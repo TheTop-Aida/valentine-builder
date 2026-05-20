@@ -1,0 +1,458 @@
+import { useState, useEffect, useRef } from 'react';
+import { THEMES, FONTS, ANIMATIONS, PAGE_EFFECTS, LAYOUTS, ELEMENT_TYPES, PAGE_TYPES, SWATCHES } from './constants.js';
+import { generateHTML } from './htmlExporter.js';
+import PageList from './components/PageList.jsx';
+import ElementEditor from './components/ElementEditor.jsx';
+import Preview from './components/Preview.jsx';
+
+function showToast(msg, duration = 2200) {
+  const el = document.getElementById('global-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._tid);
+  el._tid = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function getInitialTemplate() {
+  return [
+    {
+      id: 'p1', name: '❤️ หน้าแรกเปิดตัว', theme: 'pink', layout: 'center',
+      pageAnimation: 'fadeIn', pageEffect: 'hearts', pageEffectDensity: 50,
+      elements: [
+        { id: 'e1', type: 'sticker', emoji: '💖', fontSize: 60, animation: 'heartbeat' },
+        { id: 'e2', type: 'heading', text: 'Happy Valentine Day', fontSize: 28, fontFamily: 'Mali', color: '#ff6b9d', animation: 'zoomIn' },
+        { id: 'e3', type: 'subtext', text: 'ยินดีต้อนรับเข้าสู่เว็บไซต์แห่งความทรงจำของเรา\nมีของขวัญบางอย่างรออยู่ เปิดดูสิครับ ✨', fontSize: 15, fontFamily: 'Mitr', animation: 'slideUp', animDelay: 0.3 },
+        { id: 'e4', type: 'button', label: 'เปิดของขวัญก้อนแรก 🎁', target: 'p2', animation: 'bounce', animDelay: 0.6 }
+      ]
+    },
+    {
+      id: 'p2', name: '❓ หน้าถามคำถามวัดใจ', theme: 'pink', layout: 'center',
+      pageAnimation: 'zoomIn', pageEffect: 'stars', pageEffectDensity: 50,
+      elements: [
+        { id: 'e5', type: 'counter', question: 'วันวาเลนไทน์ปีนี้... ตกลงเธอรักเค้าไหม? 🥺', fontSize: 20, fontFamily: 'Mali', color: '#e63462', yesLabel: 'รักที่สุดเลยนะ 💚', noLabel: 'ไม่รักหรอก 🚫', yesTarget: 'p3', noBehavior: 'growYes', noMessages: ["คิดดีๆนะ 🥺", "เอ๊ะ! ลองกดใหม่จิ๊", "กดยังไงก็หนีไม่พ้นหรอก 😜", "งื้ออ กด YES เหอะน้า"] }
+      ]
+    },
+    {
+      id: 'p3', name: '💌 หน้าเปิดจดหมายลับ', theme: 'pink', layout: 'center',
+      pageAnimation: 'slideUp', pageEffect: 'confetti', pageEffectDensity: 50,
+      elements: [
+        { id: 'e6', type: 'heading', text: 'เย้! ขอบคุณที่รักกันนะ 💖', fontSize: 24, fontFamily: 'Charm', color: '#ff6b9d' },
+        { id: 'e7', type: 'letter', text: 'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันแบบนี้ในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลกเลยยย 💕' },
+        { id: 'e8', type: 'button', label: '← กลับหน้าแรก', target: 'p1' }
+      ]
+    }
+  ];
+}
+
+export default function App() {
+  const [pages, setPages] = useState(() => {
+    try { const saved = localStorage.getItem('vb_pages_v5'); if (saved) return JSON.parse(saved); } catch(e) {}
+    return getInitialTemplate();
+  });
+
+  const historyRef = useRef([]);
+  const historyIdxRef = useRef(0);
+  const isUndoRedoRef = useRef(false);
+  const mountedRef = useRef(false);
+  const counterIdRef = useRef(100);
+  const iframeRef = useRef();
+
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const [activePageId, setActivePageId] = useState('p1');
+  const [activeTab, setActiveTab] = useState('elements');
+  const [editingElemId, setEditingElemId] = useState(null);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPageType, setNewPageType] = useState('custom');
+  const [newPageName, setNewPageName] = useState('');
+
+  const activePage = pages.find(p => p.id === activePageId);
+  const activeThemeObj = activePage ? (THEMES[activePage.theme] || THEMES.pink) : null;
+
+  const selStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', cursor:'pointer' };
+  const labelStyle = { display:'block', fontSize:'0.72rem', color:'#9a7aaa', marginBottom:'5px', fontWeight:'500' };
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      historyRef.current = [JSON.parse(JSON.stringify(pages))];
+      historyIdxRef.current = 0;
+      mountedRef.current = true;
+      return;
+    }
+    if (isUndoRedoRef.current) { isUndoRedoRef.current = false; return; }
+    const newHistory = historyRef.current.slice(0, historyIdxRef.current + 1);
+    newHistory.push(JSON.parse(JSON.stringify(pages)));
+    if (newHistory.length > 50) newHistory.shift();
+    historyRef.current = newHistory;
+    historyIdxRef.current = newHistory.length - 1;
+    setCanUndo(historyIdxRef.current > 0);
+    setCanRedo(false);
+    try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(e) {}
+  }, [pages]);
+
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); handleRedo(); }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => { setPreviewHtml(generateHTML(pages)); }, [pages]);
+
+  useEffect(() => {
+    if (iframeRef.current && previewHtml) {
+      const win = iframeRef.current.contentWindow;
+      if (win && typeof win.clearEffects === 'function') { try { win.clearEffects(); } catch(e) {} }
+      const doc = iframeRef.current.contentDocument || win.document;
+      doc.open(); doc.write(previewHtml); doc.close();
+      if (win && typeof win.goTo === 'function') win.goTo(activePageId);
+    }
+  }, [previewHtml, activePageId]);
+
+  function handleUndo() {
+    if (historyIdxRef.current <= 0) return;
+    historyIdxRef.current--;
+    isUndoRedoRef.current = true;
+    setPages(JSON.parse(JSON.stringify(historyRef.current[historyIdxRef.current])));
+    setCanUndo(historyIdxRef.current > 0); setCanRedo(true);
+    showToast('↩️ Undo สำเร็จ');
+  }
+
+  function handleRedo() {
+    if (historyIdxRef.current >= historyRef.current.length - 1) return;
+    historyIdxRef.current++;
+    isUndoRedoRef.current = true;
+    setPages(JSON.parse(JSON.stringify(historyRef.current[historyIdxRef.current])));
+    setCanUndo(true); setCanRedo(historyIdxRef.current < historyRef.current.length - 1);
+    showToast('↪️ Redo สำเร็จ');
+  }
+
+  const generateUid = () => 'p_' + Math.random().toString(36).substr(2, 9);
+  const generateEid = () => 'e_' + (++counterIdRef.current);
+
+  function updatePage(id, patch) {
+    setPages(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+  }
+
+  function deletePage(id) {
+    if (pages.length <= 1) { alert("จำเป็นต้องมีหน้าเว็บเหลืออยู่อย่างน้อย 1 หน้าครับ"); return; }
+    if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบหน้านี้?")) {
+      const remaining = pages.filter(p => p.id !== id);
+      setPages(remaining);
+      if (activePageId === id) setActivePageId(remaining[0].id);
+    }
+  }
+
+  function updateElement(pId, eId, patch) {
+    const pg = pages.find(p => p.id === pId);
+    if (!pg) return;
+    updatePage(pId, { elements: pg.elements.map(el => el.id === eId ? { ...el, ...patch } : el) });
+  }
+
+  function deleteElement(pId, eId) {
+    const pg = pages.find(p => p.id === pId);
+    if (!pg) return;
+    updatePage(pId, { elements: pg.elements.filter(el => el.id !== eId) });
+    if (editingElemId === eId) setEditingElemId(null);
+  }
+
+  function createNewPage() {
+    const pId = generateUid();
+    const base = {
+      id: pId,
+      type: newPageType,
+      name: newPageName.trim() || PAGE_TYPES.find(t => t.value === newPageType).label,
+      theme: 'pink', layout: 'center', pageAnimation: 'fadeIn', pageEffect: 'none', pageEffectDensity: 50, elements: []
+    };
+    if (newPageType === 'question') base.elements = [{ id: generateEid(), type: 'counter', question: 'คุณจะยอมรับเป็นแฟนกับผมไหม? 💖', yesLabel: 'ตกลง 🥰', noLabel: 'เป็นแค่เพื่อน 🥹', noBehavior: 'growYes', noMessages: ["คิดใหม่สิ.."] }];
+    else if (newPageType === 'gallery') base.elements = [{ id: generateEid(), type: 'heading', text: 'คลังภาพความทรงจำ 📸', fontSize: 24, fontFamily: 'Mali' }, { id: generateEid(), type: 'gallery', images: [], cols: 2 }];
+    else if (newPageType === 'music') base.elements = [{ id: generateEid(), type: 'heading', text: 'เพลงนี้มอบให้เธอ 🎵', fontSize: 22, fontFamily: 'Itim' }, { id: generateEid(), type: 'vinyl', audioSrc: '' }];
+    else if (newPageType === 'letter') base.elements = [{ id: generateEid(), type: 'heading', text: 'จดหมายลับ 💌', fontSize: 22, fontFamily: 'Charm' }, { id: generateEid(), type: 'letter', text: 'เขียนความในใจที่นี่...' }];
+    else base.elements = [{ id: generateEid(), type: 'heading', text: 'หน้าใหม่ ✨', fontSize: 22 }];
+    setPages(prev => [...prev, base]);
+    setActivePageId(pId);
+    setNewPageName('');
+    setShowAddModal(false);
+  }
+
+  function addElement(type) {
+    if (!activePage) return;
+    const freshNode = { id: generateEid(), type };
+    if (type === 'heading') freshNode.text = 'หัวข้อข้อความใหม่';
+    if (type === 'subtext') freshNode.text = 'รายละเอียดข้อความ';
+    if (type === 'sticker') freshNode.emoji = '❤️';
+    if (type === 'animated_sticker') { freshNode.stickerSrc = ''; freshNode.stickerSize = 120; }
+    if (type === 'button') { freshNode.label = 'ปุ่มนำทาง'; freshNode.target = ''; }
+    if (type === 'gift_buttons') { freshNode.gifts = [{icon:'🎁',label:'ของขวัญ 1',target:'',color:'#ff6b9d'}]; freshNode.iconSize = 48; }
+    if (type === 'polaroid_gallery') { freshNode.photos = []; freshNode.cols = 2; }
+    if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noBehavior = 'runaway'; freshNode.reactionImages = ['','','','']; }
+    updatePage(activePage.id, { elements: [...(activePage.elements || []), freshNode] });
+    setEditingElemId(freshNode.id);
+  }
+
+  function handleElementDrop(targetIndex) {
+    if (dragIdx === null || dragIdx === targetIndex) return;
+    const reordered = [...(activePage.elements || [])];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(targetIndex, 0, moved);
+    updatePage(activePage.id, { elements: reordered });
+    setDragIdx(null); setDragOverIdx(null);
+  }
+
+  function exportCompleteHTML() {
+    const blob = new Blob([generateHTML(pages)], { type: 'text/html;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'our-valentine.html';
+    a.click();
+    showToast('✅ Export สำเร็จ! ดาวน์โหลดแล้ว');
+  }
+
+  const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
+
+  return (
+    <div id="root" style={{display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden'}}>
+      {/* TOP BAR */}
+      <div className="topbar">
+        <div style={{display:'flex', alignItems:'center', gap:10}}>
+          <span className="logo">💌 Valentine Builder Pro</span>
+          <span className="version-badge">v6.0</span>
+          <button className="btn-undo" onClick={handleUndo} disabled={!canUndo}>↩️ Undo</button>
+          <button className="btn-undo" onClick={handleRedo} disabled={!canRedo}>↪️ Redo</button>
+        </div>
+        <div className="topbar-actions">
+          <button className="btn-top btn-export" onClick={exportCompleteHTML}>⬇️ Export HTML</button>
+        </div>
+      </div>
+
+      {/* MAIN */}
+      <div className="main">
+        {/* LEFT: PAGE LIST */}
+        <PageList
+          pages={pages}
+          activePageId={activePageId}
+          onSelect={setActivePageId}
+          onDelete={deletePage}
+          onAdd={() => setShowAddModal(true)}
+        />
+
+        {/* CENTER: EDITOR */}
+        <div className="panel-center">
+          {activePage ? (
+            <div style={{display:'flex', flexDirection:'column', height:'100%', overflow:'hidden'}}>
+              <div className="editor-tabs">
+                {['elements','layout','background','music','theme'].map(tab => (
+                  <div key={tab} className={`editor-tab ${activeTab===tab?'active':''}`} onClick={() => setActiveTab(tab)}>
+                    {tab==='elements'?'🧩 วัตถุ':tab==='layout'?'📐 Layout':tab==='background'?'🖼️ พื้นหลัง':tab==='music'?'🎵 เพลง':'🎨 Theme'}
+                  </div>
+                ))}
+              </div>
+
+              <div className="editor-body">
+                {/* TAB: ELEMENTS */}
+                {activeTab === 'elements' && (
+                  <div>
+                    <div className="sec-header">🧩 วัตถุในหน้านี้</div>
+                    <div className="elements-list">
+                      {(activePage.elements || []).map((el, idx) => (
+                        <div
+                          key={el.id}
+                          className={`element-item ${dragIdx===idx?'dragging':''} ${dragOverIdx===idx?'drag-over':''}`}
+                          draggable
+                          onDragStart={() => setDragIdx(idx)}
+                          onDragOver={e => { e.preventDefault(); setDragOverIdx(idx); }}
+                          onDrop={() => handleElementDrop(idx)}
+                          onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
+                        >
+                          <span className="element-drag-handle">⠿</span>
+                          <span className="element-icon">{ELEMENT_TYPES.find(t=>t.type===el.type)?.icon||'📦'}</span>
+                          <div className="element-info">
+                            <div className="element-type">{el.type}</div>
+                            <div className="element-val">{el.text||el.emoji||el.label||el.question||el.type}</div>
+                          </div>
+                          <div className="element-actions">
+                            <button className={`element-edit-btn ${editingElemId===el.id?'active':''}`} onClick={() => setEditingElemId(editingElemId===el.id?null:el.id)}>✏️</button>
+                            <button className="element-del" onClick={() => deleteElement(activePage.id, el.id)}>✕</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {activeEditingElement && (
+                      <ElementEditor
+                        el={activeEditingElement}
+                        themeObj={activeThemeObj}
+                        pages={pages}
+                        onUpdate={(patch) => updateElement(activePage.id, activeEditingElement.id, patch)}
+                        onClose={() => setEditingElemId(null)}
+                      />
+                    )}
+
+                    <div className="sec-header" style={{marginTop:14}}>➕ เพิ่มวัตถุใหม่</div>
+                    <div className="add-elements">
+                      {ELEMENT_TYPES.map(t => (
+                        <button key={t.type} className="btn-elem" onClick={() => addElement(t.type)}>
+                          {t.icon} {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB: LAYOUT */}
+                {activeTab === 'layout' && (
+                  <div>
+                    <div className="sec-header">📐 รูปแบบ Layout การจัดวาง</div>
+                    <div className="layout-grid">
+                      {LAYOUTS.map(l => (
+                        <div key={l.id} className={`layout-opt ${activePage.layout===l.id?'selected':''}`} onClick={() => updatePage(activePage.id, {layout:l.id})}>
+                          <div className="layout-icon">{l.icon}</div>
+                          <div>{l.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="field">
+                      <label style={labelStyle}>ความกว้าง Card (px)</label>
+                      <input type="number" value={activePage.cardWidth||440} onChange={e=>updatePage(activePage.id,{cardWidth:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
+                    </div>
+                    <div className="field">
+                      <label style={labelStyle}>Padding ภายใน Card (px)</label>
+                      <input type="number" value={activePage.cardPadding??32} onChange={e=>updatePage(activePage.id,{cardPadding:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
+                    </div>
+                    <div className="field">
+                      <label style={labelStyle}>ความโค้งมน Card (border-radius px)</label>
+                      <input type="number" value={activePage.cardRadius??24} onChange={e=>updatePage(activePage.id,{cardRadius:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
+                    </div>
+                    <div className="sec-header" style={{marginTop:12}}>🎬 แอนิเมชันเมื่อเปิดหน้า</div>
+                    <div className="anim-grid">
+                      {ANIMATIONS.map(a => (
+                        <div key={a.id} className={`anim-opt ${activePage.pageAnimation===a.id?'selected':''}`} onClick={() => updatePage(activePage.id, {pageAnimation:a.id})}>
+                          {a.icon}<br/>{a.label}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="sec-header" style={{marginTop:12}}>✨ เอฟเฟกต์พิเศษบนหน้า</div>
+                    <div className="anim-grid">
+                      {PAGE_EFFECTS.map(ef => (
+                        <div key={ef.id} className={`anim-opt ${activePage.pageEffect===ef.id?'selected':''}`} onClick={() => updatePage(activePage.id, {pageEffect:ef.id})}>
+                          {ef.icon}<br/>{ef.label}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="field" style={{marginTop:10}}>
+                      <label style={labelStyle}>ความหนาแน่นเอฟเฟกต์ ({activePage.pageEffectDensity??50}%)</label>
+                      <input type="range" min="10" max="100" value={activePage.pageEffectDensity??50} onChange={e=>updatePage(activePage.id,{pageEffectDensity:+e.target.value})} style={{width:'100%'}} />
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB: BACKGROUND */}
+                {activeTab === 'background' && (
+                  <div>
+                    <div className="sec-header">🎨 สีพื้นหลังหน้าเว็บ</div>
+                    <div className="field">
+                      <label style={labelStyle}>สีพื้นหลังหลัก (Custom Bg Color)</label>
+                      <div style={{display:'flex',gap:'6px',flexWrap:'wrap',alignItems:'center',marginBottom:'8px'}}>
+                        {SWATCHES.map(c=>(
+                          <div key={c} className={`palette-swatch ${activePage.customBg===c?'active':''}`} style={{background:c}} onClick={()=>updatePage(activePage.id,{customBg:c})} />
+                        ))}
+                        <input type="color" value={activePage.customBg||'#fff0f3'} onChange={e=>updatePage(activePage.id,{customBg:e.target.value})} style={{width:'26px',height:'26px',padding:0,border:'none',cursor:'pointer',borderRadius:'50%'}} />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label style={labelStyle}>สีพื้นหลัง Card</label>
+                      <div style={{display:'flex',gap:'6px',flexWrap:'wrap',alignItems:'center'}}>
+                        {SWATCHES.map(c=>(
+                          <div key={c} className={`palette-swatch ${activePage.customCardBg===c?'active':''}`} style={{background:c}} onClick={()=>updatePage(activePage.id,{customCardBg:c})} />
+                        ))}
+                        <input type="color" value={activePage.customCardBg||'#ffffff'} onChange={e=>updatePage(activePage.id,{customCardBg:e.target.value})} style={{width:'26px',height:'26px',padding:0,border:'none',cursor:'pointer',borderRadius:'50%'}} />
+                      </div>
+                    </div>
+                    <div className="field" style={{marginTop:10}}>
+                      <label style={labelStyle}>🖼️ URL รูปพื้นหลังหน้า (Page BG Image)</label>
+                      <input value={activePage.bgImage||''} onChange={e=>updatePage(activePage.id,{bgImage:e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} placeholder="https://..." />
+                      {activePage.bgImage && (
+                        <div className="field">
+                          <label style={labelStyle}>ความโปร่งใสรูปพื้นหลัง ({Math.round((activePage.bgOpacity??0.5)*100)}%)</label>
+                          <input type="range" min="0" max="1" step="0.05" value={activePage.bgOpacity??0.5} onChange={e=>updatePage(activePage.id,{bgOpacity:+e.target.value})} style={{width:'100%'}} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB: MUSIC */}
+                {activeTab === 'music' && (
+                  <div>
+                    <div className="sec-header">🎵 เพลงประกอบพื้นหลัง (BGM)</div>
+                    <div className="field">
+                      <label style={labelStyle}>URL เพลง .mp3 สำหรับหน้านี้</label>
+                      <input value={activePage.bgMusic||''} onChange={e=>updatePage(activePage.id,{bgMusic:e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} placeholder="https://example.com/music.mp3" />
+                      <p style={{fontSize:'0.65rem', color:'#9a7aaa', marginTop:'4px'}}>* เพลงจะเล่นวนลูปเมื่อเข้าสู่หน้านี้</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB: THEME */}
+                {activeTab === 'theme' && (
+                  <div>
+                    <div className="sec-header">🎨 เลือกโทนสีหลัก (Theme)</div>
+                    <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
+                      {Object.keys(THEMES).map(k => {
+                        const th = THEMES[k];
+                        return (
+                          <div key={k} style={{padding:'10px',background:'rgba(255,255,255,0.03)',border:`1px solid ${activePage.theme===k?'#ff6b9d':'rgba(255,100,150,0.15)'}`,borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between'}} onClick={() => updatePage(activePage.id, {theme:k})}>
+                            <span style={{fontSize:'0.82rem',fontWeight:500,flex:1,color:'#e8d0f0'}}>{th.name}</span>
+                            <div style={{display:'flex',gap:'4px'}}>
+                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.bg,border:'1px solid #777'}}/>
+                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.accent}}/>
+                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.btn}}/>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div style={{padding:'40px',textAlign:'center',color:'#4a3a5a'}}>กรุณาเลือกหรือเพิ่มหน้าเว็บใหม่จากเมนูด้านซ้าย</div>
+          )}
+        </div>
+
+        {/* RIGHT: PREVIEW */}
+        <Preview iframeRef={iframeRef} />
+      </div>
+
+      {/* MODAL: ADD PAGE */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3>➕ เพิ่มหน้าสไลด์ใหม่</h3>
+            <div className="field">
+              <label>รูปแบบหน้าเทมเพลต</label>
+              <select value={newPageType} onChange={e => setNewPageType(e.target.value)} style={{width:'100%',padding:'6px',background:'#2a1a34',color:'#fff',border:'1px solid rgba(255,100,150,0.3)',borderRadius:'6px'}}>
+                {PAGE_TYPES.map(pt => <option key={pt.value} value={pt.value}>{pt.icon} {pt.label}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>ชื่อหน้า</label>
+              <input type="text" placeholder="เว้นว่างไว้เพื่อใช้ชื่ออัตโนมัติ" value={newPageName} onChange={e => setNewPageName(e.target.value)} style={{width:'100%',padding:'6px',background:'#2a1a34',color:'#fff',border:'1px solid rgba(255,100,150,0.3)',borderRadius:'6px'}} onKeyDown={e => e.key==='Enter' && createNewPage()} />
+            </div>
+            <div className="modal-btns">
+              <button className="btn-cancel" onClick={() => setShowAddModal(false)}>ยกเลิก</button>
+              <button className="btn-confirm" onClick={createNewPage}>ตกลงสร้างหน้าใหม่</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
