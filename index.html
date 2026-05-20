@@ -318,28 +318,31 @@ function renderElement(el, th) {
     case 'audio':
       const ytThumb = el.ytId ? 'https://img.youtube.com/vi/' + el.ytId + '/hqdefault.jpg' : (el.coverSrc || '');
       const isYT = !!el.ytId;
-      const audioTag = isYT ? '' : '<audio id="aud-' + el.id + '" src="' + (el.src||'') + '" loop style="display:none;"></audio>';
-      const thumbHtml = ytThumb
-        ? '<img src="' + ytThumb + '" style="width:90px;height:90px;object-fit:cover;flex-shrink:0;display:block;" />'
-        : '<div style="width:90px;height:90px;flex-shrink:0;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎵</div>';
+      if (isYT) {
+        // YouTube embed iframe — ทำงานได้ทุก environment
+        return (
+          '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;">' +
+          '<div style="border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);">' +
+          '<div style="display:flex;align-items:center;padding:10px 14px;gap:10px;">' +
+          '<img src="' + ytThumb + '" style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;" />' +
+          '<div style="flex:1;font-size:0.9rem;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + (el.title || 'เพลงของเรา') + '</div>' +
+          '</div>' +
+          '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">' +
+          '<iframe src="https://www.youtube.com/embed/' + el.ytId + '?autoplay=0&loop=1&playlist=' + el.ytId + '" ' +
+          'style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" ' +
+          'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
+          '</div></div></div>'
+        );
+      }
+      // MP3 fallback
       return (
-        '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;" data-audio-el="' + el.id + '" data-yt-id="' + (el.ytId||'') + '">' +
-        '<div style="display:flex;align-items:stretch;border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);">' +
-        thumbHtml +
-        '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 16px;gap:8px;min-width:0;overflow:hidden;">' +
-        '<div style="overflow:hidden;width:100%;position:relative;">' +
-        '<div id="marq-' + el.id + '" style="font-size:0.9rem;font-weight:600;color:#fff;white-space:nowrap;display:inline-block;">' + (el.title || 'เพลงของเรา') + (el.artist ? ' – ' + el.artist : '') + '</div>' +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:14px;">' +
-        '<button id="like-' + el.id + '" onclick="ytToggleLike(\'' + el.id + '\',\'like\')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👎</button>' +
-        '<button onclick="ytCtrl(\'' + el.id + '\',\'prev\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏮</button>' +
-        '<button id="playbtn-' + el.id + '" onclick="ytCtrl(\'' + el.id + '\',\'play\')" style="background:none;border:none;color:#fff;font-size:1.7rem;cursor:pointer;opacity:0.95;padding:0;line-height:1;">▶</button>' +
-        '<button onclick="ytCtrl(\'' + el.id + '\',\'next\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏭</button>' +
-        '<button id="dislike-' + el.id + '" onclick="ytToggleLike(\'' + el.id + '\',\'dislike\')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👍</button>' +
-        '</div></div></div>' +
-        '<div id="ytplayer-' + el.id + '"></div>' +
-        audioTag +
-        '</div>'
+        '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;">' +
+        '<div style="display:flex;align-items:center;border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);padding:12px 16px;gap:12px;">' +
+        '<div style="font-size:2rem;">🎵</div>' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (el.title || 'เพลงของเรา') + '</div>' +
+        '<audio controls src="' + (el.src||'') + '" style="width:100%;height:32px;"></audio>' +
+        '</div></div></div>'
       );
     case 'vinyl':
       return `
