@@ -157,6 +157,26 @@ body{font-family:'Mitr',sans-serif;background:#0f0a14;color:#fff;height:100vh;ov
 .tpl-card-desc{font-size:0.72rem;color:#7a5a8a;line-height:1.4}
 .tpl-card-pages{position:absolute;top:8px;right:8px;background:rgba(255,107,157,0.15);border:1px solid rgba(255,107,157,0.3);color:#ff9a9e;font-size:0.62rem;padding:2px 7px;border-radius:8px}
 .tpl-badge{display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;padding:2px 7px;border-radius:6px;margin-top:6px}
+
+/* ══ ANIMATED STICKER PRESETS ══ */
+.anim-sticker-preset{display:inline-block;border-radius:8px;border:1px solid rgba(255,100,150,0.2);padding:4px 6px;cursor:pointer;font-size:1.4rem;transition:all .2s;background:rgba(255,255,255,0.03)}
+.anim-sticker-preset:hover{background:rgba(255,107,157,0.15);border-color:#ff6b9d;transform:scale(1.1)}
+
+/* ══ GIFT BOX BUTTON ══ */
+.gift-btn-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .25s}
+.gift-btn-wrap:hover{transform:translateY(-4px) scale(1.05)}
+.gift-btn-wrap:hover .gift-icon{animation:giftWiggle 0.4s ease}
+@keyframes giftWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+
+/* ══ POLAROID GALLERY ══ */
+.polaroid-item{background:#fff;padding:10px 10px 30px;box-shadow:0 4px 14px rgba(0,0,0,0.15);display:inline-block;position:relative;transition:transform .3s}
+.polaroid-item:nth-child(odd){transform:rotate(-2deg)}
+.polaroid-item:nth-child(even){transform:rotate(1.5deg)}
+.polaroid-item:hover{transform:rotate(0) scale(1.04)!important;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:10}
+.polaroid-caption{text-align:center;margin-top:6px;font-family:'Mali',cursive;font-size:0.75rem;color:#444;line-height:1.3}
+
+/* ══ COUNTER REACTION IMAGE ══ */
+.reaction-img{max-width:120px;max-height:120px;object-fit:contain;transition:all 0.4s cubic-bezier(.34,1.56,.64,1);border-radius:12px}
 </style>
 </head>
 <body>
@@ -227,18 +247,21 @@ const LAYOUTS = [
 ];
 
 const ELEMENT_TYPES = [
-  { type:'heading',  icon:'📝', label:'Heading หัวข้อ' },
-  { type:'subtext',  icon:'✍️', label:'Subtext ข้อความ' },
-  { type:'image',    icon:'🖼️', label:'รูปภาพ' },
-  { type:'sticker',  icon:'🎭', label:'Sticker ตัวโต' },
-  { type:'button',   icon:'🔘', label:'ปุ่มลิงก์หน้า' },
-  { type:'divider',  icon:'➖', label:'เส้นคั่นแบ่ง' },
-  { type:'spacer',   icon:'↕️', label:'Spacer ช่องว่าง' },
-  { type:'letter',   icon:'💌', label:'กล่องเปิดจดหมาย' },
-  { type:'audio',    icon:'🎵', label:'เครื่องเล่นเพลง MP3' },
-  { type:'vinyl',    icon:'💿', label:'แผ่นเสียงเพลง (Vinyl)' },
-  { type:'gallery',  icon:'📸', label:'คอลเลกชันแกลเลอรี' },
-  { type:'counter',  icon:'❓', label:'คำถามวัดใจ (Yes/No)' },
+  { type:'heading',         icon:'📝', label:'Heading หัวข้อ' },
+  { type:'subtext',         icon:'✍️', label:'Subtext ข้อความ' },
+  { type:'image',           icon:'🖼️', label:'รูปภาพ' },
+  { type:'sticker',         icon:'🎭', label:'Sticker ตัวโต' },
+  { type:'animated_sticker',icon:'🎞️', label:'สติกเกอร์เคลื่อนไหว' },
+  { type:'button',          icon:'🔘', label:'ปุ่มลิงก์หน้า' },
+  { type:'gift_buttons',    icon:'🎁', label:'กล่องของขวัญ' },
+  { type:'divider',         icon:'➖', label:'เส้นคั่นแบ่ง' },
+  { type:'spacer',          icon:'↕️', label:'Spacer ช่องว่าง' },
+  { type:'letter',          icon:'💌', label:'กล่องเปิดจดหมาย' },
+  { type:'audio',           icon:'🎵', label:'เครื่องเล่นเพลง MP3' },
+  { type:'vinyl',           icon:'💿', label:'แผ่นเสียงเพลง (Vinyl)' },
+  { type:'gallery',         icon:'📸', label:'คอลเลกชันแกลเลอรี' },
+  { type:'polaroid_gallery',icon:'🖼️', label:'แกลเลอรีโพลารอยด์' },
+  { type:'counter',         icon:'❓', label:'คำถามวัดใจ (Yes/No)' },
 ];
 
 const STICKERS = ['❤️','🩷','💕','💖','💗','💓','🌸','🌹','✨','⭐','🌙','☀️','🎁','🎉','🥺','😻','🐰','🐻','🦋','🍓','🍰','💌','🎵','💎'];
@@ -390,7 +413,7 @@ function renderElement(el, th) {
           <img src="${el.src || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="vinyl-img-${el.id}" style="width:${el.size||120}px; height:${el.size||120}px; border-radius:50%; object-fit:cover; animation:spin 4s linear infinite; animation-play-state:paused; box-shadow:0 4px 15px rgba(0,0,0,0.3); border:2px solid #333; background:#fff;" />
           <audio id="vinyl-aud-${el.id}" controls src="${el.audioSrc||''}" style="width:100%; height:32px;" onplay="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='running'" onpause="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='paused'"></audio>
         </div>`;
-    case 'gallery':
+    case 'gallery': {
       const items = el.images || [];
       const cols = el.cols || 2;
       if (items.length === 0) return `<div style="padding:20px; background:rgba(0,0,0,0.03); border-radius:10px; text-align:center; font-size:0.75rem; color:#888; z-index:2;">📸 คลังภาพยังว่างเปล่า (กรุณาอัปโหลดรูปภาพ)</div>`;
@@ -398,10 +421,67 @@ function renderElement(el, th) {
         <div class="gallery-container ${animClass}" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:6px; width:100%; z-index:2; ${animDelay}">
           ${items.map(img => `<img src="${img}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.05);" />`).join('')}
         </div>`;
+    }
+    /* ══════════════════════════════════════════
+       🎞️ ANIMATED STICKER (webp/gif/apng)
+    ══════════════════════════════════════════ */
+    case 'animated_sticker': {
+      const src = el.stickerSrc || '';
+      const sz = el.stickerSize || 120;
+      if (!src) return `<div style="padding:16px;border:2px dashed rgba(255,107,157,0.3);border-radius:12px;text-align:center;color:#9a7aaa;font-size:0.8rem;z-index:2;">🎞️ ยังไม่ได้ใส่ URL สติกเกอร์เคลื่อนไหว</div>`;
+      return `<div class="${animClass}" style="${animDelay} z-index:2; display:flex; justify-content:center;">
+        <img src="${src}" style="width:${sz}px;height:${sz}px;object-fit:contain;background:transparent;" alt="sticker" />
+      </div>`;
+    }
+    /* ══════════════════════════════════════════
+       🎁 GIFT BUTTONS (clickable icon row)
+    ══════════════════════════════════════════ */
+    case 'gift_buttons': {
+      const gifts = el.gifts || [{ icon:'🎁', label:'ของขวัญ', target:'', color:'#ff6b9d' }];
+      const giftHtml = gifts.map((g, i) => {
+        const action = g.target ? (g.target.startsWith('http') ? `window.open('${g.target}','_blank')` : `goTo('${g.target}')`) : '';
+        return `<div onclick="${action}" style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .25s;padding:10px;border-radius:14px;border:2px solid ${g.color||'#ff6b9d'}33;background:${g.color||'#ff6b9d'}11;" onmouseover="this.style.transform='translateY(-4px) scale(1.06)';this.querySelector('.gi').style.animation='giftWiggle .4s ease'" onmouseout="this.style.transform='';this.querySelector('.gi').style.animation=''">
+          <span class="gi" style="font-size:${el.iconSize||48}px;line-height:1;">${g.icon||'🎁'}</span>
+          ${g.label ? `<span style="font-size:0.75rem;color:${g.color||'#ff6b9d'};font-family:'Mali',cursive;font-weight:600;">${g.label}</span>` : ''}
+        </div>`;
+      }).join('');
+      return `<div class="${animClass}" style="${animDelay} z-index:2; display:flex; justify-content:center; flex-wrap:wrap; gap:12px; width:100%;">
+        <style>@keyframes giftWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}</style>
+        ${giftHtml}
+      </div>`;
+    }
+    /* ══════════════════════════════════════════
+       🖼️ POLAROID GALLERY with Captions
+    ══════════════════════════════════════════ */
+    case 'polaroid_gallery': {
+      const pitems = el.photos || [];
+      if (pitems.length === 0) return `<div style="padding:20px;background:rgba(0,0,0,0.03);border-radius:10px;text-align:center;font-size:0.75rem;color:#888;z-index:2;">🖼️ ยังไม่มีรูปโพลารอยด์</div>`;
+      const cols2 = el.cols || 2;
+      return `
+        <style>
+          .polaroid-item{background:#fff;padding:10px 10px 30px;box-shadow:0 4px 14px rgba(0,0,0,0.15);display:inline-block;position:relative;transition:transform .3s;}
+          .polaroid-item:nth-child(odd){transform:rotate(-2.2deg);}
+          .polaroid-item:nth-child(even){transform:rotate(1.8deg);}
+          .polaroid-item:hover{transform:rotate(0) scale(1.05)!important;box-shadow:0 10px 28px rgba(0,0,0,0.22);z-index:10;}
+          .polaroid-caption{text-align:center;margin-top:6px;font-family:'Mali',cursive;font-size:0.72rem;color:#333;line-height:1.3;word-break:break-word;}
+        </style>
+        <div class="${animClass}" style="${animDelay} display:grid; grid-template-columns:repeat(${cols2},1fr); gap:14px; width:100%; z-index:2;">
+          ${pitems.map(p => `
+            <div class="polaroid-item">
+              <img src="${p.src||''}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" />
+              ${p.caption ? `<div class="polaroid-caption">${p.caption}</div>` : ''}
+            </div>`).join('')}
+        </div>`;
+    }
     case 'counter':
       // ปรับโครงสร้างใหม่ ให้ปุ่ม Yes และ No อยู่ใน flex flow เคียงข้างกัน 100% 
+      const reactionImgs = el.reactionImages || [];
+      const reactionHtml = reactionImgs.length > 0
+        ? `<img id="react-img-${el.id}" src="${reactionImgs[0]}" class="reaction-img" style="margin-bottom:8px;" />`
+        : '';
       return `
         <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; ${animDelay}">
+          ${reactionHtml}
           <h3 id="q-text-${el.id}" style="${fontFamily}${fontSize}${color} font-weight:600; text-align:center; transition:all 0.3s;">${el.question || 'คุณรักฉันไหม?'}</h3>
           <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:45px; width:100%;">
             <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.yesColor || th.yes}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; transform-origin:center; white-space:nowrap;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
@@ -465,9 +545,11 @@ function generateHTML(pages) {
       return `
         (function(){
           var idx = 0, msgs = ${msgs};
+          var reactionImgs = ${JSON.stringify(el.reactionImages || [])};
           var noBtn = document.getElementById('no-${el.id}');
           var yesBtn = document.getElementById('yes-${el.id}');
           var qText = document.getElementById('q-text-${el.id}');
+          var reactImg = document.getElementById('react-img-${el.id}');
           if(!noBtn || !yesBtn) return;
           
           var yesScale = 1;
@@ -516,8 +598,16 @@ function generateHTML(pages) {
                noBtn.style.top = Math.max(10, Math.floor(Math.random() * h)) + 'px';
             }
             if(idx < msgs.length && qText) {
-              qText.textContent = msgs[idx++];
+              qText.textContent = msgs[idx];
             }
+            // Update reaction image
+            if(reactImg && reactionImgs.length > 0) {
+              var imgIdx = Math.min(idx, reactionImgs.length - 1);
+              reactImg.style.transform = 'scale(1.15)';
+              setTimeout(function(){ reactImg.style.transform = ''; }, 300);
+              reactImg.src = reactionImgs[imgIdx];
+            }
+            if(idx < msgs.length) idx++;
           }
           
           // ผูก Event Listener แยกตามโหมด
@@ -553,18 +643,26 @@ function generateHTML(pages) {
 
   // Script injection for Page Background Effects
   let effectsEngine = `
-    window.activeIntervals = [];
+    window.activeIntervals = window.activeIntervals || [];
     function clearEffects() {
-      window.activeIntervals.forEach(clearInterval);
-      window.activeIntervals = [];
+      if(window.activeIntervals) {
+        window.activeIntervals.forEach(clearInterval);
+        window.activeIntervals = [];
+      }
       document.querySelectorAll('.effect-node').forEach(el => el.remove());
     }
-    function startEffect(id, accent) {
+    // 🟢 เพิ่มพารามิเตอร์ density และคำนวณ Interval ตามค่าที่ได้รับ
+    function startEffect(id, accent, density) {
       clearEffects();
       if(!id || id === 'none') return;
       
+      density = density || 50; // ดีฟอลต์ความหนาแน่นที่ 50%
+      
       if(['hearts','petals','snow','bubbles'].includes(id)) {
         var sym = id==='hearts'?'❤️':id==='petals'?'🌸':id==='snow'?'❄️':'🫧';
+        var baseInterval = 220;
+        var intervalTime = Math.max(50, baseInterval * (50 / density)); // ยิ่ง density มาก ตัวคูณยิ่งน้อย -> ตกถี่ขึ้น
+        
         var inv = setInterval(function(){
           var el = document.createElement('div');
           el.className = 'effect-node';
@@ -582,12 +680,15 @@ function generateHTML(pages) {
             el.style.transform = 'translateY('+(window.innerHeight+40)+'px) rotate('+(Math.random()*360)+'deg)';
           }, 30);
           setTimeout(function(){ el.remove(); }, 3500);
-        }, 220);
+        }, intervalTime);
         window.activeIntervals.push(inv);
       }
       
       if(id === 'confetti') {
         var colors = [accent, '#ff6b9d', '#ffd166', '#06d6a0', '#ff9f1c'];
+        var baseInterval = 50;
+        var intervalTime = Math.max(15, baseInterval * (50 / density));
+        
         var inv = setInterval(function(){
           var el = document.createElement('div');
           el.className = 'effect-node';
@@ -605,12 +706,15 @@ function generateHTML(pages) {
             { transform: 'translate('+(Math.random()*120 - 60)+'px, '+(window.innerHeight+20)+'px) rotate('+(Math.random()*540)+'deg)', opacity:0 }
           ], { duration:2500, easing:'linear' });
           setTimeout(function(){ el.remove(); }, 2500);
-        }, 50);
+        }, intervalTime);
         window.activeIntervals.push(inv);
       }
 
       if(['stars','fireflies'].includes(id)) {
         var sym = id==='stars'?'⭐':'✨';
+        var baseInterval = 120;
+        var intervalTime = Math.max(30, baseInterval * (50 / density));
+        
         var inv = setInterval(function(){
           var el = document.createElement('div');
           el.className = 'effect-node';
@@ -628,7 +732,7 @@ function generateHTML(pages) {
             { opacity: 0, transform: 'scale(0.5)' }
           ], { duration: 1800, easing: 'ease-in-out' });
           setTimeout(function(){ el.remove(); }, 1800);
-        }, 120);
+        }, intervalTime);
         window.activeIntervals.push(inv);
       }
     }
@@ -636,7 +740,13 @@ function generateHTML(pages) {
 
   // Dictionary for meta routing info (effects and music)
   const routeDictionary = JSON.stringify(pages.reduce((acc, p) => {
-    acc[p.id] = { effect: p.pageEffect || 'none', accent: getTheme(p.theme).accent, bgm: p.bgMusic || '' };
+    // 🟢 ใส่ density ลงใน metadata ส่งไปเก็บใน Iframe
+    acc[p.id] = { 
+      effect: p.pageEffect || 'none', 
+      accent: getTheme(p.theme).accent, 
+      bgm: p.bgMusic || '',
+      density: p.pageEffectDensity ?? 50
+    };
     return acc;
   }, {}));
 
@@ -677,7 +787,7 @@ function generateHTML(pages) {
       
       // Handle special effects and music
       if(metaDict[pageId]) {
-        if(window.startEffect) startEffect(metaDict[pageId].effect, metaDict[pageId].accent);
+        if(window.startEffect) startEffect(metaDict[pageId].effect, metaDict[pageId].accent, metaDict[pageId].density);
         var bgmEl = document.getElementById('global-bgm');
         if(bgmEl && metaDict[pageId].bgm) {
            if(bgmEl.src !== metaDict[pageId].bgm) {
@@ -759,7 +869,7 @@ function generateHTML(pages) {
       if(!document.querySelector('[data-yt-id]:not([data-yt-id=""])')) { initAudioPlayers(); }
       var firstId = "${pages[0]?.id || ''}";
       if(firstId) { 
-          startEffect(metaDict[firstId].effect, metaDict[firstId].accent); 
+          startEffect(metaDict[firstId].effect, metaDict[firstId].accent, metaDict[firstId].density); 
           var bgmEl = document.getElementById('global-bgm');
           if(bgmEl && metaDict[firstId].bgm) {
               bgmEl.src = metaDict[firstId].bgm;
@@ -788,6 +898,7 @@ function getInitialTemplate() {
       layout: 'center',
       pageAnimation: 'fadeIn',
       pageEffect: 'hearts',
+      pageEffectDensity: 50, // 🟢 ใส่ค่า Default Density
       elements: [
         { id: 'e1', type: 'sticker', emoji: '💖', fontSize: 60, animation: 'heartbeat' },
         { id: 'e2', type: 'heading', text: 'Happy Valentine Day', fontSize: 28, fontFamily: 'Mali', color: '#ff6b9d', animation: 'zoomIn' },
@@ -802,6 +913,7 @@ function getInitialTemplate() {
       layout: 'center',
       pageAnimation: 'zoomIn',
       pageEffect: 'stars',
+      pageEffectDensity: 50, // 🟢 ใส่ค่า Default Density
       elements: [
         { id: 'e5', type: 'counter', question: 'วันวาเลนไทน์ปีนี้... ตกลงเธอรักเค้าไหม? 🥺', fontSize: 20, fontFamily: 'Mali', color: '#e63462', yesLabel: 'รักที่สุดเลยนะ 💚', noLabel: 'ไม่รักหรอก 🚫', yesTarget: 'p3', noBehavior: 'growYes', noMessages: ["คิดดีๆนะ 🥺", "เอ๊ะ! ลองกดใหม่จิ๊", "กดยังไงก็หนีไม่พ้นหรอก 😜", "งื้ออ กด YES เหอะน้า"] }
       ]
@@ -813,6 +925,7 @@ function getInitialTemplate() {
       layout: 'center',
       pageAnimation: 'slideUp',
       pageEffect: 'confetti',
+      pageEffectDensity: 50, // 🟢 ใส่ค่า Default Density
       elements: [
         { id: 'e6', type: 'heading', text: 'เย้! ขอบคุณที่รักกันนะ 💖', fontSize: 24, fontFamily: 'Charm', color: '#ff6b9d' },
         { id: 'e7', type: 'letter', text: 'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันแบบนี้ในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลกเลยยย 💕' },
@@ -880,6 +993,35 @@ function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
         </div>
       )}
 
+      {el.type === 'animated_sticker' && (
+        <div>
+          <label style={labelStyle}>🎞️ URL สติกเกอร์เคลื่อนไหว (.gif / .webp / .apng)</label>
+          <input value={el.stickerSrc || ''} onChange={e => upd({ stickerSrc: e.target.value })} style={inputStyle} placeholder="https://media.giphy.com/media/xxx/giphy.gif" />
+          {el.stickerSrc && (
+            <div style={{textAlign:'center',marginBottom:'8px',background:'rgba(0,0,0,0.2)',borderRadius:'8px',padding:'8px'}}>
+              <img src={el.stickerSrc} style={{maxWidth:'100px',maxHeight:'100px',objectFit:'contain'}} alt="preview"/>
+            </div>
+          )}
+          <label style={labelStyle}>ปุ่มเลือกสติกเกอร์ตัวอย่างน่ารักๆ (คลิกเพื่อใช้)</label>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'8px'}}>
+            {[
+              {emoji:'🐻',url:'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+              {emoji:'🐱',url:'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif'},
+              {emoji:'🐰',url:'https://media.giphy.com/media/3oEjHV0z8S7WM4MwnK/giphy.gif'},
+              {emoji:'💖',url:'https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif'},
+              {emoji:'🌸',url:'https://media.giphy.com/media/xT9IgpL8FyQHRHdZS0/giphy.gif'},
+              {emoji:'✨',url:'https://media.giphy.com/media/26BRuo6sLetdllPAQ/giphy.gif'},
+              {emoji:'🐼',url:'https://media.giphy.com/media/sIIhZliB2McAo/giphy.gif'},
+              {emoji:'🦄',url:'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif'},
+            ].map(s => (
+              <button key={s.emoji} onClick={() => upd({ stickerSrc: s.url })} style={{fontSize:'1.4rem',background:el.stickerSrc===s.url?'rgba(255,107,157,0.25)':'rgba(255,255,255,0.04)',border:'1px solid rgba(255,107,157,'+(el.stickerSrc===s.url?'0.7':'0.2')+')',borderRadius:'8px',padding:'5px 8px',cursor:'pointer'}}>{s.emoji}</button>
+            ))}
+          </div>
+          <label style={labelStyle}>ขนาดสติกเกอร์ (px)</label>
+          <input type="number" value={el.stickerSize || 120} onChange={e => upd({ stickerSize: +e.target.value })} style={inputStyle} min="40" max="300" />
+        </div>
+      )}
+
       {el.type === 'button' && (
         <div>
           <label style={labelStyle}>ข้อความบนปุ่ม</label>
@@ -889,6 +1031,49 @@ function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
             <option value="">— เลือกหน้าปลายทาง —</option>
             {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+        </div>
+      )}
+
+      {el.type === 'gift_buttons' && (
+        <div>
+          <label style={labelStyle}>ขนาดไอคอนของขวัญ (px)</label>
+          <input type="number" value={el.iconSize || 48} onChange={e => upd({ iconSize: +e.target.value })} style={inputStyle} min="24" max="120"/>
+          <label style={labelStyle}>รายการกล่องของขวัญ</label>
+          {(el.gifts || [{ icon:'🎁', label:'ของขวัญ 1', target:'', color:'#ff6b9d' }]).map((g, i) => (
+            <div key={i} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,107,157,0.2)',borderRadius:'8px',padding:'10px',marginBottom:'8px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+                <span style={{fontSize:'0.7rem',color:'#ff9a9e',fontWeight:'600'}}>🎁 กล่องที่ {i+1}</span>
+                {(el.gifts||[]).length > 1 && (
+                  <button onClick={() => { const g2=[...(el.gifts||[])]; g2.splice(i,1); upd({gifts:g2}); }} style={{background:'rgba(255,80,80,0.2)',border:'none',color:'#ff8080',borderRadius:'4px',padding:'2px 6px',cursor:'pointer',fontSize:'0.7rem'}}>ลบ</button>
+                )}
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'60px 1fr',gap:'6px',marginBottom:'6px'}}>
+                <div>
+                  <label style={labelStyle}>ไอคอน</label>
+                  <input value={g.icon||'🎁'} onChange={e => { const g2=[...(el.gifts||[])]; g2[i]={...g2[i],icon:e.target.value}; upd({gifts:g2}); }} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>ป้ายกำกับ</label>
+                  <input value={g.label||''} onChange={e => { const g2=[...(el.gifts||[])]; g2[i]={...g2[i],label:e.target.value}; upd({gifts:g2}); }} style={inputStyle} placeholder="เช่น Gift 1" />
+                </div>
+              </div>
+              <label style={labelStyle}>สีไอคอน</label>
+              <div style={{display:'flex',gap:'6px',marginBottom:'6px',flexWrap:'wrap'}}>
+                {['#ff6b9d','#e63462','#9b59b6','#3498db','#52b788','#f1c40f','#e67e22'].map(c=>(
+                  <div key={c} onClick={() => { const g2=[...(el.gifts||[])]; g2[i]={...g2[i],color:c}; upd({gifts:g2}); }} style={{width:'22px',height:'22px',borderRadius:'50%',background:c,cursor:'pointer',border:g.color===c?'2px solid #fff':'2px solid transparent'}}/>
+                ))}
+              </div>
+              <label style={labelStyle}>ปลายทาง (หน้าหรือ URL)</label>
+              <select value={g.target||''} onChange={e => { const g2=[...(el.gifts||[])]; g2[i]={...g2[i],target:e.target.value}; upd({gifts:g2}); }} style={selStyle}>
+                <option value="">— เลือกหน้า —</option>
+                {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+              <input value={g.target&&g.target.startsWith('http')?g.target:''} onChange={e => { const g2=[...(el.gifts||[])]; g2[i]={...g2[i],target:e.target.value}; upd({gifts:g2}); }} style={{...inputStyle,marginTop:'4px'}} placeholder="หรือใส่ URL ลิงก์ภายนอก https://..." />
+            </div>
+          ))}
+          <button onClick={() => { const g2=[...(el.gifts||[])]; g2.push({icon:'🎀',label:`ของขวัญ ${g2.length+1}`,target:'',color:'#ff6b9d'}); upd({gifts:g2}); }} style={{width:'100%',padding:'7px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.3)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>
+            ➕ เพิ่มกล่องของขวัญ
+          </button>
         </div>
       )}
 
@@ -973,7 +1158,41 @@ function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
         </div>
       )}
 
-      {el.type === 'counter' && (
+      {el.type === 'polaroid_gallery' && (
+        <div>
+          <label style={labelStyle}>จำนวนคอลัมน์</label>
+          <select value={el.cols || 2} onChange={e => upd({ cols: +e.target.value })} style={selStyle}>
+            <option value={1}>1 คอลัมน์</option>
+            <option value={2}>2 คอลัมน์</option>
+            <option value={3}>3 คอลัมน์</option>
+          </select>
+          <label style={labelStyle}>📁 เพิ่มรูปโพลารอยด์ (เลือกได้หลายรูป)</label>
+          <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,107,157,0.18)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,107,157,0.08)'}>
+            🖼️ เพิ่มรูปภาพ
+            <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>{
+              const files=Array.from(e.target.files);
+              if(!files.length)return;
+              const existing=el.photos||[];
+              let loaded=0;
+              const newPhotos=[...existing];
+              files.forEach(file=>{
+                const reader=new FileReader();
+                reader.onload=ev=>{newPhotos.push({src:ev.target.result,caption:''});loaded++;if(loaded===files.length)upd({photos:newPhotos});};
+                reader.readAsDataURL(file);
+              });
+            }} />
+          </label>
+          {(el.photos||[]).map((p,i)=>(
+            <div key={i} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,107,157,0.2)',borderRadius:'8px',padding:'8px',marginBottom:'6px',display:'flex',gap:'8px',alignItems:'flex-start'}}>
+              <img src={p.src} style={{width:'50px',height:'50px',objectFit:'cover',borderRadius:'4px',flexShrink:0}} alt=""/>
+              <div style={{flex:1}}>
+                <input value={p.caption||''} onChange={e=>{ const ph=[...(el.photos||[])]; ph[i]={...ph[i],caption:e.target.value}; upd({photos:ph}); }} style={{...inputStyle,marginBottom:'4px'}} placeholder="คำบรรยายใต้ภาพ (caption)..." />
+              </div>
+              <button onClick={()=>{ const ph=(el.photos||[]).filter((_,j)=>j!==i); upd({photos:ph}); }} style={{background:'rgba(255,80,80,0.2)',border:'none',color:'#ff8080',borderRadius:'4px',padding:'4px 6px',cursor:'pointer',fontSize:'0.7rem',flexShrink:0}}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
         <div>
           <label style={labelStyle}>หัวข้อคำถามชวนตอบ</label>
           <input value={el.question || ''} onChange={e => upd({ question: e.target.value })} style={inputStyle} />
@@ -1017,6 +1236,22 @@ function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
 
           <label style={labelStyle}>ข้อความบ่นเมื่อกด/เล็ง No (แยกบรรทัดกวน ๆ)</label>
           <textarea value={(el.noMessages || []).join('\n')} onChange={e => upd({ noMessages: e.target.value.split('\n') })} style={inputStyle} placeholder="เช่น อย่ากดน้า..&#10;คิดดีๆ ก่อน" />
+
+          <div style={{marginTop:'12px',paddingTop:'12px',borderTop:'1px dashed rgba(255,107,157,0.2)'}}>
+            <div style={{fontSize:'0.72rem',color:'#ff9a9e',fontWeight:'600',marginBottom:'8px'}}>🖼️ รูป Reaction ตามจำนวนครั้งที่กด No</div>
+            <p style={{fontSize:'0.65rem',color:'#7a5a8a',marginBottom:'8px',lineHeight:'1.4'}}>ใส่ URL รูปภาพแต่ละระดับ — รูปที่ 1 แสดงเมื่อกด No ครั้งแรก, รูปที่ 2 ครั้งที่สอง...</p>
+            {(el.reactionImages||['','']).map((url,i)=>(
+              <div key={i} style={{display:'flex',gap:'6px',alignItems:'center',marginBottom:'6px'}}>
+                <span style={{fontSize:'0.68rem',color:'#9a7aaa',minWidth:'50px'}}>ครั้งที่ {i+1}</span>
+                <input value={url} onChange={e=>{ const r=[...(el.reactionImages||['',''])]; r[i]=e.target.value; upd({reactionImages:r}); }} style={{...inputStyle,flex:1,marginBottom:0}} placeholder="URL รูปภาพ เช่น https://..." />
+                {url && <img src={url} style={{width:'28px',height:'28px',objectFit:'contain',borderRadius:'4px',flexShrink:0}} alt=""/>}
+              </div>
+            ))}
+            <div style={{display:'flex',gap:'6px'}}>
+              <button onClick={()=>{ const r=[...(el.reactionImages||['','']),''] ; upd({reactionImages:r}); }} style={{flex:1,padding:'5px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.3)',borderRadius:'6px',color:'#ff9a9e',fontSize:'0.75rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>➕ เพิ่มระดับ</button>
+              {(el.reactionImages||[]).length > 1 && <button onClick={()=>{ const r=[...(el.reactionImages||[])]; r.pop(); upd({reactionImages:r}); }} style={{padding:'5px 10px',background:'rgba(255,80,80,0.1)',border:'1px solid rgba(255,80,80,0.2)',borderRadius:'6px',color:'#ff8080',fontSize:'0.75rem',cursor:'pointer'}}>ลบ</button>}
+            </div>
+          </div>
         </div>
       )}
 
@@ -1109,7 +1344,7 @@ const TEMPLATE_LIBRARY = [
     pages: 3,
     badge: { text: 'สุดฮิต', color: '#ff6b9d' },
     generate: (uid, eid) => [
-      { id: uid(), name: '💖 หน้าเปิดตัว', theme:'pink', layout:'center', pageAnimation:'fadeIn', pageEffect:'hearts',
+      { id: uid(), name: '💖 หน้าเปิดตัว', theme:'pink', layout:'center', pageAnimation:'fadeIn', pageEffect:'hearts', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'💖', fontSize:64, animation:'heartbeat' },
           { id:eid(), type:'heading', text:'Happy Valentine\'s Day 💕', fontSize:28, fontFamily:'Mali', color:'#ff6b9d', animation:'zoomIn' },
@@ -1117,14 +1352,14 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'เปิดดูเลย 🎁', target:'__PAGE2__', animation:'bounce', animDelay:0.6 }
         ]
       },
-      { id: uid(), name: '❓ วัดใจ', theme:'pink', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+      { id: uid(), name: '❓ วัดใจ', theme:'pink', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'counter', question:'วันวาเลนไทน์ปีนี้... เธอรักฉันไหม? 🥺', fontSize:20, fontFamily:'Mali', color:'#e63462',
             yesLabel:'รักมากที่สุด 💚', noLabel:'ไม่รักหรอก 🚫', yesTarget:'__PAGE3__',
             noBehavior:'growYes', noMessages:['คิดดีๆนะ 🥺','เอ๊ะ ลองใหม่จิ๊','กดยังไงก็หนีไม่พ้น 😜','งื้ออ กด YES เหอะน้า'] }
         ]
       },
-      { id: uid(), name: '💌 จดหมายรัก', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'confetti',
+      { id: uid(), name: '💌 จดหมายรัก', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'confetti', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'เย้! ขอบคุณที่รักกัน 💖', fontSize:24, fontFamily:'Charm', color:'#e8739a' },
           { id:eid(), type:'letter', text:'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลก 💕' },
@@ -1142,21 +1377,21 @@ const TEMPLATE_LIBRARY = [
     pages: 4,
     badge: { text: 'ความทรงจำ', color: '#9b59b6' },
     generate: (uid, eid) => [
-      { id: uid(), name: '✨ หน้าปก', theme:'purple', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies',
+      { id: uid(), name: '✨ หน้าปก', theme:'purple', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'📖 คลังความทรงจำของเรา', fontSize:26, fontFamily:'Kanit', color:'#9b59b6', animation:'slideDown' },
           { id:eid(), type:'subtext', text:'รวบรวมทุกช่วงเวลาดี ๆ ที่เราผ่านมาด้วยกัน ✨', fontSize:14, fontFamily:'Mitr', animation:'fadeIn', animDelay:0.4 },
           { id:eid(), type:'button', label:'เปิดดูความทรงจำ 📸', target:'__PAGE2__', animation:'slideUp', animDelay:0.7 }
         ]
       },
-      { id: uid(), name: '📸 แกลเลอรีรูปภาพ', theme:'purple', layout:'center', pageAnimation:'slideUp', pageEffect:'bubbles',
+      { id: uid(), name: '📸 แกลเลอรีรูปภาพ', theme:'purple', layout:'center', pageAnimation:'slideUp', pageEffect:'bubbles', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'ภาพถ่ายร่วมกัน 💜', fontSize:22, fontFamily:'Kanit', color:'#9b59b6' },
           { id:eid(), type:'gallery', images:[], cols:2 },
           { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__' }
         ]
       },
-      { id: uid(), name: '💌 บทสรุปความรัก', theme:'purple', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+      { id: uid(), name: '💌 บทสรุปความรัก', theme:'purple', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'💜', fontSize:56, animation:'heartbeat' },
           { id:eid(), type:'heading', text:'ขอบคุณที่อยู่เคียงข้างกันเสมอ', fontSize:22, fontFamily:'Charm', color:'#9b59b6', animation:'fadeIn' },
@@ -1175,7 +1410,7 @@ const TEMPLATE_LIBRARY = [
     pages: 3,
     badge: { text: 'เพลงรัก', color: '#52b788' },
     generate: (uid, eid) => [
-      { id: uid(), name: '🎵 หน้าเพลง', theme:'dark', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies',
+      { id: uid(), name: '🎵 หน้าเพลง', theme:'dark', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'🎵', fontSize:56, animation:'float' },
           { id:eid(), type:'heading', text:'เพลงนี้... มอบให้เธอคนเดียว', fontSize:24, fontFamily:'Itim', color:'#ff6b9d', animation:'slideUp' },
@@ -1184,7 +1419,7 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'อ่านข้อความของฉัน 💌', target:'__PAGE2__', animDelay:0.8 }
         ]
       },
-      { id: uid(), name: '💌 โน้ตรัก', theme:'dark', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+      { id: uid(), name: '💌 โน้ตรัก', theme:'dark', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'ความในใจที่อยากบอก...', fontSize:22, fontFamily:'Charm', color:'#ff9a9e', animation:'fadeIn' },
           { id:eid(), type:'letter', text:'เพลงนี้ทุกครั้งที่ได้ยิน ฉันจะนึกถึงเธอเสมอ...\n\nขอบคุณที่ทำให้ชีวิตมีสีสัน รักเธอมากนะ 🎵💕' },
@@ -1202,7 +1437,7 @@ const TEMPLATE_LIBRARY = [
     pages: 5,
     badge: { text: 'สุดพิเศษ', color: '#f1c40f' },
     generate: (uid, eid) => [
-      { id: uid(), name: '💍 เปิดตัว', theme:'red', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals',
+      { id: uid(), name: '💍 เปิดตัว', theme:'red', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'🌹', fontSize:64, animation:'float' },
           { id:eid(), type:'heading', text:'มีเรื่องสำคัญอยากบอกเธอ...', fontSize:26, fontFamily:'Mali', color:'#e63462', animation:'zoomIn' },
@@ -1210,21 +1445,21 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'เริ่มต้น →', target:'__PAGE2__', animation:'bounce', animDelay:0.7 }
         ]
       },
-      { id: uid(), name: '❤️ เหตุผลที่รัก', theme:'red', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+      { id: uid(), name: '❤️ เหตุผลที่รัก', theme:'red', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'เหตุผลที่รักเธอ 💝', fontSize:24, fontFamily:'Charm', color:'#e63462', animation:'fadeIn' },
           { id:eid(), type:'subtext', text:'เหตุผลที่ 1: เธอยิ้มแล้วโลกสวยขึ้นทันที 🌸\nเหตุผลที่ 2: เสียงหัวเราะของเธอ คือเพลงที่ดีที่สุด\nเหตุผลที่ 3: อยู่ข้างเธอแล้ว รู้สึกว่าทุกอย่างโอเคหมด', fontSize:15, animation:'slideUp', animDelay:0.3 },
           { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__', animDelay:0.6 }
         ]
       },
-      { id: uid(), name: '💍 คำถามสำคัญ', theme:'red', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+      { id: uid(), name: '💍 คำถามสำคัญ', theme:'red', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'counter', question:'ฉันรักเธอมากนะ... เธอจะยอมเป็นแฟนฉันไหม? 💍', fontSize:20, fontFamily:'Mali', color:'#4a0a1a',
             yesLabel:'ยินดีมากเลย 💖', noLabel:'ขอคิดดูก่อน', yesTarget:'__PAGE4__',
             noBehavior:'runaway', noMessages:['อย่าน้าา 🥺','ฉันรักเธอมากนะ!','กด YES เถอะ 💝','วิ่งหนีได้แต่ใจหนีไม่พ้น!'] }
         ]
       },
-      { id: uid(), name: '🎉 เย้! ตกลง!', theme:'red', layout:'center', pageAnimation:'bounce', pageEffect:'confetti',
+      { id: uid(), name: '🎉 เย้! ตกลง!', theme:'red', layout:'center', pageAnimation:'bounce', pageEffect:'confetti', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'🎉', fontSize:64, animation:'bounce' },
           { id:eid(), type:'heading', text:'เย้เย้เย้!!!! ดีใจมากเลย!!! 🥰', fontSize:26, fontFamily:'Mali', color:'#e63462', animation:'zoomIn' },
@@ -1232,7 +1467,7 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'ดูแผนของเรา 💍', target:'__PAGE5__', animDelay:0.7 }
         ]
       },
-      { id: uid(), name: '🌟 แผนอนาคต', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'petals',
+      { id: uid(), name: '🌟 แผนอนาคต', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'petals', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'สิ่งที่อยากทำด้วยกัน 🌸', fontSize:22, fontFamily:'Charm', color:'#e8739a', animation:'fadeIn' },
           { id:eid(), type:'subtext', text:'📍 ไปเที่ยวทะเลด้วยกัน\n🍜 กินอาหารอร่อย ๆ ทุกวัน\n🎬 ดูหนังอยู่บ้านวันฝนตก\n🌸 ดูซากุระบานที่ญี่ปุ่น\n💑 อยู่ด้วยกันนาน ๆ ตลอดไป', fontSize:15, animation:'slideUp', animDelay:0.3 },
@@ -1250,7 +1485,7 @@ const TEMPLATE_LIBRARY = [
     pages: 4,
     badge: { text: 'ครบรอบ', color: '#f1c40f' },
     generate: (uid, eid) => [
-      { id: uid(), name: '🎂 วันครบรอบ', theme:'sakura', layout:'center', pageAnimation:'zoomIn', pageEffect:'confetti',
+      { id: uid(), name: '🎂 วันครบรอบ', theme:'sakura', layout:'center', pageAnimation:'zoomIn', pageEffect:'confetti', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'🎂', fontSize:60, animation:'bounce' },
           { id:eid(), type:'heading', text:'ครบรอบของเรา 🥂', fontSize:28, fontFamily:'Mali', color:'#e8739a', animation:'zoomIn' },
@@ -1258,14 +1493,14 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'ดูความทรงจำของเรา 📸', target:'__PAGE2__', animDelay:0.7 }
         ]
       },
-      { id: uid(), name: '📸 แกลเลอรี', theme:'sakura', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals',
+      { id: uid(), name: '📸 แกลเลอรี', theme:'sakura', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'ภาพถ่ายตลอดระยะเวลา 🌸', fontSize:22, fontFamily:'Charm', color:'#e8739a' },
           { id:eid(), type:'gallery', images:[], cols:3 },
           { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__' }
         ]
       },
-      { id: uid(), name: '💌 จดหมายซึ้ง', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+      { id: uid(), name: '💌 จดหมายซึ้ง', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'ถึงเธอในวันครบรอบ 💌', fontSize:22, fontFamily:'Charm', color:'#e8739a', animation:'fadeIn' },
           { id:eid(), type:'letter', text:'ถึงเธอที่รัก...\n\nไม่ว่าจะผ่านมากี่ปี ความรู้สึกที่มีต่อเธอไม่เคยเปลี่ยน ขอบคุณที่อยู่เคียงข้างกันเสมอ และขอให้เราอยู่ด้วยกันอีกนาน ๆ นะ\n\nรักเธอตลอดไป 💕' },
@@ -1283,7 +1518,7 @@ const TEMPLATE_LIBRARY = [
     pages: 2,
     badge: { text: 'Minimalist', color: '#3498db' },
     generate: (uid, eid) => [
-      { id: uid(), name: '✨ หน้าหลัก', theme:'blue', layout:'minimal', pageAnimation:'fadeIn', pageEffect:'stars',
+      { id: uid(), name: '✨ หน้าหลัก', theme:'blue', layout:'minimal', pageAnimation:'fadeIn', pageEffect:'stars', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'sticker', emoji:'🕊️', fontSize:52, animation:'float' },
           { id:eid(), type:'heading', text:'to you, with love.', fontSize:30, fontFamily:'Prompt', color:'#3498db', animation:'fadeIn' },
@@ -1292,7 +1527,7 @@ const TEMPLATE_LIBRARY = [
           { id:eid(), type:'button', label:'เปิดอ่าน', target:'__PAGE2__', animation:'fadeIn', animDelay:0.9 }
         ]
       },
-      { id: uid(), name: '💙 จดหมาย', theme:'blue', layout:'minimal', pageAnimation:'slideUp', pageEffect:'bubbles',
+      { id: uid(), name: '💙 จดหมาย', theme:'blue', layout:'minimal', pageAnimation:'slideUp', pageEffect:'bubbles', pageEffectDensity: 50,
         elements: [
           { id:eid(), type:'heading', text:'dear you,', fontSize:26, fontFamily:'Prompt', color:'#3498db', animation:'fadeIn' },
           { id:eid(), type:'letter', text:'ทุกวันที่ผ่านมา มีเธออยู่ในความคิดเสมอ\n\nไม่รู้จะบอกยังไงให้รู้ว่ารักเธอมากแค่ไหน แต่หวังว่าเธอจะรู้สึกได้นะ\n\n— with all my love 💙' },
@@ -1451,14 +1686,21 @@ function ValentineBuilder() {
   // Handle updates to refresh inside iframe preview frame securely
   useEffect(() => {
     if (iframeRef.current && previewHtml) {
-      const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
+      const win = iframeRef.current.contentWindow;
+      
+      // 🟢 เคลียร์เอฟเฟกต์เก่าใน iframe ทิ้งก่อนเขียนหน้าใหม่ทับ เพื่อป้องกันการรัน Interval สะสมจนค้าง
+      if (win && typeof win.clearEffects === 'function') {
+        try { win.clearEffects(); } catch(e) {}
+      }
+
+      const doc = iframeRef.current.contentDocument || win.document;
       doc.open();
       doc.write(previewHtml);
       doc.close();
       
       // Force iframe routing trigger state to match editor active scene
-      if (iframeRef.current.contentWindow && iframeRef.current.contentWindow.goTo) {
-        iframeRef.current.contentWindow.goTo(activePageId);
+      if (win && typeof win.goTo === 'function') {
+        win.goTo(activePageId);
       }
     }
   }, [previewHtml, activePageId]);
@@ -1478,6 +1720,20 @@ function ValentineBuilder() {
       setPages(remaining);
       if (activePageId === id) setActivePageId(remaining[0].id);
     }
+  }
+
+  function deleteElement(pId, eId) {
+    const pg = pages.find(p => p.id === pId);
+    if (!pg) return;
+    updatePage(pId, { elements: pg.elements.filter(el => el.id !== eId) });
+    if(editingElemId === eId) setEditingElemId(null);
+  }
+
+  function updateElement(pId, eId, patch) {
+    const pg = pages.find(p => p.id === pId);
+    if (!pg) return;
+    const newElements = pg.elements.map(el => el.id === eId ? { ...el, ...patch } : el);
+    updatePage(pId, { elements: newElements });
   }
 
   function movePageOrder(id, dir, e) {
@@ -1500,6 +1756,7 @@ function ValentineBuilder() {
       layout: 'center',
       pageAnimation: 'fadeIn',
       pageEffect: 'none',
+      pageEffectDensity: 50, // 🟢 ดีฟอลต์ความหนาแน่น 50%
       elements: []
     };
 
@@ -1540,26 +1797,15 @@ function ValentineBuilder() {
     if (type === 'heading') freshNode.text = 'หัวข้อข้อความใหม่';
     if (type === 'subtext') freshNode.text = 'รายละเอียดเนื้องานเสริมความหวานชื่นข้อความจำลอง';
     if (type === 'sticker') freshNode.emoji = '❤️';
+    if (type === 'animated_sticker') { freshNode.stickerSrc = ''; freshNode.stickerSize = 120; }
     if (type === 'button') { freshNode.label = 'ปุ่มนำทาง'; freshNode.target = ''; }
-    if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noBehavior = 'runaway'; }
+    if (type === 'gift_buttons') { freshNode.gifts = [{icon:'🎁',label:'ของขวัญ 1',target:'',color:'#ff6b9d'},{icon:'🎀',label:'ของขวัญ 2',target:'',color:'#e63462'},{icon:'🎊',label:'ของขวัญ 3',target:'',color:'#9b59b6'}]; freshNode.iconSize = 48; }
+    if (type === 'polaroid_gallery') { freshNode.photos = []; freshNode.cols = 2; }
+    if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noBehavior = 'runaway'; freshNode.reactionImages = ['','','',''];}
 
     const updatedElements = [...(activePage.elements || []), freshNode];
     updatePage(activePage.id, { elements: updatedElements });
     setEditingElemId(freshNode.id);
-  }
-
-  function deleteElement(pId, eId) {
-    const pg = pages.find(p => p.id === pId);
-    if (!pg) return;
-    updatePage(pId, { elements: pg.elements.filter(el => el.id !== eId) });
-    if(editingElemId === eId) setEditingElemId(null);
-  }
-
-  function updateElement(pId, eId, patch) {
-    const pg = pages.find(p => p.id === pId);
-    if (!pg) return;
-    const newElements = pg.elements.map(el => el.id === eId ? { ...el, ...patch } : el);
-    updatePage(pId, { elements: newElements });
   }
 
   // ⛓️ DRAG & DROP SWAPPING REORDER LOGIC
@@ -1592,7 +1838,7 @@ function ValentineBuilder() {
       <div className="topbar">
         <div style={{display:'flex', alignItems:'center', gap:10}}>
           <span className="logo">💌 Valentine Builder Pro</span>
-          <span className="version-badge">v5.0</span>
+          <span className="version-badge">v6.0</span>
           <div style={{display:'flex', gap:4, alignItems:'center', marginLeft:6}}>
             <button className="btn-undo" onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">↩️ Undo</button>
             <button className="btn-undo" onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Y)">↪️ Redo</button>
@@ -1798,6 +2044,28 @@ function ValentineBuilder() {
                         {PAGE_EFFECTS.map(pe => <option key={pe.id} value={pe.id}>{pe.icon} {pe.label}</option>)}
                       </select>
                     </div>
+
+                    {/* 🟢 จุดที่ 2: เพิ่ม Slider ปรับลดความหนาแน่นเอฟเฟกต์ในแถบตั้งค่า */}
+                    {activePage.pageEffect && activePage.pageEffect !== 'none' && (
+                      <div className="field" style={{background:'rgba(255,107,157,0.06)', border:'1px solid rgba(255,107,157,0.15)', borderRadius:'10px', padding:'12px', marginTop:'10px'}}>
+                        <label style={{display:'flex', justifyContent:'space-between', fontSize:'0.72rem', color:'#ff9a9e', fontWeight:'600'}}>
+                          <span>ความหนาแน่นเอฟเฟกต์</span>
+                          <span style={{color:'#ff6b9d'}}>{activePage.pageEffectDensity ?? 50}%</span>
+                        </label>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="100" 
+                          step="10"
+                          value={activePage.pageEffectDensity ?? 50} 
+                          onChange={e => updatePage(activePage.id, {pageEffectDensity: parseInt(e.target.value)})} 
+                          style={{width:'100%', marginTop:'8px'}}
+                        />
+                        <p style={{fontSize:'0.62rem', color:'#7a5a8a', marginTop:'6px', lineHeight:'1.4'}}>
+                          * สไลด์ไปทางซ้ายเพื่อลดปริมาณการร่วงหล่นของเอฟเฟกต์ ป้องกันการบังเนื้อหาหลัก
+                        </p>
+                      </div>
+                    )}
 
                     <div style={{margin:'18px 0', borderTop:'1px solid rgba(255,100,150,0.1)'}} />
                     
