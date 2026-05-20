@@ -331,11 +331,11 @@ function renderElement(el, th) {
         '<div id="marq-' + el.id + '" style="font-size:0.9rem;font-weight:600;color:#fff;white-space:nowrap;display:inline-block;">' + (el.title || 'เพลงของเรา') + (el.artist ? ' – ' + el.artist : '') + '</div>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:14px;">' +
-        '<button id="like-' + el.id + '" onclick="ytToggleLike('' + el.id + '','like')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👎</button>' +
-        '<button onclick="ytCtrl('' + el.id + '','prev')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏮</button>' +
-        '<button id="playbtn-' + el.id + '" onclick="ytCtrl('' + el.id + '','play')" style="background:none;border:none;color:#fff;font-size:1.7rem;cursor:pointer;opacity:0.95;padding:0;line-height:1;">▶</button>' +
-        '<button onclick="ytCtrl('' + el.id + '','next')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏭</button>' +
-        '<button id="dislike-' + el.id + '" onclick="ytToggleLike('' + el.id + '','dislike')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👍</button>' +
+        '<button id="like-' + el.id + '" onclick="ytToggleLike(\'' + el.id + '\',\'like\')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👎</button>' +
+        '<button onclick="ytCtrl(\'' + el.id + '\',\'prev\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏮</button>' +
+        '<button id="playbtn-' + el.id + '" onclick="ytCtrl(\'' + el.id + '\',\'play\')" style="background:none;border:none;color:#fff;font-size:1.7rem;cursor:pointer;opacity:0.95;padding:0;line-height:1;">▶</button>' +
+        '<button onclick="ytCtrl(\'' + el.id + '\',\'next\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏭</button>' +
+        '<button id="dislike-' + el.id + '" onclick="ytToggleLike(\'' + el.id + '\',\'dislike\')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👍</button>' +
         '</div></div></div>' +
         '<div id="ytplayer-' + el.id + '"></div>' +
         audioTag +
