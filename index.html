@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>💌 Valentine Builder v3.0 (Ultimate Customizer)</title>
+<title>💌 Valentine Builder v4.1 (Ultimate Customizer)</title>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&family=Mitr:wght@300;400;500&family=Sarabun:wght@300;400;500;700&family=Kanit:wght@300;400;500;700&family=Charm:wght@400;700&family=Itim&family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -55,21 +55,22 @@ body{font-family:'Mitr',sans-serif;background:#0f0a14;color:#fff;height:100vh;ov
 .field{margin-bottom:14px}
 .field label{display:block;font-size:0.72rem;color:#9a7aaa;margin-bottom:5px;font-weight:500}
 .field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,100,150,0.2);border-radius:8px;color:#e8d0f0;font-family:'Mitr',sans-serif;font-size:0.82rem;padding:8px 10px;outline:none;transition:border .2s}
+.field input[type="range"]{padding:0;}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:#ff6b9d}
 .field textarea{resize:vertical;min-height:70px;line-height:1.6}
 
 /* INLINE ROW */
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
-/* COLOR PICKER */
-.color-picker-row{display:flex;align-items:center;gap:8px}
-.color-picker-row input[type="color"]{width:34px;height:34px;border:1px solid rgba(255,100,150,0.3);border-radius:6px;cursor:pointer;background:none;padding:1px}
-.color-hex{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,100,150,0.2);border-radius:8px;color:#e8d0f0;font-family:'Mitr',sans-serif;font-size:0.8rem;padding:8px 10px;outline:none}
+/* COLOR PICKER PALETTE */
+.palette-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.2s}
+.palette-swatch:hover{transform:scale(1.1)}
+.palette-swatch.active{border-color:#fff;box-shadow:0 0 5px rgba(255,255,255,0.5)}
 
 /* SECTION HEADER */
 .sec-header{font-size:0.72rem;color:#ff9a9e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,107,157,0.15);display:flex;align-items:center;gap:6px;font-weight:600}
 
-/* ELEMENT LIST (Drag & Drop) */
+/* ELEMENT LIST */
 .elements-list{display:flex;flex-direction:column;gap:6px;min-height:50px;padding:2px}
 .element-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,100,150,0.15);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:grab;transition:all .2s;position:relative;user-select:none}
 .element-item:active{cursor:grabbing}
@@ -126,21 +127,41 @@ body{font-family:'Mitr',sans-serif;background:#0f0a14;color:#fff;height:100vh;ov
 .chip{padding:5px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;border:1px solid rgba(255,100,150,0.2);background:rgba(255,255,255,0.03);color:#9a7aaa;transition:all .2s;flex:1;text-align:center}
 .chip.active,.chip:hover{border-color:#ff6b9d;background:rgba(255,107,157,0.15);color:#ff9a9e}
 
-/* PAGE REORDER */
-.page-order-btns{display:flex;gap:4px;margin-top:4px}
-.page-order-btn{background:rgba(255,255,255,0.05);border:none;color:#7a5a8a;width:24px;height:20px;border-radius:4px;cursor:pointer;font-size:0.65rem}
-.page-order-btn:hover{background:rgba(255,107,157,0.15);color:#ff9a9e}
-
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center}
 .modal{background:#1a0a24;border:1px solid rgba(255,107,157,0.3);border-radius:14px;padding:20px;width:380px}
 .modal h3{font-family:'Mali',cursive;color:#ff9a9e;margin-bottom:12px;font-size:1rem}
 .modal-btns{display:flex;gap:6px;margin-top:14px;justify-content:flex-end}
 .btn-cancel{background:rgba(255,255,255,0.06);border:none;color:#9a7aaa;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem}
 .btn-confirm{background:linear-gradient(135deg,#ff6b9d,#e63462);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:500}
+
+/* UNDO/REDO BUTTONS */
+.btn-undo{background:rgba(255,255,255,0.06);border:1px solid rgba(255,100,150,0.2);color:#9a7aaa;font-size:0.78rem;padding:5px 10px;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'Mitr',sans-serif}
+.btn-undo:hover:not(:disabled){background:rgba(255,107,157,0.12);color:#ff9a9e;border-color:rgba(255,107,157,0.4)}
+.btn-undo:disabled{opacity:0.3;cursor:not-allowed}
+
+/* TOAST NOTIFICATION */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:linear-gradient(135deg,#1a0a24,#2d0a2e);border:1px solid rgba(255,107,157,0.4);color:#ff9a9e;padding:10px 20px;border-radius:20px;font-size:0.8rem;z-index:9999;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* TEMPLATE LIBRARY MODAL */
+.tpl-modal{background:#120820;border:1px solid rgba(255,107,157,0.25);border-radius:18px;padding:24px;width:680px;max-width:95vw;max-height:85vh;overflow-y:auto}
+.tpl-modal::-webkit-scrollbar{width:4px}
+.tpl-modal::-webkit-scrollbar-thumb{background:rgba(255,107,157,0.3);border-radius:4px}
+.tpl-modal h3{font-family:'Mali',cursive;color:#ff9a9e;margin-bottom:6px;font-size:1.1rem}
+.tpl-modal .subtitle{font-size:0.75rem;color:#7a5a8a;margin-bottom:18px}
+.tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.tpl-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,100,150,0.2);border-radius:12px;padding:14px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.tpl-card:hover{background:rgba(255,107,157,0.08);border-color:#ff6b9d;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,157,0.15)}
+.tpl-card-cover{height:70px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;gap:6px;position:relative;overflow:hidden}
+.tpl-card-name{font-size:0.9rem;font-weight:600;color:#e8d0f0;margin-bottom:3px}
+.tpl-card-desc{font-size:0.72rem;color:#7a5a8a;line-height:1.4}
+.tpl-card-pages{position:absolute;top:8px;right:8px;background:rgba(255,107,157,0.15);border:1px solid rgba(255,107,157,0.3);color:#ff9a9e;font-size:0.62rem;padding:2px 7px;border-radius:8px}
+.tpl-badge{display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;padding:2px 7px;border-radius:6px;margin-top:6px}
 </style>
 </head>
 <body>
 <div id="root"></div>
+<div class="toast" id="global-toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -160,6 +181,8 @@ const THEMES = {
   dark:   { name:'🖤 Midnight',    bg:'#0d0d1a', card:'#1a1a2e', accent:'#ff6b9d', text:'#f0d0ff', btn:'#ff6b9d', yes:'#52b788', no:'#e05c6f' },
   sakura: { name:'🌸 Sakura',      bg:'#fef6f9', card:'#fff9fb', accent:'#e8739a', text:'#4a2030', btn:'#e8739a', yes:'#5cb85c', no:'#d9534f' },
 };
+
+const SWATCHES = ['#ff6b9d', '#e63462', '#9b59b6', '#3498db', '#52b788', '#f1c40f', '#e67e22', '#34495e', '#ffffff', '#000000'];
 
 const FONTS = [
   { value:'Mali', label:'Mali (ลายมือ)' },
@@ -206,13 +229,14 @@ const LAYOUTS = [
 const ELEMENT_TYPES = [
   { type:'heading',  icon:'📝', label:'Heading หัวข้อ' },
   { type:'subtext',  icon:'✍️', label:'Subtext ข้อความ' },
-  { type:'image',    icon:'🖼️', label:'รูปภาพ URL' },
+  { type:'image',    icon:'🖼️', label:'รูปภาพ' },
   { type:'sticker',  icon:'🎭', label:'Sticker ตัวโต' },
   { type:'button',   icon:'🔘', label:'ปุ่มลิงก์หน้า' },
   { type:'divider',  icon:'➖', label:'เส้นคั่นแบ่ง' },
   { type:'spacer',   icon:'↕️', label:'Spacer ช่องว่าง' },
   { type:'letter',   icon:'💌', label:'กล่องเปิดจดหมาย' },
   { type:'audio',    icon:'🎵', label:'เครื่องเล่นเพลง MP3' },
+  { type:'vinyl',    icon:'💿', label:'แผ่นเสียงเพลง (Vinyl)' },
   { type:'gallery',  icon:'📸', label:'คอลเลกชันแกลเลอรี' },
   { type:'counter',  icon:'❓', label:'คำถามวัดใจ (Yes/No)' },
 ];
@@ -242,6 +266,7 @@ function getAnimCSS() {
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes sparkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.03)}}
 @keyframes typewriter{from{width:0}to{width:100%}}
+@keyframes spin{100%{transform:rotate(360deg)}}
 
 .anim-fadeIn{animation:fadeIn 0.6s ease both}
 .anim-slideUp{animation:slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both}
@@ -257,7 +282,7 @@ function getAnimCSS() {
 }
 
 /* ════════════════════════════════════════════
-   RENDER ELEMENT ENGINE (WITH INDIVIDUAL STYLE OVERRIDES)
+   RENDER ELEMENT ENGINE
 ════════════════════════════════════════════ */
 function renderElement(el, th) {
   const fontFamily = el.fontFamily ? `font-family:'${el.fontFamily}',sans-serif;` : '';
@@ -270,48 +295,74 @@ function renderElement(el, th) {
 
   switch (el.type) {
     case 'heading':
-      return `<h1 class="${animClass}" style="${itemStyle} font-weight:700; margin-bottom:4px; line-height:1.3;">${el.text || 'หัวข้อหลัก'}</h1>`;
+      return `<h1 class="${animClass}" style="${itemStyle} font-weight:700; margin-bottom:4px; line-height:1.3; z-index:2;">${el.text || 'หัวข้อหลัก'}</h1>`;
     case 'subtext':
-      return `<p class="${animClass}" style="${itemStyle} margin-bottom:4px; line-height:1.6; white-space:pre-wrap;">${el.text || 'ใส่ข้อความของคุณที่นี่...'}</p>`;
+      return `<p class="${animClass}" style="${itemStyle} margin-bottom:4px; line-height:1.6; white-space:pre-wrap; z-index:2;">${el.text || 'ใส่ข้อความของคุณที่นี่...'}</p>`;
     case 'image':
-      if (!el.src) return `<div style="width:100%; padding:30px; background:rgba(0,0,0,.04); border-radius:12px; text-align:center; font-size:1.5rem">🖼️ ยังไม่ได้ใส่ URL รูปภาพ</div>`;
-      return `<div class="${animClass}" style="${animDelay} text-align:center; width:100%;"><img src="${el.src}" style="max-width:100%; width:${el.maxWidth||220}px; border-radius:${el.radius||12}px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.05);" alt="Valentine img"/></div>`;
+      if (!el.src) return `<div style="width:100%; padding:30px; background:rgba(0,0,0,.04); border-radius:12px; text-align:center; font-size:1.5rem; z-index:2;">🖼️ ยังไม่ได้ใส่ URL รูปภาพ</div>`;
+      return `<div class="${animClass}" style="${animDelay} text-align:center; width:100%; z-index:2;"><img src="${el.src}" style="max-width:100%; width:${el.maxWidth||220}px; border-radius:${el.radius||12}px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.05);" alt="Valentine img"/></div>`;
     case 'sticker':
-      return `<div class="${animClass}" style="font-size:${el.fontSize||48}px; margin:4px 0; display:inline-block; text-align:center; width:100%; ${animDelay}">${el.emoji || '❤️'}</div>`;
+      return `<div class="${animClass}" style="font-size:${el.fontSize||48}px; margin:4px 0; display:inline-block; text-align:center; width:100%; z-index:2; ${animDelay}">${el.emoji || '❤️'}</div>`;
     case 'button':
-      return `<div style="${textAlign}"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:10px 24px; border-radius:30px; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${el.fontSize||15}px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${el.label||'ปุ่มกด'}</button></div>`;
+      return `<div style="${textAlign} z-index:2;"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:10px 24px; border-radius:30px; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${el.fontSize||15}px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${el.label||'ปุ่มกด'}</button></div>`;
     case 'divider':
-      return `<hr style="border:none; border-top:${el.thickness||1}px solid ${el.color||th.accent}33; margin:12px 0; width:100%;"/>`;
+      return `<hr style="border:none; border-top:${el.thickness||1}px solid ${el.color||th.accent}33; margin:12px 0; width:100%; z-index:2;"/>`;
     case 'spacer':
-      return `<div style="height:${el.height||20}px; width:100%;"></div>`;
+      return `<div style="height:${el.height||20}px; width:100%; z-index:2;"></div>`;
     case 'letter':
       return `
-        <div class="${animClass}" style="${animDelay} background:linear-gradient(135deg, rgba(255,107,157,.04), rgba(255,107,157,.01)); border:2px dashed ${th.accent}; border-radius:16px; padding:18px; text-align:left; width:100%;">
+        <div class="${animClass}" style="${animDelay} z-index:2; background:linear-gradient(135deg, rgba(255,107,157,.04), rgba(255,107,157,.01)); border:2px dashed ${th.accent}; border-radius:16px; padding:18px; text-align:left; width:100%;">
           <div style="font-size:1.8rem; text-align:center; margin-bottom:8px; cursor:pointer;" onclick="var s=this.nextElementSibling; s.style.display=s.style.display==='none'?'block':'none';">✉️ <span style="font-size:0.75rem; color:${th.accent}; display:inline;">(คลิกเปิดจดหมาย)</span></div>
           <div style="display:none; transition:all 0.3s; ${fontFamily}${fontSize}${color} line-height:1.6; white-space:pre-wrap;">${el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...'}</div>
         </div>`;
     case 'audio':
+      const ytThumb = el.ytId ? 'https://img.youtube.com/vi/' + el.ytId + '/hqdefault.jpg' : (el.coverSrc || '');
+      const isYT = !!el.ytId;
+      const audioTag = isYT ? '' : '<audio id="aud-' + el.id + '" src="' + (el.src||'') + '" loop style="display:none;"></audio>';
+      const thumbHtml = ytThumb
+        ? '<img src="' + ytThumb + '" style="width:90px;height:90px;object-fit:cover;flex-shrink:0;display:block;" />'
+        : '<div style="width:90px;height:90px;flex-shrink:0;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎵</div>';
+      return (
+        '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;" data-audio-el="' + el.id + '" data-yt-id="' + (el.ytId||'') + '">' +
+        '<div style="display:flex;align-items:stretch;border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);">' +
+        thumbHtml +
+        '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 16px;gap:8px;min-width:0;overflow:hidden;">' +
+        '<div style="overflow:hidden;width:100%;position:relative;">' +
+        '<div id="marq-' + el.id + '" style="font-size:0.9rem;font-weight:600;color:#fff;white-space:nowrap;display:inline-block;">' + (el.title || 'เพลงของเรา') + (el.artist ? ' – ' + el.artist : '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:14px;">' +
+        '<button id="like-' + el.id + '" onclick="ytToggleLike('' + el.id + '','like')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👎</button>' +
+        '<button onclick="ytCtrl('' + el.id + '','prev')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏮</button>' +
+        '<button id="playbtn-' + el.id + '" onclick="ytCtrl('' + el.id + '','play')" style="background:none;border:none;color:#fff;font-size:1.7rem;cursor:pointer;opacity:0.95;padding:0;line-height:1;">▶</button>' +
+        '<button onclick="ytCtrl('' + el.id + '','next')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.9;padding:0;">⏭</button>' +
+        '<button id="dislike-' + el.id + '" onclick="ytToggleLike('' + el.id + '','dislike')" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;padding:0;">👍</button>' +
+        '</div></div></div>' +
+        '<div id="ytplayer-' + el.id + '"></div>' +
+        audioTag +
+        '</div>'
+      );
+    case 'vinyl':
       return `
-        <div class="${animClass}" style="${animDelay} padding:10px; background:rgba(255,255,255,0.6); border-radius:12px; width:100%; border:1px solid ${th.accent}22; text-align:center;">
-          <div style="font-size:0.75rem; margin-bottom:5px; font-weight:500; color:${th.text};">🎵 ${el.title || 'เพลงของเรา'}</div>
-          <audio controls src="${el.src||''}" style="width:100%; height:32px;"></audio>
+        <div class="${animClass}" style="${animDelay} z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px; width:100%;">
+          <img src="${el.src || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="vinyl-img-${el.id}" style="width:${el.size||120}px; height:${el.size||120}px; border-radius:50%; object-fit:cover; animation:spin 4s linear infinite; animation-play-state:paused; box-shadow:0 4px 15px rgba(0,0,0,0.3); border:2px solid #333; background:#fff;" />
+          <audio id="vinyl-aud-${el.id}" controls src="${el.audioSrc||''}" style="width:100%; height:32px;" onplay="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='running'" onpause="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='paused'"></audio>
         </div>`;
     case 'gallery':
       const items = el.images || [];
       const cols = el.cols || 2;
-      if (items.length === 0) return `<div style="padding:20px; background:rgba(0,0,0,0.03); border-radius:10px; text-align:center; font-size:0.75rem; color:#888;">📸 คลังภาพยังว่างเปล่า (กรุณาใส่ลิงก์รูปภาพในกล่องแก้ไข)</div>`;
+      if (items.length === 0) return `<div style="padding:20px; background:rgba(0,0,0,0.03); border-radius:10px; text-align:center; font-size:0.75rem; color:#888; z-index:2;">📸 คลังภาพยังว่างเปล่า (กรุณาอัปโหลดรูปภาพ)</div>`;
       return `
-        <div class="gallery-container ${animClass}" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:6px; width:100%; ${animDelay}">
+        <div class="gallery-container ${animClass}" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:6px; width:100%; z-index:2; ${animDelay}">
           ${items.map(img => `<img src="${img}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.05);" />`).join('')}
         </div>`;
     case 'counter':
+      // ปรับโครงสร้างใหม่ ให้ปุ่ม Yes และ No อยู่ใน flex flow เคียงข้างกัน 100% 
       return `
-        <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; ${animDelay}">
-          <h3 id="q-text-${el.id}" style="${fontFamily}${fontSize}${color} font-weight:600; text-align:center;">${el.question || 'คุณรักฉันไหม?'}</h3>
-          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:45px; width:100%; position:relative;">
-            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${th.yes}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
-            <div id="no-proxy-${el.id}" style="display:inline-block; width:90px; height:38px;"></div>
-            <button id="no-global-${el.id}" class="btn-no-el" style="position:fixed; z-index:999; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${th.no}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.15s;">${el.noLabel || 'ไม่รัก 🚫'}</button>
+        <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; ${animDelay}">
+          <h3 id="q-text-${el.id}" style="${fontFamily}${fontSize}${color} font-weight:600; text-align:center; transition:all 0.3s;">${el.question || 'คุณรักฉันไหม?'}</h3>
+          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:45px; width:100%;">
+            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.yesColor || th.yes}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; transform-origin:center; white-space:nowrap;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
+            <button id="no-${el.id}" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.noColor || th.no}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; transform-origin:center; white-space:nowrap; overflow:hidden;">${el.noLabel || 'ไม่รัก 🚫'}</button>
           </div>
         </div>`;
     default:
@@ -333,11 +384,11 @@ function getPageLayoutStyles(p, th) {
   const cardPadding = p.cardPadding !== undefined ? p.cardPadding : 32;
   const cardRadius = p.cardRadius !== undefined ? p.cardRadius : 24;
 
-  let containerStyles = `background:${bg}; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; width:100%; box-sizing:border-box; padding:16px; position:relative; overflow-x:hidden;`;
+  let containerStyles = `background:${bg}; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; width:100%; box-sizing:border-box; padding:16px; position:relative; overflow:hidden; z-index:1;`;
   let cardStyles = `background:${cardBg}; padding:${cardPadding}px; border-radius:${cardRadius}px; max-width:${cardWidth}px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:${elementsGap}px; align-items:${contentAlign}; text-align:${textJustify}; box-shadow:0 10px 35px rgba(0,0,0,0.06); position:relative; z-index:2;`;
 
   if (p.layout === 'full') {
-    cardStyles = `width:100%; max-width:100%; min-height:100vh; border-radius:0; padding:${cardPadding}px; background:${cardBg}; display:flex; flex-direction:column; gap:${elementsGap}px; align-items:${contentAlign}; text-align:${textJustify}; justify-content:center; box-shadow:none; margin:0;`;
+    cardStyles = `width:100%; max-width:100%; min-height:100vh; border-radius:0; padding:${cardPadding}px; background:${cardBg}; display:flex; flex-direction:column; gap:${elementsGap}px; align-items:${contentAlign}; text-align:${textJustify}; justify-content:center; box-shadow:none; margin:0; position:relative; z-index:2;`;
   } else if (p.layout === 'top') {
     cardStyles += ` margin-top: 30px; margin-bottom: auto;`;
   } else if (p.layout === 'minimal') {
@@ -359,48 +410,95 @@ function generateHTML(pages) {
     const { containerStyles, cardStyles } = getPageLayoutStyles(p, th);
     const elementsRendered = (p.elements || []).map(el => renderElement(el, th)).join('\n');
     
-    // Counter run-away logic script injection
+    // Background Image Injection Layer
+    const bgImageLayer = p.bgImage ? `<div style="position:absolute; inset:0; background-image:url('${p.bgImage}'); background-size:cover; background-position:center; opacity:${p.bgOpacity ?? 0.5}; z-index:0; pointer-events:none;"></div>` : '';
+    const cardBgImageLayer = p.cardBgImage && p.layout !== 'minimal' ? `<div style="position:absolute; inset:0; background-image:url('${p.cardBgImage}'); background-size:cover; background-position:center; opacity:${p.cardBgOpacity ?? 0.5}; z-index:0; border-radius:${p.layout==='full'?0:(p.cardRadius||24)}px; pointer-events:none;"></div>` : '';
+
+    // ลอจิกสำหรับการหนีของปุ่ม
     const counterEls = (p.elements || []).filter(el => el.type === 'counter');
     const pageCounterScripts = counterEls.map(el => {
       const msgs = JSON.stringify(el.noMessages || ["คิดดีๆ นะ 🥺","โอกาสสุดท้ายจริงๆ 😡","ยอมรับเถอะว่ารักเค้า!","กด YES เถอะนะ..."]);
+      const behavior = el.noBehavior || 'runaway';
       return `
         (function(){
           var idx = 0, msgs = ${msgs};
-          var btn = document.getElementById('no-global-${el.id}');
-          var proxy = document.getElementById('no-proxy-${el.id}');
+          var noBtn = document.getElementById('no-${el.id}');
+          var yesBtn = document.getElementById('yes-${el.id}');
           var qText = document.getElementById('q-text-${el.id}');
-          if(!btn || !proxy) return;
+          if(!noBtn || !yesBtn) return;
           
-          function positionBtn(){
-            var r = proxy.getBoundingClientRect();
-            btn.style.top = (r.top + window.scrollY) + 'px';
-            btn.style.left = (r.left + window.scrollX) + 'px';
-            btn.style.width = r.width + 'px';
-            btn.style.height = r.height + 'px';
-          }
-          
-          setTimeout(positionBtn, 300);
-          window.addEventListener('resize', positionBtn);
-          
-          function runAway(){
-            var w = window.innerWidth - btn.offsetWidth - 20;
-            var h = window.innerHeight - btn.offsetHeight - 20;
-            btn.style.left = Math.max(10, Math.floor(Math.random() * w)) + 'px';
-            btn.style.top = Math.max(10, Math.floor(Math.random() * h)) + 'px';
+          var yesScale = 1;
+          var noScale = 1;
+
+          function runAway(e){
+            if('${behavior}' === 'growYes') {
+               // หากยังไม่ได้บันทึกขนาดเริ่มต้น ให้บันทึกก่อน
+               if(!noBtn.dataset.initMax) {
+                 noBtn.dataset.initMax = noBtn.offsetWidth;
+                 noBtn.style.boxSizing = 'border-box';
+               }
+               var initM = parseInt(noBtn.dataset.initMax);
+               
+               // คำนวณ Scale ใหม่ (จำกัดให้ Yes ไม่ใหญ่เกิน 1.8 เท่า กันบังอักษร)
+               yesScale = Math.min(yesScale + 0.3, 1.8); 
+               noScale = Math.max(noScale - 0.25, 0); 
+               
+               yesBtn.style.transform = 'scale(' + yesScale + ')';
+               
+               // ทำให้ No หดตัวลงเรื่อยๆ พร้อมกับเบียดพื้นที่เล็กลง เพื่อดัน Yes ให้ไปอยู่ตรงกลางสวยๆ
+               if(noScale <= 0) {
+                 noBtn.style.display = 'none';
+               } else {
+                 noBtn.style.transform = 'scale(' + noScale + ')';
+                 noBtn.style.opacity = noScale;
+                 noBtn.style.maxWidth = (initM * noScale) + 'px';
+                 noBtn.style.paddingLeft = (20 * noScale) + 'px';
+                 noBtn.style.paddingRight = (20 * noScale) + 'px';
+                 if(noScale < 0.5) noBtn.style.color = 'transparent';
+               }
+            } else {
+               // ลอจิกวิ่งหนี (ดึงออกจาก Flex เป็น Fixed ในเสี้ยววิที่เมาส์แตะ จะได้ไม่โดดตอนแรก)
+               if(noBtn.style.position !== 'fixed') {
+                 var r = noBtn.getBoundingClientRect();
+                 noBtn.style.width = r.width + 'px';
+                 noBtn.style.height = r.height + 'px';
+                 noBtn.style.left = r.left + 'px';
+                 noBtn.style.top = r.top + 'px';
+                 noBtn.style.position = 'fixed';
+                 noBtn.style.zIndex = '9999';
+               }
+               var w = window.innerWidth - noBtn.offsetWidth - 20;
+               var h = window.innerHeight - noBtn.offsetHeight - 20;
+               noBtn.style.left = Math.max(10, Math.floor(Math.random() * w)) + 'px';
+               noBtn.style.top = Math.max(10, Math.floor(Math.random() * h)) + 'px';
+            }
             if(idx < msgs.length && qText) {
               qText.textContent = msgs[idx++];
             }
           }
-          btn.addEventListener('mouseover', runAway);
-          btn.addEventListener('touchstart', function(e){ e.preventDefault(); runAway(); });
-          btn.addEventListener('click', function(e){ e.preventDefault(); runAway(); });
+          
+          // ผูก Event Listener แยกตามโหมด
+          if('${behavior}' === 'fast') {
+            noBtn.addEventListener('mouseenter', runAway);
+            noBtn.style.transition = 'all 0.3s ease, top 0.05s linear, left 0.05s linear';
+          } else if('${behavior}' === 'runaway') {
+            noBtn.addEventListener('mouseover', runAway);
+            noBtn.style.transition = 'all 0.3s ease, top 0.3s ease-out, left 0.3s ease-out';
+          } else {
+            // โหมด growYes ให้กดซ้ำได้
+            noBtn.addEventListener('mouseover', function(e){ e.preventDefault(); runAway(e); });
+            noBtn.addEventListener('click', function(e){ e.preventDefault(); runAway(e); });
+          }
+          noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); runAway(e); }, {passive: false});
         })();
       `;
     }).join('\n');
 
     return `
       <section id="${p.id}" class="page-container" style="${containerStyles} display:${isFirst?'flex':'none'};">
+        ${bgImageLayer}
         <div class="card anim-${p.pageAnimation || 'fadeIn'}" style="${cardStyles}">
+          ${cardBgImageLayer}
           ${elementsRendered}
         </div>
         <script>
@@ -493,9 +591,9 @@ function generateHTML(pages) {
     }
   `;
 
-  // Page tracking catalog dictionary mapping for effects switching
+  // Dictionary for meta routing info (effects and music)
   const routeDictionary = JSON.stringify(pages.reduce((acc, p) => {
-    acc[p.id] = { effect: p.pageEffect || 'none', accent: getTheme(p.theme).accent };
+    acc[p.id] = { effect: p.pageEffect || 'none', accent: getTheme(p.theme).accent, bgm: p.bgMusic || '' };
     return acc;
   }, {}));
 
@@ -514,6 +612,7 @@ function generateHTML(pages) {
   </style>
 </head>
 <body>
+  <audio id="global-bgm" loop></audio>
   ${sectionsHtml}
 
   <script>
@@ -533,18 +632,101 @@ function generateHTML(pages) {
         card.className = cls;
       }
       
-      // Route background special effect trigger
-      if(window.startEffect && metaDict[pageId]) {
-        startEffect(metaDict[pageId].effect, metaDict[pageId].accent);
+      // Handle special effects and music
+      if(metaDict[pageId]) {
+        if(window.startEffect) startEffect(metaDict[pageId].effect, metaDict[pageId].accent);
+        var bgmEl = document.getElementById('global-bgm');
+        if(bgmEl && metaDict[pageId].bgm) {
+           if(bgmEl.src !== metaDict[pageId].bgm) {
+              bgmEl.src = metaDict[pageId].bgm;
+              bgmEl.play().catch(e=>console.log("Audio autoplay blocked"));
+           }
+        } else if (bgmEl) {
+           bgmEl.pause();
+        }
       }
     }
     
     ${effectsEngine}
-    
+
+    // ── YouTube + Audio Player Controller ──────────────────────
+    window._ytPlayers = {};
+    window.ytCtrl = function(eid, cmd) {
+      var p = window._ytPlayers[eid];
+      if(p && p.ytId) {
+        var ytp = p.ytp;
+        if(!ytp || !ytp.playVideo) return;
+        if(cmd==='play'){ p.playing ? ytp.pauseVideo() : ytp.playVideo(); }
+        else if(cmd==='prev'){ ytp.seekTo(Math.max(0,(ytp.getCurrentTime()||0)-10),true); }
+        else if(cmd==='next'){ ytp.seekTo((ytp.getCurrentTime()||0)+10,true); }
+      } else {
+        var a=document.getElementById('aud-'+eid), btn=document.getElementById('playbtn-'+eid);
+        if(!a) return;
+        if(cmd==='play'){ a.paused?(a.play(),btn&&(btn.textContent='⏸')):(a.pause(),btn&&(btn.textContent='▶')); }
+        else if(cmd==='prev'){ a.currentTime=Math.max(0,a.currentTime-10); }
+        else if(cmd==='next'){ a.currentTime=Math.min(a.duration||0,a.currentTime+10); }
+      }
+    };
+    window.ytToggleLike = function(eid, type) {
+      var ic=document.getElementById(type+'-'+eid); if(!ic) return;
+      ic.style.opacity = ic.style.opacity==='1' ? '0.7' : '1';
+      ic.style.color = ic.style.color==='rgb(255, 220, 80)' ? '#fff' : 'rgb(255,220,80)';
+    };
+    function initAudioPlayers() {
+      document.querySelectorAll('[data-audio-el]').forEach(function(el){
+        var eid = el.getAttribute('data-audio-el');
+        var ytId = el.getAttribute('data-yt-id');
+        // marquee
+        var m = document.getElementById('marq-'+eid);
+        if(m){ var pw=m.parentElement.offsetWidth, tw=m.scrollWidth;
+          if(tw>pw){ var dur=tw/40; m.innerHTML=m.innerHTML+'    '+m.innerHTML;
+            var s=document.createElement('style'); s.textContent='@keyframes mq'+eid+'{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}';
+            document.head.appendChild(s); m.style.animation='mq'+eid+' '+dur+'s linear infinite'; }}
+        // YouTube player
+        if(ytId) {
+          window._ytPlayers[eid] = { ytId: ytId, ytp: null, playing: false };
+          function makePlayer(eid2, ytId2) {
+            if(typeof YT==='undefined'||!YT.Player){ setTimeout(function(){ makePlayer(eid2,ytId2); },300); return; }
+            window._ytPlayers[eid2].ytp = new YT.Player('ytplayer-'+eid2, {
+              height:'1', width:'1', videoId: ytId2,
+              playerVars:{ autoplay:0, controls:0, playsinline:1 },
+              events:{ onStateChange: function(e){
+                var pp=window._ytPlayers[eid2]; if(!pp) return;
+                var btn=document.getElementById('playbtn-'+eid2);
+                if(e.data===1){ pp.playing=true; if(btn)btn.textContent='⏸'; }
+                else{ pp.playing=false; if(btn)btn.textContent='▶'; }
+              }}
+            });
+          }
+          makePlayer(eid, ytId);
+        }
+      });
+    }
+    // Load YouTube IFrame API once if needed
+    if(document.querySelector('[data-yt-id]:not([data-yt-id=""])')) {
+      var ytTag=document.createElement('script'); ytTag.src='https://www.youtube.com/iframe_api';
+      var prev_cb=window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady=function(){ if(prev_cb)prev_cb(); initAudioPlayers(); };
+      document.head.appendChild(ytTag);
+    }
+    // ─────────────────────────────────────────────────────────────
+
     // Boot sequence initialization
     window.addEventListener('DOMContentLoaded', function(){
+      if(!document.querySelector('[data-yt-id]:not([data-yt-id=""])')) { initAudioPlayers(); }
       var firstId = "${pages[0]?.id || ''}";
-      if(firstId) { startEffect(metaDict[firstId].effect, metaDict[firstId].accent); }
+      if(firstId) { 
+          startEffect(metaDict[firstId].effect, metaDict[firstId].accent); 
+          var bgmEl = document.getElementById('global-bgm');
+          if(bgmEl && metaDict[firstId].bgm) {
+              bgmEl.src = metaDict[firstId].bgm;
+              // Browsers block autoplay without interaction, listen for first click
+              document.body.addEventListener('click', function initAudio(){
+                 bgmEl.play();
+                 document.body.removeEventListener('click', initAudio);
+              }, {once:true});
+          }
+      }
     });
   <\/script>
 </body>
@@ -578,7 +760,7 @@ function getInitialTemplate() {
       pageAnimation: 'zoomIn',
       pageEffect: 'stars',
       elements: [
-        { id: 'e5', type: 'counter', question: 'วันวาเลนไทน์ปีนี้... ตกลงเธอรักเค้าไหม? 🥺', fontSize: 20, fontFamily: 'Mali', color: '#e63462', yesLabel: 'รักที่สุดเลยนะ 💚', noLabel: 'ไม่รักหรอก 🚫', yesTarget: 'p3', noTrick: true, noMessages: ["คิดดีๆนะ 🥺", "เอ๊ะ! ลองกดใหม่จิ๊", "กดยังไงก็หนีไม่พ้นหรอก 😜", "งื้ออ กด YES เหอะน้า"] }
+        { id: 'e5', type: 'counter', question: 'วันวาเลนไทน์ปีนี้... ตกลงเธอรักเค้าไหม? 🥺', fontSize: 20, fontFamily: 'Mali', color: '#e63462', yesLabel: 'รักที่สุดเลยนะ 💚', noLabel: 'ไม่รักหรอก 🚫', yesTarget: 'p3', noBehavior: 'growYes', noMessages: ["คิดดีๆนะ 🥺", "เอ๊ะ! ลองกดใหม่จิ๊", "กดยังไงก็หนีไม่พ้นหรอก 😜", "งื้ออ กด YES เหอะน้า"] }
       ]
     },
     {
@@ -600,7 +782,7 @@ function getInitialTemplate() {
 /* ════════════════════════════════════════════
    ELEMENT SUB-EDITOR OVERRIDES COMPONENT
 ════════════════════════════════════════════ */
-function ElementEditor({ el, pages, onUpdate, onClose }) {
+function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
   const inputStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', marginBottom:'8px' };
   const selStyle = { ...inputStyle, cursor:'pointer' };
   const labelStyle = { display:'block', fontSize:'0.68rem', color:'#9a7aaa', marginBottom:'4px', fontWeight:'500' };
@@ -624,7 +806,7 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
 
       {el.type === 'image' && (
         <div>
-          <label style={labelStyle}>📁 อัปโหลดรูปจากเครื่อง</label>
+          <label style={labelStyle}>📁 อัปโหลดรูปจากเครื่อง หรือ URL</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',transition:'all .2s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,107,157,0.18)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,107,157,0.08)'}>
             🖼️ เลือกรูปภาพจากเครื่อง
             <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>upd({src:ev.target.result});reader.readAsDataURL(file);}} />
@@ -634,7 +816,6 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
               <img src={el.src} style={{width:'100%',maxHeight:'120px',objectFit:'cover',display:'block'}} alt="preview" />
             </div>
           )}
-          <label style={labelStyle}>หรือใส่ URL รูปภาพ (จากเว็บ)</label>
           <input value={el.src && el.src.startsWith('data:') ? '(รูปจากเครื่อง ✓)' : (el.src||'')} onChange={e=>upd({src:e.target.value})} style={{...inputStyle, opacity: el.src && el.src.startsWith('data:') ? 0.5 : 1}} placeholder="https://example.com/photo.jpg" readOnly={!!(el.src && el.src.startsWith('data:'))} />
           {el.src && el.src.startsWith('data:') && (
             <button onClick={()=>upd({src:''})} style={{width:'100%',padding:'5px',marginBottom:'8px',background:'rgba(255,80,80,0.15)',border:'1px solid rgba(255,80,80,0.3)',borderRadius:'6px',color:'#ff8080',fontSize:'0.75rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>
@@ -643,8 +824,6 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
           )}
           <label style={labelStyle}>ความกว้างรูปภาพ (px)</label>
           <input type="number" value={el.maxWidth || 220} onChange={e => upd({ maxWidth: +e.target.value })} style={inputStyle} />
-          <label style={labelStyle}>ความโค้งมนมุมภาพ (px)</label>
-          <input type="number" value={el.radius || 12} onChange={e => upd({ radius: +e.target.value })} style={inputStyle} />
         </div>
       )}
 
@@ -681,8 +860,36 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
         <div>
           <label style={labelStyle}>ชื่อเพลงประกอบ</label>
           <input value={el.title || ''} onChange={e => upd({ title: e.target.value })} style={inputStyle} />
-          <label style={labelStyle}>ลิงก์ URL เพลงตรงไฟล์ (.mp3)</label>
-          <input value={el.src || ''} onChange={e => upd({ src: e.target.value })} style={inputStyle} placeholder="https://example.com/song.mp3" />
+          <label style={labelStyle}>ลิงก์ YouTube หรือ URL เพลง (.mp3)</label>
+          <input value={el.src || ''} onChange={e => {
+            const val = e.target.value;
+            const ytMatch = val.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+            if (ytMatch) {
+              const vid = ytMatch[1];
+              upd({ src: val, ytId: vid, coverSrc: `https://img.youtube.com/vi/${vid}/hqdefault.jpg` });
+            } else {
+              upd({ src: val, ytId: '', coverSrc: '' });
+            }
+          }} style={inputStyle} placeholder="https://youtu.be/xxx หรือ https://example.com/song.mp3" />
+          {el.ytId && (
+            <div style={{marginTop:'8px', display:'flex', alignItems:'center', gap:'8px'}}>
+              <img src={`https://img.youtube.com/vi/${el.ytId}/hqdefault.jpg`} style={{width:'80px', height:'56px', objectFit:'cover', borderRadius:'6px', border:'1px solid rgba(255,107,157,0.3)'}} alt="thumbnail" />
+              <span style={{fontSize:'0.72rem', color:'#ff9a9e'}}>✅ ดึง Thumbnail จาก YouTube แล้ว</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {el.type === 'vinyl' && (
+        <div>
+          <label style={labelStyle}>หน้าปกแผ่นเสียง (รูปภาพ)</label>
+          <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,107,157,0.18)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,107,157,0.08)'}>
+            📸 เลือกรูปปก
+            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>upd({src:ev.target.result});reader.readAsDataURL(file);}} />
+          </label>
+          {el.src && <div style={{textAlign:'center', marginBottom:'8px'}}><img src={el.src} style={{width:'80px',height:'80px',borderRadius:'50%',objectFit:'cover',border:'2px solid #333'}} alt="cover"/></div>}
+          <label style={labelStyle}>ลิงก์ URL เพลง (.mp3)</label>
+          <input value={el.audioSrc || ''} onChange={e => upd({ audioSrc: e.target.value })} style={inputStyle} placeholder="https://example.com/song.mp3" />
         </div>
       )}
 
@@ -694,9 +901,9 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
             <option value={2}>2 คอลัมน์คู่</option>
             <option value={3}>3 คอลัมน์กริดเล็ก</option>
           </select>
-          <label style={labelStyle}>📁 อัปโหลดรูปจากเครื่อง (เลือกได้หลายรูปพร้อมกัน)</label>
+          <label style={labelStyle}>📁 อัปโหลดรูปภาพเข้าแกลเลอรี (เลือกได้หลายรูป)</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,107,157,0.18)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,107,157,0.08)'}>
-            📸 เลือกรูปหลายภาพ
+            📸 เพิ่มรูปภาพ
             <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>{
               const files=Array.from(e.target.files);
               if(!files.length)return;
@@ -720,8 +927,6 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
               ))}
             </div>
           )}
-          <label style={labelStyle}>หรือใส่ลิงก์ URL (1 ลิงก์ต่อ 1 บรรทัด)</label>
-          <textarea value={(el.images||[]).filter(x=>!x.startsWith('data:')).join('\n')} onChange={e=>{const urlImgs=e.target.value.split('\n').filter(x=>x.trim());const b64Imgs=(el.images||[]).filter(x=>x.startsWith('data:'));upd({images:[...b64Imgs,...urlImgs]});}} style={{...inputStyle, minHeight:'60px'}} placeholder="https://link1.jpg&#10;https://link2.jpg" />
         </div>
       )}
 
@@ -729,22 +934,45 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
         <div>
           <label style={labelStyle}>หัวข้อคำถามชวนตอบ</label>
           <input value={el.question || ''} onChange={e => upd({ question: e.target.value })} style={inputStyle} />
+          
           <div className="row2">
             <div>
               <label style={labelStyle}>ข้อความปุ่มตกลง (Yes)</label>
               <input value={el.yesLabel || ''} onChange={e => upd({ yesLabel: e.target.value })} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>หากกดตกลงแล้วไปหน้าไหน</label>
-              <select value={el.yesTarget || ''} onChange={e => upd({ yesTarget: e.target.value })} style={selStyle}>
-                <option value="">— เลือกหน้าปลายทาง —</option>
-                {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <label style={labelStyle}>สีปุ่ม Yes</label>
+              <input type="color" value={el.yesColor || themeObj.yes} onChange={e => upd({ yesColor: e.target.value })} style={{width:'100%',height:'35px',padding:'0',border:'none',cursor:'pointer',borderRadius:'6px'}} />
             </div>
           </div>
-          <label style={labelStyle}>ข้อความปุ่มปฏิเสธ (No)</label>
-          <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} />
-          <label style={labelStyle}>ข้อความตอบกลับเมื่อกด No (แยกบรรทัดกวน ๆ)</label>
+          
+          <label style={labelStyle}>หากกดตกลงแล้วไปหน้าไหน</label>
+          <select value={el.yesTarget || ''} onChange={e => upd({ yesTarget: e.target.value })} style={selStyle}>
+            <option value="">— เลือกหน้าปลายทาง —</option>
+            {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          
+          <div style={{margin:'14px 0', borderTop:'1px dashed rgba(255,100,150,0.2)'}}></div>
+          
+          <div className="row2">
+             <div>
+               <label style={labelStyle}>ข้อความปุ่มปฏิเสธ (No)</label>
+               <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} />
+             </div>
+             <div>
+               <label style={labelStyle}>สีปุ่ม No</label>
+               <input type="color" value={el.noColor || themeObj.no} onChange={e => upd({ noColor: e.target.value })} style={{width:'100%',height:'35px',padding:'0',border:'none',cursor:'pointer',borderRadius:'6px'}} />
+             </div>
+          </div>
+
+          <label style={labelStyle}>ลูกเล่นเมื่อพยายามกดปุ่ม No</label>
+          <select value={el.noBehavior || 'runaway'} onChange={e => upd({ noBehavior: e.target.value })} style={selStyle}>
+            <option value="runaway">🏃‍♂️ วิ่งหนีตามปกติ (จับได้ยาก)</option>
+            <option value="fast">⚡ วิ่งหนีความเร็วแสง (ไม่มีทางกดทัน)</option>
+            <option value="growYes">🟢 ปุ่ม Yes ขยาย และปุ่ม No หดจนสลายไป</option>
+          </select>
+
+          <label style={labelStyle}>ข้อความบ่นเมื่อกด/เล็ง No (แยกบรรทัดกวน ๆ)</label>
           <textarea value={(el.noMessages || []).join('\n')} onChange={e => upd({ noMessages: e.target.value.split('\n') })} style={inputStyle} placeholder="เช่น อย่ากดน้า..&#10;คิดดีๆ ก่อน" />
         </div>
       )}
@@ -774,14 +1002,17 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
         </div>
       </div>
 
-      <div className="row2">
-        <div className="field">
-          <label style={labelStyle}>สีตัวอักษรวัตถุ</label>
-          <div className="color-picker-row">
-            <input type="color" value={el.color || '#ff6b9d'} onChange={e => upd({ color: e.target.value })} />
-            <input className="color-hex" value={el.color || ''} placeholder="เช่น #ff6b9d" onChange={e => upd({ color: e.target.value })} style={{...inputStyle, marginBottom:0}} />
-          </div>
+      <div className="field">
+        <label style={labelStyle}>สีตัวอักษรวัตถุ (เลือกจากพาเลตต์)</label>
+        <div style={{display:'flex', gap:'6px', flexWrap:'wrap', alignItems:'center'}}>
+          {SWATCHES.map(c => (
+            <div key={c} className={`palette-swatch ${(el.color||themeObj.text)===c?'active':''}`} style={{background:c}} onClick={() => upd({color: c})} />
+          ))}
+          <input type="color" value={el.color || themeObj.text} onChange={e => upd({ color: e.target.value })} style={{width:'26px',height:'26px',padding:0,border:'none',cursor:'pointer',borderRadius:'50%'}} title="เลือกสีอื่นๆ" />
         </div>
+      </div>
+
+      <div className="row2">
         <div className="field">
           <label style={labelStyle}>การจัดแนวเนื้อหา (Align)</label>
           <div className="chip-row">
@@ -811,10 +1042,245 @@ function ElementEditor({ el, pages, onUpdate, onClose }) {
 }
 
 /* ════════════════════════════════════════════
+   TOAST NOTIFICATION HELPER
+════════════════════════════════════════════ */
+function showToast(msg, duration=2200) {
+  const el = document.getElementById('global-toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._tid);
+  el._tid = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+/* ════════════════════════════════════════════
+   TEMPLATE LIBRARY — 6 FULL STORY TEMPLATES
+════════════════════════════════════════════ */
+const TEMPLATE_LIBRARY = [
+  {
+    id: 'tpl_classic',
+    name: '💌 Classic Valentine',
+    desc: '3 หน้าสุดคลาสสิก: เปิดตัว → วัดใจ → จดหมายรัก',
+    cover: ['💖','✉️','🌹'],
+    coverBg: 'linear-gradient(135deg,#ff6b9d22,#e6346222)',
+    pages: 3,
+    badge: { text: 'สุดฮิต', color: '#ff6b9d' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '💖 หน้าเปิดตัว', theme:'pink', layout:'center', pageAnimation:'fadeIn', pageEffect:'hearts',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'💖', fontSize:64, animation:'heartbeat' },
+          { id:eid(), type:'heading', text:'Happy Valentine\'s Day 💕', fontSize:28, fontFamily:'Mali', color:'#ff6b9d', animation:'zoomIn' },
+          { id:eid(), type:'subtext', text:'มีอะไรอยากบอก เปิดดูสิ... 🥺', fontSize:15, fontFamily:'Mitr', animation:'slideUp', animDelay:0.3 },
+          { id:eid(), type:'button', label:'เปิดดูเลย 🎁', target:'__PAGE2__', animation:'bounce', animDelay:0.6 }
+        ]
+      },
+      { id: uid(), name: '❓ วัดใจ', theme:'pink', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+        elements: [
+          { id:eid(), type:'counter', question:'วันวาเลนไทน์ปีนี้... เธอรักฉันไหม? 🥺', fontSize:20, fontFamily:'Mali', color:'#e63462',
+            yesLabel:'รักมากที่สุด 💚', noLabel:'ไม่รักหรอก 🚫', yesTarget:'__PAGE3__',
+            noBehavior:'growYes', noMessages:['คิดดีๆนะ 🥺','เอ๊ะ ลองใหม่จิ๊','กดยังไงก็หนีไม่พ้น 😜','งื้ออ กด YES เหอะน้า'] }
+        ]
+      },
+      { id: uid(), name: '💌 จดหมายรัก', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'confetti',
+        elements: [
+          { id:eid(), type:'heading', text:'เย้! ขอบคุณที่รักกัน 💖', fontSize:24, fontFamily:'Charm', color:'#e8739a' },
+          { id:eid(), type:'letter', text:'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลก 💕' },
+          { id:eid(), type:'sticker', emoji:'🌸', fontSize:40, animation:'float' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'tpl_photostory',
+    name: '📸 Photo Memory Book',
+    desc: '4 หน้า: เปิดตัว → แกลเลอรี → timeline → ปิดท้าย',
+    cover: ['📸','🖼️','💝'],
+    coverBg: 'linear-gradient(135deg,#9b59b622,#3498db22)',
+    pages: 4,
+    badge: { text: 'ความทรงจำ', color: '#9b59b6' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '✨ หน้าปก', theme:'purple', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies',
+        elements: [
+          { id:eid(), type:'heading', text:'📖 คลังความทรงจำของเรา', fontSize:26, fontFamily:'Kanit', color:'#9b59b6', animation:'slideDown' },
+          { id:eid(), type:'subtext', text:'รวบรวมทุกช่วงเวลาดี ๆ ที่เราผ่านมาด้วยกัน ✨', fontSize:14, fontFamily:'Mitr', animation:'fadeIn', animDelay:0.4 },
+          { id:eid(), type:'button', label:'เปิดดูความทรงจำ 📸', target:'__PAGE2__', animation:'slideUp', animDelay:0.7 }
+        ]
+      },
+      { id: uid(), name: '📸 แกลเลอรีรูปภาพ', theme:'purple', layout:'center', pageAnimation:'slideUp', pageEffect:'bubbles',
+        elements: [
+          { id:eid(), type:'heading', text:'ภาพถ่ายร่วมกัน 💜', fontSize:22, fontFamily:'Kanit', color:'#9b59b6' },
+          { id:eid(), type:'gallery', images:[], cols:2 },
+          { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__' }
+        ]
+      },
+      { id: uid(), name: '💌 บทสรุปความรัก', theme:'purple', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'💜', fontSize:56, animation:'heartbeat' },
+          { id:eid(), type:'heading', text:'ขอบคุณที่อยู่เคียงข้างกันเสมอ', fontSize:22, fontFamily:'Charm', color:'#9b59b6', animation:'fadeIn' },
+          { id:eid(), type:'letter', text:'ทุกรูปที่เราถ่ายด้วยกัน คือความทรงจำที่ไม่มีวันลืม...\n\nรักเธอมากเลยนะ 💜' },
+          { id:eid(), type:'button', label:'← กลับต้น', target:'__PAGE1__' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'tpl_music',
+    name: '🎵 Music Dedication',
+    desc: '3 หน้า: เปิดตัว → เล่นเพลงซึ้ง → โน้ตรัก',
+    cover: ['🎵','💿','🎶'],
+    coverBg: 'linear-gradient(135deg,#0d0d1a,#ff6b9d22)',
+    pages: 3,
+    badge: { text: 'เพลงรัก', color: '#52b788' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '🎵 หน้าเพลง', theme:'dark', layout:'center', pageAnimation:'fadeIn', pageEffect:'fireflies',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'🎵', fontSize:56, animation:'float' },
+          { id:eid(), type:'heading', text:'เพลงนี้... มอบให้เธอคนเดียว', fontSize:24, fontFamily:'Itim', color:'#ff6b9d', animation:'slideUp' },
+          { id:eid(), type:'subtext', text:'เปิดฟังพร้อมกันเลยนะ 🎶', fontSize:14, animation:'fadeIn', animDelay:0.5 },
+          { id:eid(), type:'vinyl', audioSrc:'', animation:'zoomIn', animDelay:0.3 },
+          { id:eid(), type:'button', label:'อ่านข้อความของฉัน 💌', target:'__PAGE2__', animDelay:0.8 }
+        ]
+      },
+      { id: uid(), name: '💌 โน้ตรัก', theme:'dark', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+        elements: [
+          { id:eid(), type:'heading', text:'ความในใจที่อยากบอก...', fontSize:22, fontFamily:'Charm', color:'#ff9a9e', animation:'fadeIn' },
+          { id:eid(), type:'letter', text:'เพลงนี้ทุกครั้งที่ได้ยิน ฉันจะนึกถึงเธอเสมอ...\n\nขอบคุณที่ทำให้ชีวิตมีสีสัน รักเธอมากนะ 🎵💕' },
+          { id:eid(), type:'sticker', emoji:'💕', fontSize:40, animation:'heartbeat' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'tpl_proposal',
+    name: '💍 Love Proposal',
+    desc: '5 หน้า: เปิดตัว → เหตุผลรัก → คำถามสำคัญ → เย้! → แผนอนาคต',
+    cover: ['💍','🌹','💖'],
+    coverBg: 'linear-gradient(135deg,#e6346222,#f1c40f22)',
+    pages: 5,
+    badge: { text: 'สุดพิเศษ', color: '#f1c40f' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '💍 เปิดตัว', theme:'red', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'🌹', fontSize:64, animation:'float' },
+          { id:eid(), type:'heading', text:'มีเรื่องสำคัญอยากบอกเธอ...', fontSize:26, fontFamily:'Mali', color:'#e63462', animation:'zoomIn' },
+          { id:eid(), type:'subtext', text:'กรุณาเปิดใจ และอ่านทีละหน้าเลยนะ 🥺', fontSize:15, animation:'slideUp', animDelay:0.4 },
+          { id:eid(), type:'button', label:'เริ่มต้น →', target:'__PAGE2__', animation:'bounce', animDelay:0.7 }
+        ]
+      },
+      { id: uid(), name: '❤️ เหตุผลที่รัก', theme:'red', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+        elements: [
+          { id:eid(), type:'heading', text:'เหตุผลที่รักเธอ 💝', fontSize:24, fontFamily:'Charm', color:'#e63462', animation:'fadeIn' },
+          { id:eid(), type:'subtext', text:'เหตุผลที่ 1: เธอยิ้มแล้วโลกสวยขึ้นทันที 🌸\nเหตุผลที่ 2: เสียงหัวเราะของเธอ คือเพลงที่ดีที่สุด\nเหตุผลที่ 3: อยู่ข้างเธอแล้ว รู้สึกว่าทุกอย่างโอเคหมด', fontSize:15, animation:'slideUp', animDelay:0.3 },
+          { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__', animDelay:0.6 }
+        ]
+      },
+      { id: uid(), name: '💍 คำถามสำคัญ', theme:'red', layout:'center', pageAnimation:'zoomIn', pageEffect:'stars',
+        elements: [
+          { id:eid(), type:'counter', question:'ฉันรักเธอมากนะ... เธอจะยอมเป็นแฟนฉันไหม? 💍', fontSize:20, fontFamily:'Mali', color:'#4a0a1a',
+            yesLabel:'ยินดีมากเลย 💖', noLabel:'ขอคิดดูก่อน', yesTarget:'__PAGE4__',
+            noBehavior:'runaway', noMessages:['อย่าน้าา 🥺','ฉันรักเธอมากนะ!','กด YES เถอะ 💝','วิ่งหนีได้แต่ใจหนีไม่พ้น!'] }
+        ]
+      },
+      { id: uid(), name: '🎉 เย้! ตกลง!', theme:'red', layout:'center', pageAnimation:'bounce', pageEffect:'confetti',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'🎉', fontSize:64, animation:'bounce' },
+          { id:eid(), type:'heading', text:'เย้เย้เย้!!!! ดีใจมากเลย!!! 🥰', fontSize:26, fontFamily:'Mali', color:'#e63462', animation:'zoomIn' },
+          { id:eid(), type:'subtext', text:'จะดูแลเธอให้ดีที่สุด รักเธอตลอดไปนะ 💕', fontSize:15, animation:'slideUp', animDelay:0.4 },
+          { id:eid(), type:'button', label:'ดูแผนของเรา 💍', target:'__PAGE5__', animDelay:0.7 }
+        ]
+      },
+      { id: uid(), name: '🌟 แผนอนาคต', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'petals',
+        elements: [
+          { id:eid(), type:'heading', text:'สิ่งที่อยากทำด้วยกัน 🌸', fontSize:22, fontFamily:'Charm', color:'#e8739a', animation:'fadeIn' },
+          { id:eid(), type:'subtext', text:'📍 ไปเที่ยวทะเลด้วยกัน\n🍜 กินอาหารอร่อย ๆ ทุกวัน\n🎬 ดูหนังอยู่บ้านวันฝนตก\n🌸 ดูซากุระบานที่ญี่ปุ่น\n💑 อยู่ด้วยกันนาน ๆ ตลอดไป', fontSize:15, animation:'slideUp', animDelay:0.3 },
+          { id:eid(), type:'sticker', emoji:'💝', fontSize:48, animation:'heartbeat' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'tpl_anniversary',
+    name: '🎂 Anniversary Special',
+    desc: '4 หน้า: countdown → timeline → แกลเลอรี → จดหมาย',
+    cover: ['🎂','🕯️','🥂'],
+    coverBg: 'linear-gradient(135deg,#f1c40f22,#e6794222)',
+    pages: 4,
+    badge: { text: 'ครบรอบ', color: '#f1c40f' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '🎂 วันครบรอบ', theme:'sakura', layout:'center', pageAnimation:'zoomIn', pageEffect:'confetti',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'🎂', fontSize:60, animation:'bounce' },
+          { id:eid(), type:'heading', text:'ครบรอบของเรา 🥂', fontSize:28, fontFamily:'Mali', color:'#e8739a', animation:'zoomIn' },
+          { id:eid(), type:'subtext', text:'ผ่านมาแล้วกี่วัน กี่เดือน กี่ปี... แต่ทุกวันก็ยังรักเธอเท่าเดิม 💕', fontSize:15, animation:'slideUp', animDelay:0.4 },
+          { id:eid(), type:'button', label:'ดูความทรงจำของเรา 📸', target:'__PAGE2__', animDelay:0.7 }
+        ]
+      },
+      { id: uid(), name: '📸 แกลเลอรี', theme:'sakura', layout:'center', pageAnimation:'fadeIn', pageEffect:'petals',
+        elements: [
+          { id:eid(), type:'heading', text:'ภาพถ่ายตลอดระยะเวลา 🌸', fontSize:22, fontFamily:'Charm', color:'#e8739a' },
+          { id:eid(), type:'gallery', images:[], cols:3 },
+          { id:eid(), type:'button', label:'ต่อไป →', target:'__PAGE3__' }
+        ]
+      },
+      { id: uid(), name: '💌 จดหมายซึ้ง', theme:'sakura', layout:'center', pageAnimation:'slideUp', pageEffect:'hearts',
+        elements: [
+          { id:eid(), type:'heading', text:'ถึงเธอในวันครบรอบ 💌', fontSize:22, fontFamily:'Charm', color:'#e8739a', animation:'fadeIn' },
+          { id:eid(), type:'letter', text:'ถึงเธอที่รัก...\n\nไม่ว่าจะผ่านมากี่ปี ความรู้สึกที่มีต่อเธอไม่เคยเปลี่ยน ขอบคุณที่อยู่เคียงข้างกันเสมอ และขอให้เราอยู่ด้วยกันอีกนาน ๆ นะ\n\nรักเธอตลอดไป 💕' },
+          { id:eid(), type:'sticker', emoji:'💕', fontSize:44, animation:'float' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'tpl_minimal',
+    name: '🤍 Minimal Elegance',
+    desc: '2 หน้า: aesthetic สะอาดตา + จดหมาย',
+    cover: ['🤍','✨','🕊️'],
+    coverBg: 'linear-gradient(135deg,#0d0d1a,#3498db22)',
+    pages: 2,
+    badge: { text: 'Minimalist', color: '#3498db' },
+    generate: (uid, eid) => [
+      { id: uid(), name: '✨ หน้าหลัก', theme:'blue', layout:'minimal', pageAnimation:'fadeIn', pageEffect:'stars',
+        elements: [
+          { id:eid(), type:'sticker', emoji:'🕊️', fontSize:52, animation:'float' },
+          { id:eid(), type:'heading', text:'to you, with love.', fontSize:30, fontFamily:'Prompt', color:'#3498db', animation:'fadeIn' },
+          { id:eid(), type:'divider' },
+          { id:eid(), type:'subtext', text:'มีบางอย่างอยากบอกเธอ\nเปิดดูได้เลยนะ...', fontSize:16, fontFamily:'Sarabun', animation:'slideUp', animDelay:0.5 },
+          { id:eid(), type:'button', label:'เปิดอ่าน', target:'__PAGE2__', animation:'fadeIn', animDelay:0.9 }
+        ]
+      },
+      { id: uid(), name: '💙 จดหมาย', theme:'blue', layout:'minimal', pageAnimation:'slideUp', pageEffect:'bubbles',
+        elements: [
+          { id:eid(), type:'heading', text:'dear you,', fontSize:26, fontFamily:'Prompt', color:'#3498db', animation:'fadeIn' },
+          { id:eid(), type:'letter', text:'ทุกวันที่ผ่านมา มีเธออยู่ในความคิดเสมอ\n\nไม่รู้จะบอกยังไงให้รู้ว่ารักเธอมากแค่ไหน แต่หวังว่าเธอจะรู้สึกได้นะ\n\n— with all my love 💙' },
+          { id:eid(), type:'sticker', emoji:'💙', fontSize:36, animation:'heartbeat', animDelay:0.5 }
+        ]
+      }
+    ]
+  }
+];
+
+/* ════════════════════════════════════════════
    MAIN BUILDER APPLICATION COMPONENT
 ════════════════════════════════════════════ */
 function ValentineBuilder() {
-  const [pages, setPages] = useState(() => getInitialTemplate());
+  // ── AUTO-SAVE: load from localStorage or use initial template ──
+  const [pages, setPages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vb_pages_v5');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return getInitialTemplate();
+  });
+
+  // ── UNDO/REDO HISTORY STACK ──
+  const historyRef = useRef([]);
+  const historyIdxRef = useRef(0);
+  const isUndoRedoRef = useRef(false);
+
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
   const [activePageId, setActivePageId] = useState('p1');
   const [activeTab, setActiveTab] = useState('elements');
   const [editingElemId, setEditingElemId] = useState(null);
@@ -829,10 +1295,114 @@ function ValentineBuilder() {
   const [newPageType, setNewPageType] = useState('custom');
   const [newPageName, setNewPageName] = useState('');
 
+  // Template Library Modal
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+
   const iframeRef = useRef();
   const counterIdRef = useRef(100);
 
   const activePage = pages.find(p => p.id === activePageId);
+  const activeThemeObj = activePage ? (THEMES[activePage.theme] || THEMES.pink) : null;
+
+  // ── Initialize history with loaded pages ──
+  const mountedRef = useRef(false);
+
+  // ── AUTO-SAVE to localStorage on every pages change ──
+  useEffect(() => {
+    if (!mountedRef.current) {
+      // First mount: initialize history from loaded state
+      historyRef.current = [JSON.parse(JSON.stringify(pages))];
+      historyIdxRef.current = 0;
+      mountedRef.current = true;
+      return;
+    }
+    if (isUndoRedoRef.current) { isUndoRedoRef.current = false; return; }
+    // Push to history
+    const newHistory = historyRef.current.slice(0, historyIdxRef.current + 1);
+    newHistory.push(JSON.parse(JSON.stringify(pages)));
+    if (newHistory.length > 50) newHistory.shift();
+    historyRef.current = newHistory;
+    historyIdxRef.current = newHistory.length - 1;
+    setCanUndo(historyIdxRef.current > 0);
+    setCanRedo(false);
+    // Save
+    try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(e) {}
+  }, [pages]);
+
+  // ── KEYBOARD SHORTCUTS: Ctrl+Z / Ctrl+Y ──
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault(); handleUndo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault(); handleRedo();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  function handleUndo() {
+    if (historyIdxRef.current <= 0) return;
+    historyIdxRef.current--;
+    isUndoRedoRef.current = true;
+    const prev = historyRef.current[historyIdxRef.current];
+    setPages(JSON.parse(JSON.stringify(prev)));
+    setCanUndo(historyIdxRef.current > 0);
+    setCanRedo(true);
+    showToast('↩️ Undo สำเร็จ');
+  }
+
+  function handleRedo() {
+    if (historyIdxRef.current >= historyRef.current.length - 1) return;
+    historyIdxRef.current++;
+    isUndoRedoRef.current = true;
+    const next = historyRef.current[historyIdxRef.current];
+    setPages(JSON.parse(JSON.stringify(next)));
+    setCanUndo(true);
+    setCanRedo(historyIdxRef.current < historyRef.current.length - 1);
+    showToast('↪️ Redo สำเร็จ');
+  }
+
+  function handleLoadTemplate(tpl) {
+    if (!confirm(`โหลด Template "${tpl.name}" จะแทนที่หน้าทั้งหมดที่มีอยู่ ยืนยันไหม?`)) return;
+    
+    // Generate unique IDs and resolve page references
+    const pageIds = [];
+    const eidCounter = { v: counterIdRef.current };
+    const uidFn = () => { const id = 'p_' + Math.random().toString(36).substr(2,9); pageIds.push(id); return id; };
+    const eidFn = () => 'e_' + (++eidCounter.v);
+    
+    let newPages = tpl.generate(uidFn, eidFn);
+    counterIdRef.current = eidCounter.v;
+
+    // Resolve __PAGE1__, __PAGE2__, etc. references
+    newPages = newPages.map((page, i) => ({
+      ...page,
+      elements: (page.elements || []).map(el => {
+        let resolved = { ...el };
+        ['target', 'yesTarget'].forEach(key => {
+          if (resolved[key]) {
+            const match = resolved[key].match(/__PAGE(\d+)__/);
+            if (match) {
+              const idx = parseInt(match[1]) - 1;
+              resolved[key] = newPages[idx]?.id || '';
+            }
+          }
+        });
+        return resolved;
+      })
+    }));
+
+    setPages(newPages);
+    setActivePageId(newPages[0].id);
+    setShowTemplateModal(false);
+    showToast(`✅ โหลด Template "${tpl.name}" แล้ว!`, 2800);
+  }
+
+  const activePage = pages.find(p => p.id === activePageId);
+  const activeThemeObj = activePage ? (THEMES[activePage.theme] || THEMES.pink) : null;
 
   useEffect(() => {
     setPreviewHtml(generateHTML(pages));
@@ -895,7 +1465,7 @@ function ValentineBuilder() {
 
     if (newPageType === 'question') {
       base.elements = [
-        { id: generateEid(), type: 'counter', question: 'คุณจะยอมรับเป็นแฟนกับผมไหม? 💖', yesLabel: 'ตกลงยอมรับ 🥰', noLabel: 'เป็นแค่เพื่อนกันนะ 🥹', noTrick: true, noMessages: ["คิดใหม่อีกรอบสิคะ..", "ง้อออ กดเยสเถอะนะ", "อย่าน้าาา หนีไม่พ้นหรอก!"] }
+        { id: generateEid(), type: 'counter', question: 'คุณจะยอมรับเป็นแฟนกับผมไหม? 💖', yesLabel: 'ตกลงยอมรับ 🥰', noLabel: 'เป็นแค่เพื่อนกันนะ 🥹', noBehavior: 'growYes', noMessages: ["คิดใหม่อีกรอบสิคะ..", "ง้อออ กดเยสเถอะนะ", "อย่าน้าาา หนีไม่พ้นหรอก!"] }
       ];
     } else if (newPageType === 'gallery') {
       base.elements = [
@@ -905,7 +1475,7 @@ function ValentineBuilder() {
     } else if (newPageType === 'music') {
       base.elements = [
         { id: generateEid(), type: 'heading', text: 'เพลงนี้มอบให้เธอคนเดียวนะ 🎵', fontSize: 22, fontFamily: 'Itim' },
-        { id: generateEid(), type: 'audio', title: 'Special Romantic Track', src: '' }
+        { id: generateEid(), type: 'vinyl', audioSrc: '' }
       ];
     } else if (newPageType === 'letter') {
       base.elements = [
@@ -931,7 +1501,7 @@ function ValentineBuilder() {
     if (type === 'subtext') freshNode.text = 'รายละเอียดเนื้องานเสริมความหวานชื่นข้อความจำลอง';
     if (type === 'sticker') freshNode.emoji = '❤️';
     if (type === 'button') { freshNode.label = 'ปุ่มนำทาง'; freshNode.target = ''; }
-    if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noTrick = true; }
+    if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noBehavior = 'runaway'; }
 
     const updatedElements = [...(activePage.elements || []), freshNode];
     updatePage(activePage.id, { elements: updatedElements });
@@ -973,8 +1543,8 @@ function ValentineBuilder() {
   }
 
   const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
-
   const selStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', cursor:'pointer' };
+  const labelStyle = { display:'block', fontSize:'0.72rem', color:'#9a7aaa', marginBottom:'5px', fontWeight:'500' };
 
   return (
     <div style={{display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden'}}>
@@ -982,11 +1552,20 @@ function ValentineBuilder() {
       <div className="topbar">
         <div style={{display:'flex', alignItems:'center', gap:10}}>
           <span className="logo">💌 Valentine Builder Pro</span>
-          <span className="version-badge">v3.0 FULL CUSTOM</span>
+          <span className="version-badge">v5.0</span>
+          <div style={{display:'flex', gap:4, alignItems:'center', marginLeft:6}}>
+            <button className="btn-undo" onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">↩️ Undo</button>
+            <button className="btn-undo" onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Y)">↪️ Redo</button>
+          </div>
         </div>
         <div className="topbar-actions">
-          <span style={{fontSize:'0.75rem', color:'#7a5a8a'}}>{pages.length} หน้าเว็บย่อย</span>
-          <button className="btn-top btn-export" onClick={exportCompleteHTML}>⬇️ Export ดาวน์โหลดไฟล์ HTML</button>
+          <span style={{fontSize:'0.7rem', color:'#5a7a5a', display:'flex', alignItems:'center', gap:4}}>
+            <span style={{width:6, height:6, borderRadius:'50%', background:'#52b788', display:'inline-block'}}></span>
+            บันทึกอัตโนมัติ
+          </span>
+          <button className="btn-top" onClick={() => setShowTemplateModal(true)} style={{background:'rgba(255,107,157,0.1)', border:'1px solid rgba(255,107,157,0.3)', color:'#ff9a9e'}}>🎨 Templates</button>
+          <span style={{fontSize:'0.75rem', color:'#7a5a8a'}}>{pages.length} หน้า</span>
+          <button className="btn-top btn-export" onClick={exportCompleteHTML}>⬇️ Export HTML</button>
         </div>
       </div>
 
@@ -1012,6 +1591,7 @@ function ValentineBuilder() {
               </div>
             ))}
             <button className="btn-add-page" onClick={() => setShowAddModal(true)}>➕ เพิ่มหน้าใหม่...</button>
+            <button className="btn-add-page" style={{marginTop:4, color:'#9a7aaa', borderColor:'rgba(150,100,200,0.3)'}} onClick={() => { if(confirm('รีเซ็ตกลับเป็น Template เริ่มต้น?')) { setPages(getInitialTemplate()); setActivePageId('p1'); showToast('🔄 รีเซ็ตเรียบร้อยแล้ว'); }}}>🔄 รีเซ็ต</button>
           </div>
         </div>
 
@@ -1022,8 +1602,8 @@ function ValentineBuilder() {
               {/* TABS SELECTOR BUTTONS */}
               <div className="editor-tabs">
                 <span className={`editor-tab ${activeTab==='elements'?'active':''}`} onClick={() => setActiveTab('elements')}>🧩 จัดเรียง Elements</span>
-                <span className={`editor-tab ${activeTab==='layout'?'active':''}`} onClick={() => setActiveTab('layout')}>📐 ปรับแต่ง Layout</span>
-                <span className={`editor-tab ${activeTab==='anim'?'active':''}`} onClick={() => setActiveTab('anim')}>✨ เอฟเฟกต์ / แอนิเมชัน</span>
+                <span className={`editor-tab ${activeTab==='layout'?'active':''}`} onClick={() => setActiveTab('layout')}>📐 พื้นหลัง Layout</span>
+                <span className={`editor-tab ${activeTab==='anim'?'active':''}`} onClick={() => setActiveTab('anim')}>✨ เอฟเฟกต์ / เพลง</span>
                 <span className={`editor-tab ${activeTab==='theme'?'active':''}`} onClick={() => setActiveTab('theme')}>🎨 เลือกธีมหลัก</span>
               </div>
 
@@ -1073,6 +1653,7 @@ function ValentineBuilder() {
                     {activeEditingElement && (
                       <ElementEditor 
                         el={activeEditingElement}
+                        themeObj={activeThemeObj}
                         pages={pages.filter(p => p.id !== activePage.id)}
                         onUpdate={(patch) => updateElement(activePage.id, activeEditingElement.id, patch)}
                         onClose={() => setEditingElemId(null)}
@@ -1105,57 +1686,53 @@ function ValentineBuilder() {
                     </div>
 
                     <div style={{margin:'14px 0'}} />
-                    <div className="sec-header">⚙️ ออกแบบและจัดวางองค์ประกอบด้วยตนเอง (Custom Dimensions)</div>
                     
-                    <div className="field">
-                      <label>การจัดแนววัตถุภายในกล่องเนื้อหา (Content Alignment)</label>
-                      <div className="chip-row">
-                        {[{id:'left',l:'จัดฝั่งซ้าย'}, {id:'center',l:'กึ่งกลางหน้าจอ'}, {id:'right',l:'จัดฝั่งขวา'}].map(opt => (
-                          <span key={opt.id} className={`chip ${(activePage.contentAlign||'center')===opt.id?'active':''}`} onClick={() => updatePage(activePage.id, {contentAlign: opt.id})}>
-                            {opt.l}
-                          </span>
+                    <div className="sec-header">🎨 ปรับแต่งพื้นหลังและสีสัน</div>
+                    
+                    <div style={{background:'rgba(255,255,255,0.03)', padding:'12px', borderRadius:'8px', marginBottom:'14px'}}>
+                      <label style={labelStyle}>🌟 พื้นหลังของหน้าจอใหญ่ (Page Background)</label>
+                      <div style={{display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'10px'}}>
+                        {SWATCHES.map(c => (
+                          <div key={c} className={`palette-swatch ${(activePage.customBg||activeThemeObj.bg)===c?'active':''}`} style={{background:c}} onClick={() => updatePage(activePage.id, {customBg: c})} />
                         ))}
+                        <input type="color" value={activePage.customBg || activeThemeObj.bg} onChange={e => updatePage(activePage.id, {customBg: e.target.value})} style={{width:'26px',height:'26px',padding:0,border:'none',cursor:'pointer',borderRadius:'50%'}} title="เลือกสีอื่นๆ" />
                       </div>
+                      
+                      <label style={{...labelStyle, marginTop:'10px'}}>🖼️ หรือเลือกรูปภาพเป็นพื้นหลัง</label>
+                      <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.75rem',cursor:'pointer'}}>
+                        อัปโหลดรูปพื้นหลังจอใหญ่
+                        <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgImage:ev.target.result});r.readAsDataURL(f);}}} />
+                      </label>
+                      {activePage.bgImage && (
+                        <div style={{marginTop:'10px'}}>
+                          <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.7rem', color:'#c8a0d8'}}><span>ความเข้มของภาพ</span><span>{Math.round((activePage.bgOpacity??0.5)*100)}%</span></div>
+                          <input className="field" type="range" min="0.1" max="1" step="0.1" value={activePage.bgOpacity ?? 0.5} onChange={e => updatePage(activePage.id, {bgOpacity: parseFloat(e.target.value)})} style={{width:'100%'}} />
+                          <button onClick={()=>updatePage(activePage.id,{bgImage:''})} style={{background:'rgba(255,80,80,0.1)', border:'1px solid rgba(255,80,80,0.3)', color:'#ff8080', fontSize:'0.7rem', padding:'4px 10px', borderRadius:'6px', cursor:'pointer', marginTop:'4px'}}>ลบรูปภาพนี้</button>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="row2">
-                      <div className="field">
-                        <label>ระยะห่างเว้นระว่างช่องวัตถุ (Gap px)</label>
-                        <input type="number" value={activePage.elementsGap !== undefined ? activePage.elementsGap : 16} onChange={e => updatePage(activePage.id, {elementsGap: +e.target.value})} min="0" max="120" />
+                    <div style={{background:'rgba(255,255,255,0.03)', padding:'12px', borderRadius:'8px', marginBottom:'14px'}}>
+                      <label style={labelStyle}>📦 พื้นหลังของกล่องกระดาษข้อความ (Card Background)</label>
+                      <div style={{display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'10px'}}>
+                        {SWATCHES.map(c => (
+                          <div key={c} className={`palette-swatch ${(activePage.customCardBg||activeThemeObj.card)===c?'active':''}`} style={{background:c}} onClick={() => updatePage(activePage.id, {customCardBg: c})} />
+                        ))}
+                        <input type="color" value={activePage.customCardBg || activeThemeObj.card} onChange={e => updatePage(activePage.id, {customCardBg: e.target.value})} style={{width:'26px',height:'26px',padding:0,border:'none',cursor:'pointer',borderRadius:'50%'}} title="เลือกสีอื่นๆ" />
                       </div>
-                      <div className="field">
-                        <label>ความกว้างสูงสุดของกล่องการ์ด (Max-Width px)</label>
-                        <input type="number" value={activePage.cardWidth || 440} onChange={e => updatePage(activePage.id, {cardWidth: +e.target.value})} min="280" max="1400" />
-                      </div>
-                    </div>
-
-                    <div className="row2">
-                      <div className="field">
-                        <label>ระยะห่างเยื้องขอบในกล่อง (Padding px)</label>
-                        <input type="number" value={activePage.cardPadding !== undefined ? activePage.cardPadding : 32} onChange={e => updatePage(activePage.id, {cardPadding: +e.target.value})} min="0" max="100" />
-                      </div>
-                      <div className="field">
-                        <label>ความโค้งมนของขอบการ์ด (Border-Radius px)</label>
-                        <input type="number" value={activePage.cardRadius !== undefined ? activePage.cardRadius : 24} onChange={e => updatePage(activePage.id, {cardRadius: +e.target.value})} min="0" max="100" />
-                      </div>
-                    </div>
-
-                    <div style={{margin:'14px 0', borderTop:'1px solid rgba(255,100,150,0.1)'}} />
-                    <div className="sec-header">🎨 เลือกแต่งสีฉากหลัง & การ์ดข้อความเฉพาะหน้าเว็บนี้</div>
-                    <div className="field">
-                      <label>สีพื้นหลังฉากหลังใหญ่ (Page Overriding Background)</label>
-                      <div className="color-picker-row">
-                        <input type="color" value={activePage.customBg || THEMES[activePage.theme]?.bg || '#fff0f3'} onChange={e => updatePage(activePage.id, {customBg: e.target.value})} />
-                        <input className="color-hex" value={activePage.customBg || ''} onChange={e => updatePage(activePage.id, {customBg: e.target.value})} placeholder="เช่น #fff0f3 (เว้นว่างเพื่อใช้ตามธีมหลัก)" />
-                      </div>
-                    </div>
-                    
-                    <div className="field">
-                      <label>สีพื้นหลังตัวกล่องกระดาษ (Card Overriding Background)</label>
-                      <div className="color-picker-row">
-                        <input type="color" value={activePage.customCardBg || THEMES[activePage.theme]?.card || '#ffffff'} onChange={e => updatePage(activePage.id, {customCardBg: e.target.value})} />
-                        <input className="color-hex" value={activePage.customCardBg || ''} onChange={e => updatePage(activePage.id, {customCardBg: e.target.value})} placeholder="เช่น #ffffff (เว้นว่างเพื่อใช้ตามธีมหลัก)" />
-                      </div>
+                      
+                      <label style={{...labelStyle, marginTop:'10px'}}>🖼️ หรือเลือกรูปภาพเป็นพื้นหลังกล่อง</label>
+                      <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.75rem',cursor:'pointer'}}>
+                        อัปโหลดรูปพื้นหลังกล่อง
+                        <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{cardBgImage:ev.target.result});r.readAsDataURL(f);}}} />
+                      </label>
+                      {activePage.cardBgImage && (
+                        <div style={{marginTop:'10px'}}>
+                          <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.7rem', color:'#c8a0d8'}}><span>ความเข้มของภาพ</span><span>{Math.round((activePage.cardBgOpacity??0.5)*100)}%</span></div>
+                          <input className="field" type="range" min="0.1" max="1" step="0.1" value={activePage.cardBgOpacity ?? 0.5} onChange={e => updatePage(activePage.id, {cardBgOpacity: parseFloat(e.target.value)})} style={{width:'100%'}} />
+                          <button onClick={()=>updatePage(activePage.id,{cardBgImage:''})} style={{background:'rgba(255,80,80,0.1)', border:'1px solid rgba(255,80,80,0.3)', color:'#ff8080', fontSize:'0.7rem', padding:'4px 10px', borderRadius:'6px', cursor:'pointer', marginTop:'4px'}}>ลบรูปภาพนี้</button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1173,12 +1750,22 @@ function ValentineBuilder() {
                     </div>
 
                     <div style={{margin:'18px 0', borderTop:'1px solid rgba(255,100,150,0.1)'}} />
-                    <div className="sec-header">🌸 เอฟเฟกต์พิเศษตระการตาบนพื้นหลัง (Page Background Special Effect)</div>
+                    
+                    <div className="sec-header">🌸 เอฟเฟกต์พิเศษตระการตาบนพื้นหลัง</div>
                     <div className="field">
                       <label>เลือกตัวโปรยเอฟเฟกต์เบื้องหลัง</label>
                       <select value={activePage.pageEffect || 'none'} onChange={e => updatePage(activePage.id, {pageEffect: e.target.value})} style={selStyle}>
                         {PAGE_EFFECTS.map(pe => <option key={pe.id} value={pe.id}>{pe.icon} {pe.label}</option>)}
                       </select>
+                    </div>
+
+                    <div style={{margin:'18px 0', borderTop:'1px solid rgba(255,100,150,0.1)'}} />
+                    
+                    <div className="sec-header">🎵 ตั้งค่าเพลงพื้นหลัง (Background Music) ประจำหน้านี้</div>
+                    <div className="field">
+                      <label>ลิงก์ไฟล์เพลง (.mp3) (เพลงจะเล่นอัตโนมัติเมื่อเปิดมาหน้านี้)</label>
+                      <input type="text" placeholder="https://example.com/song.mp3" value={activePage.bgMusic || ''} onChange={e => updatePage(activePage.id, {bgMusic: e.target.value})} style={{width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none'}} />
+                      <p style={{fontSize:'0.65rem', color:'#9a7aaa', marginTop:'4px'}}>* เพลงจะเล่นวนลูปไปเรื่อย ๆ จนกว่าจะเปลี่ยนหน้าเว็บที่มีเพลงอื่นแทรก</p>
                     </div>
                   </div>
                 )}
@@ -1225,7 +1812,7 @@ function ValentineBuilder() {
             <span style={{fontSize:'0.65rem', background:'rgba(255,255,255,0.06)', padding:'2px 6px', borderRadius:'4px'}}>Iframe Sandbox</span>
           </div>
           <div className="preview-frame">
-            <iframe ref={iframeRef} title="Valentine Sandbox Live view" />
+            <iframe ref={iframeRef} title="Valentine Sandbox Live view" allow="autoplay" />
           </div>
         </div>
       </div>
@@ -1251,6 +1838,38 @@ function ValentineBuilder() {
             <div className="modal-btns">
               <button className="btn-cancel" onClick={() => setShowAddModal(false)}>ยกเลิก</button>
               <button className="btn-confirm" onClick={createNewPage}>ตกลงสร้างหน้าใหม่</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🎨 MODAL: TEMPLATE LIBRARY */}
+      {showTemplateModal && (
+        <div className="modal-overlay" onClick={() => setShowTemplateModal(false)}>
+          <div className="tpl-modal" onClick={e => e.stopPropagation()}>
+            <h3>🎨 Template Library</h3>
+            <p className="subtitle">เลือก Template สำเร็จรูป — จะแทนที่หน้าทั้งหมดที่มีอยู่ แก้ไขต่อได้ทันที</p>
+            <div className="tpl-grid">
+              {TEMPLATE_LIBRARY.map(tpl => (
+                <div key={tpl.id} className="tpl-card" onClick={() => handleLoadTemplate(tpl)}>
+                  <div className="tpl-card-pages">{tpl.pages} หน้า</div>
+                  <div className="tpl-card-cover" style={{background: tpl.coverBg}}>
+                    {tpl.cover.map((em, i) => (
+                      <span key={i} style={{fontSize: i===1 ? '2.2rem' : '1.4rem', opacity: i===1 ? 1 : 0.7}}>{em}</span>
+                    ))}
+                  </div>
+                  <div className="tpl-card-name">{tpl.name}</div>
+                  <div className="tpl-card-desc">{tpl.desc}</div>
+                  <div>
+                    <span className="tpl-badge" style={{background: tpl.badge.color+'22', border:`1px solid ${tpl.badge.color}44`, color: tpl.badge.color}}>
+                      ✦ {tpl.badge.text}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{marginTop:16, textAlign:'right'}}>
+              <button className="btn-cancel" onClick={() => setShowTemplateModal(false)}>ปิด</button>
             </div>
           </div>
         </div>
