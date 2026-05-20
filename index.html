@@ -1401,9 +1401,6 @@ function ValentineBuilder() {
     showToast(`✅ โหลด Template "${tpl.name}" แล้ว!`, 2800);
   }
 
-  const activePage = pages.find(p => p.id === activePageId);
-  const activeThemeObj = activePage ? (THEMES[activePage.theme] || THEMES.pink) : null;
-
   useEffect(() => {
     setPreviewHtml(generateHTML(pages));
   }, [pages]);
