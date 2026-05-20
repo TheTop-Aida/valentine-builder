@@ -319,19 +319,59 @@ function renderElement(el, th) {
       const ytThumb = el.ytId ? 'https://img.youtube.com/vi/' + el.ytId + '/hqdefault.jpg' : (el.coverSrc || '');
       const isYT = !!el.ytId;
       if (isYT) {
-        // YouTube embed iframe — ทำงานได้ทุก environment
         return (
           '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;">' +
-          '<div style="border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);">' +
-          '<div style="display:flex;align-items:center;padding:10px 14px;gap:10px;">' +
-          '<img src="' + ytThumb + '" style="width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0;" />' +
-          '<div style="flex:1;font-size:0.9rem;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + (el.title || 'เพลงของเรา') + '</div>' +
+          '<div style="border-radius:16px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 24px rgba(0,0,0,0.25);">' +
+          // thumbnail cover (หน้าปก)
+          '<div style="position:relative;width:100%;padding-bottom:56.25%;overflow:hidden;">' +
+          '<img src="' + ytThumb + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />' +
+          '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.7))"></div>' +
+          // title overlay
+          '<div style="position:absolute;bottom:10px;left:14px;right:14px;color:#fff;font-size:0.9rem;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,0.8);">' + (el.title||'เพลงของเรา') + '</div>' +
           '</div>' +
-          '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">' +
-          '<iframe src="https://www.youtube.com/embed/' + el.ytId + '?autoplay=0&loop=1&playlist=' + el.ytId + '" ' +
-          'style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" ' +
-          'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
-          '</div></div></div>'
+          // controls bar
+          '<div style="display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 16px;">' +
+          '<button onclick="ytMusicCtrl_' + el.id + '(\'prev\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.85;padding:0;">⏮</button>' +
+          '<button id="yt-playbtn-' + el.id + '" onclick="ytMusicCtrl_' + el.id + '(\'play\')" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.6rem;cursor:pointer;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;">▶</button>' +
+          '<button onclick="ytMusicCtrl_' + el.id + '(\'next\')" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.85;padding:0;">⏭</button>' +
+          '</div>' +
+          // hidden youtube iframe (audio only trick)
+          '<div id="yt-player-' + el.id + '" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>' +
+          '</div>' +
+          // inline script for this player
+          '<script>' +
+          '(function(){' +
+          'var _player_' + el.id + ' = null;' +
+          'var _playing_' + el.id + ' = false;' +
+          'function initPlayer_' + el.id + '(){' +
+          '  if(typeof YT==="undefined"||!YT.Player){setTimeout(initPlayer_' + el.id + ',300);return;}' +
+          '  _player_' + el.id + ' = new YT.Player("yt-player-' + el.id + '",{' +
+          '    width:"1",height:"1",videoId:"' + el.ytId + '",' +
+          '    playerVars:{autoplay:0,controls:0,playsinline:1,loop:1,playlist:"' + el.ytId + '"},' +
+          '    events:{onStateChange:function(e){' +
+          '      var btn=document.getElementById("yt-playbtn-' + el.id + '");' +
+          '      if(e.data===1){_playing_' + el.id + '=true;if(btn)btn.textContent="⏸";}' +
+          '      else{_playing_' + el.id + '=false;if(btn)btn.textContent="▶";}' +
+          '    }}' +
+          '  });' +
+          '}' +
+          'window.ytMusicCtrl_' + el.id + '=function(cmd){' +
+          '  if(!_player_' + el.id + ')return;' +
+          '  if(cmd==="play"){_playing_' + el.id + '?_player_' + el.id + '.pauseVideo():_player_' + el.id + '.playVideo();}' +
+          '  else if(cmd==="prev"){var t=_player_' + el.id + '.getCurrentTime();_player_' + el.id + '.seekTo(Math.max(0,t-10),true);}' +
+          '  else if(cmd==="next"){var t=_player_' + el.id + '.getCurrentTime();_player_' + el.id + '.seekTo(t+10,true);}' +
+          '};' +
+          'if(!window._ytApiLoaded){' +
+          '  window._ytApiLoaded=true;' +
+          '  var s=document.createElement("script");s.src="https://www.youtube.com/iframe_api";document.head.appendChild(s);' +
+          '  var prev=window.onYouTubeIframeAPIReady;' +
+          '  window.onYouTubeIframeAPIReady=function(){if(prev)prev();};' +
+          '}' +
+          'if(typeof YT!=="undefined"&&YT.Player){initPlayer_' + el.id + '();}' +
+          'else{var prev2=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=function(){if(prev2)prev2();initPlayer_' + el.id + '();};}' +
+          '})();' +
+          '<\/script>' +
+          '</div>'
         );
       }
       // MP3 fallback
