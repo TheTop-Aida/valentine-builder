@@ -105,7 +105,7 @@ export function renderElement(el, th) {
             else if(cmd==="next"){if(a.duration)a.currentTime=Math.min(a.duration,a.currentTime+10);}
           };
           window.playerSeek_${el.id}=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));if(a.duration)a.currentTime=pct*a.duration;};
-        })()</script>
+        })()<\/script>
       </div>`;
     }
     case 'audio': {
