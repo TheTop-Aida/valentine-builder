@@ -191,6 +191,7 @@ export default function App() {
     if (type === 'button') { freshNode.label = 'ปุ่มนำทาง'; freshNode.target = ''; }
     if (type === 'gift_buttons') { freshNode.gifts = [{icon:'🎁',label:'ของขวัญ 1',target:'',color:'#ff6b9d'}]; freshNode.iconSize = 48; }
     if (type === 'polaroid_gallery') { freshNode.photos = []; freshNode.cols = 2; }
+    if (type === 'player') { freshNode.title = 'ชื่อเพลง'; freshNode.artist = ''; freshNode.coverSrc = ''; freshNode.audioSrc = ''; freshNode.size = 140; }
     if (type === 'counter') { freshNode.question = 'คุณรักฉันไหม?'; freshNode.yesLabel = 'รัก 💚'; freshNode.noLabel = 'ไม่รัก 🚫'; freshNode.noBehavior = 'runaway'; freshNode.reactionImages = ['','','','']; }
     updatePage(activePage.id, { elements: [...(activePage.elements || []), freshNode] });
     setEditingElemId(freshNode.id);
@@ -392,9 +393,30 @@ export default function App() {
                   <div>
                     <div className="sec-header">🎵 เพลงประกอบพื้นหลัง (BGM)</div>
                     <div className="field">
-                      <label style={labelStyle}>URL เพลง .mp3 สำหรับหน้านี้</label>
-                      <input value={activePage.bgMusic||''} onChange={e=>updatePage(activePage.id,{bgMusic:e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} placeholder="https://example.com/music.mp3" />
-                      <p style={{fontSize:'0.65rem', color:'#9a7aaa', marginTop:'4px'}}>* เพลงจะเล่นวนลูปเมื่อเข้าสู่หน้านี้</p>
+                      <p style={{fontSize:'0.7rem',color:'#9a7aaa',marginBottom:'10px',lineHeight:1.5}}>เพลงจะเล่นอัตโนมัติเมื่อผู้รับแตะหน้าจอครั้งแรก ไม่มีปุ่มใดๆ แสดงให้เห็น</p>
+                      {/* อัปโหลดไฟล์ */}
+                      {(activePage.bgMusic && activePage.bgMusic.startsWith('data:') && activePage.bgMusicFileName) ? (
+                        <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+                          <span style={{fontSize:'1.1rem'}}>🎵</span>
+                          <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.bgMusicFileName}</span>
+                          <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
+                            เปลี่ยน
+                            <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgMusic:ev.target.result,bgMusicFileName:f.name});r.readAsDataURL(f);}} />
+                          </label>
+                          <button onClick={()=>updatePage(activePage.id,{bgMusic:'',bgMusicFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
+                        </div>
+                      ) : (
+                        <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
+                          📂 เลือกไฟล์เพลง BGM (.mp3 / .m4a)
+                          <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgMusic:ev.target.result,bgMusicFileName:f.name});r.readAsDataURL(f);}} />
+                        </label>
+                      )}
+                      {!(activePage.bgMusic && activePage.bgMusic.startsWith('data:')) && (
+                        <>
+                          <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
+                          <input value={activePage.bgMusic||''} onChange={e=>updatePage(activePage.id,{bgMusic:e.target.value,bgMusicFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="https://example.com/music.mp3" />
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

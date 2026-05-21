@@ -1,5 +1,19 @@
 import { STICKERS, FONTS, ANIMATIONS, SWATCHES } from '../constants.js';
 
+// แปลง Google Drive URL ทุกรูปแบบเป็น direct stream URL
+function parseDriveUrl(val) {
+  // รูปแบบ: /file/d/FILE_ID/view หรือ /file/d/FILE_ID/
+  const fileMatch = val.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+  // รูปแบบ: open?id=FILE_ID
+  const openMatch = val.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (openMatch) return `https://drive.google.com/uc?export=download&id=${openMatch[1]}`;
+  // รูปแบบ: uc?id=FILE_ID (มีอยู่แล้ว แต่ยังไม่มี export)
+  const ucMatch = val.match(/drive\.google\.com\/uc\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+  if (ucMatch) return `https://drive.google.com/uc?export=download&id=${ucMatch[1]}`;
+  return null;
+}
+
 export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
   const inputStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', marginBottom:'8px' };
   const selStyle = { ...inputStyle, cursor:'pointer' };
@@ -84,26 +98,111 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
         </div>
       )}
 
+      {el.type === 'player' && (
+        <div>
+          {/* รูปปก */}
+          <label style={labelStyle}>🖼️ รูปปกเพลง (Album Art)</label>
+          {(el.coverSrc && el.coverSrc.startsWith('data:')) ? (
+            <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+              <img src={el.coverSrc} style={{width:'44px',height:'44px',borderRadius:'50%',objectFit:'cover',border:'2px solid rgba(255,107,157,0.5)'}} alt="cover"/>
+              <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.coverFileName||'รูปปก'}</span>
+              <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px'}}>
+                เปลี่ยน
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({coverSrc:ev.target.result,coverFileName:f.name});r.readAsDataURL(f);}} />
+              </label>
+              <button onClick={()=>upd({coverSrc:'',coverFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
+            </div>
+          ) : (
+            <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+              📸 เลือกรูปปกเพลง
+              <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({coverSrc:ev.target.result,coverFileName:f.name});r.readAsDataURL(f);}} />
+            </label>
+          )}
+          {/* ชื่อเพลง + ศิลปิน */}
+          <label style={labelStyle}>ชื่อเพลง</label>
+          <input value={el.title||''} onChange={e=>upd({title:e.target.value})} style={inputStyle} placeholder="Summer Girl" />
+          <label style={labelStyle}>ชื่อศิลปิน</label>
+          <input value={el.artist||''} onChange={e=>upd({artist:e.target.value})} style={inputStyle} placeholder="HAIM" />
+          {/* ไฟล์เพลง */}
+          <label style={labelStyle}>🎵 ไฟล์เพลง</label>
+          {(el.audioSrc && el.audioSrc.startsWith('data:') && el.audioFileName) ? (
+            <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+              <span style={{fontSize:'1.1rem'}}>🎵</span>
+              <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.audioFileName}</span>
+              <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px'}}>
+                เปลี่ยน
+                <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({audioSrc:ev.target.result,audioFileName:f.name});r.readAsDataURL(f);}} />
+              </label>
+              <button onClick={()=>upd({audioSrc:'',audioFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
+            </div>
+          ) : (
+            <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+              📂 เลือกไฟล์เพลง (.mp3 / .m4a / .ogg)
+              <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({audioSrc:ev.target.result,audioFileName:f.name});r.readAsDataURL(f);}} />
+            </label>
+          )}
+          {!(el.audioSrc && el.audioSrc.startsWith('data:')) && (
+            <>
+              <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
+              <input value={el.audioSrc||''} onChange={e=>upd({audioSrc:e.target.value,audioFileName:''})} style={inputStyle} placeholder="https://example.com/song.mp3" />
+            </>
+          )}
+        </div>
+      )}
+
       {el.type === 'audio' && (
         <div>
           <label style={labelStyle}>ชื่อเพลงประกอบ</label>
           <input value={el.title || ''} onChange={e => upd({ title: e.target.value })} style={inputStyle} />
-          <label style={labelStyle}>ลิงก์ YouTube หรือ URL เพลง (.mp3)</label>
-          <input value={el.src || ''} onChange={e => {
-            const val = e.target.value;
-            const ytMatch = val.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
-            if (ytMatch) {
-              const vid = ytMatch[1];
-              upd({ src: val, ytId: vid, coverSrc: `https://img.youtube.com/vi/${vid}/hqdefault.jpg` });
-            } else {
-              upd({ src: val, ytId: '', coverSrc: '' });
-            }
-          }} style={inputStyle} placeholder="https://youtu.be/xxx หรือ .mp3" />
-          {el.ytId && (
-            <div style={{marginTop:'8px',display:'flex',alignItems:'center',gap:'8px'}}>
-              <img src={`https://img.youtube.com/vi/${el.ytId}/hqdefault.jpg`} style={{width:'80px',height:'56px',objectFit:'cover',borderRadius:'6px',border:'1px solid rgba(255,107,157,0.3)'}} alt="thumbnail" />
-              <span style={{fontSize:'0.72rem',color:'#ff9a9e'}}>✅ ดึง Thumbnail จาก YouTube แล้ว</span>
+          <label style={labelStyle}>🎵 เพิ่มเพลง</label>
+          {/* Widget อัปโหลด — รวมในกล่องเดียว */}
+          {(el.src && el.src.startsWith('data:') && el.audioFileName) ? (
+            <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+              <span style={{fontSize:'1.1rem'}}>🎵</span>
+              <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.audioFileName}</span>
+              <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px'}}>
+                เปลี่ยน
+                <input type="file" accept="audio/*" style={{display:'none'}} onChange={e => {
+                  const file = e.target.files[0]; if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = ev => upd({ src: ev.target.result, ytId:'', coverSrc:'', driveConverted:'', audioFileName: file.name });
+                  reader.readAsDataURL(file);
+                }} />
+              </label>
+              <button onClick={() => upd({ src:'', audioFileName:'', ytId:'', coverSrc:'' })} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
             </div>
+          ) : (
+            <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+              📂 เลือกไฟล์เพลงจากเครื่อง (.mp3 / .m4a / .ogg)
+              <input type="file" accept="audio/*" style={{display:'none'}} onChange={e => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => upd({ src: ev.target.result, ytId:'', coverSrc:'', driveConverted:'', audioFileName: file.name });
+                reader.readAsDataURL(file);
+              }} />
+            </label>
+          )}
+          {/* หรือวาง URL */}
+          {!(el.src && el.src.startsWith('data:')) && (
+            <>
+              <label style={labelStyle}>หรือวาง URL เพลง (.mp3 / YouTube)</label>
+              <input value={el.src || ''} onChange={e => {
+                const val = e.target.value;
+                const ytMatch = val.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+                if (ytMatch) {
+                  const vid = ytMatch[1];
+                  upd({ src: val, ytId: vid, coverSrc: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`, driveConverted:'', audioFileName:'' });
+                } else {
+                  upd({ src: val, ytId:'', coverSrc:'', driveConverted:'', audioFileName:'' });
+                }
+              }} style={inputStyle} placeholder="https://youtu.be/xxx หรือ https://example.com/song.mp3" />
+              {el.ytId && (
+                <div style={{marginTop:'4px',display:'flex',alignItems:'center',gap:'8px'}}>
+                  <img src={`https://img.youtube.com/vi/${el.ytId}/hqdefault.jpg`} style={{width:'80px',height:'56px',objectFit:'cover',borderRadius:'6px',border:'1px solid rgba(255,107,157,0.3)'}} alt="thumbnail" />
+                  <span style={{fontSize:'0.72rem',color:'#ff9a9e'}}>✅ ดึง Thumbnail จาก YouTube แล้ว</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -116,8 +215,39 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>upd({src:ev.target.result});reader.readAsDataURL(file);}} />
           </label>
           {el.src && <div style={{textAlign:'center',marginBottom:'8px'}}><img src={el.src} style={{width:'80px',height:'80px',borderRadius:'50%',objectFit:'cover',border:'2px solid #333'}} alt="cover"/></div>}
-          <label style={labelStyle}>ลิงก์ URL เพลง (.mp3)</label>
-          <input value={el.audioSrc || ''} onChange={e => upd({ audioSrc: e.target.value })} style={inputStyle} placeholder="https://example.com/song.mp3" />
+          <label style={labelStyle}>🎵 เพิ่มเพลง</label>
+          {(el.audioSrc && el.audioSrc.startsWith('data:') && el.vinylAudioFileName) ? (
+            <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+              <span style={{fontSize:'1.1rem'}}>🎵</span>
+              <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.vinylAudioFileName}</span>
+              <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px'}}>
+                เปลี่ยน
+                <input type="file" accept="audio/*" style={{display:'none'}} onChange={e => {
+                  const file = e.target.files[0]; if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = ev => upd({ audioSrc: ev.target.result, vinylAudioFileName: file.name });
+                  reader.readAsDataURL(file);
+                }} />
+              </label>
+              <button onClick={() => upd({ audioSrc:'', vinylAudioFileName:'' })} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
+            </div>
+          ) : (
+            <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+              📂 เลือกไฟล์เพลงจากเครื่อง (.mp3 / .m4a / .ogg)
+              <input type="file" accept="audio/*" style={{display:'none'}} onChange={e => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => upd({ audioSrc: ev.target.result, vinylAudioFileName: file.name });
+                reader.readAsDataURL(file);
+              }} />
+            </label>
+          )}
+          {!(el.audioSrc && el.audioSrc.startsWith('data:')) && (
+            <>
+              <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
+              <input value={el.audioSrc || ''} onChange={e => upd({ audioSrc: e.target.value, vinylAudioFileName:'' })} style={inputStyle} placeholder="https://example.com/song.mp3" />
+            </>
+          )}
         </div>
       )}
 

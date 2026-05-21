@@ -55,6 +55,59 @@ export function renderElement(el, th) {
           <div style="font-size:1.8rem; text-align:center; margin-bottom:8px; cursor:pointer;" onclick="var s=this.nextElementSibling; s.style.display=s.style.display==='none'?'block':'none';">✉️ <span style="font-size:0.75rem; color:${th.accent}; display:inline;">(คลิกเปิดจดหมาย)</span></div>
           <div style="display:none; transition:all 0.3s; ${fontFamily}${fontSize}${color} line-height:1.6; white-space:pre-wrap;">${el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...'}</div>
         </div>`;
+    case 'player': {
+      const cvr = el.coverSrc || '';
+      const aSrc = el.audioSrc || '';
+      const ptitle = el.title || 'ชื่อเพลง';
+      const artist = el.artist || '';
+      const psz = el.size || 140;
+      const bgLayer = cvr
+        ? `<div style="position:absolute;inset:0;background-image:url('${cvr}');background-size:cover;background-position:center;filter:blur(20px) brightness(0.45);transform:scale(1.15);"></div>`
+        : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a0a2e,#2c1040);"></div>`;
+      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%;">
+        <div style="position:relative;border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.45);">
+          ${bgLayer}
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.22);"></div>
+          <div style="position:relative;padding:24px 20px 20px;text-align:center;">
+            <div style="position:relative;width:${psz}px;height:${psz}px;margin:0 auto 18px;">
+              <img src="${cvr || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="player-img-${el.id}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;animation:spin 4s linear infinite;animation-play-state:paused;box-shadow:0 6px 28px rgba(0,0,0,0.6);border:3px solid rgba(255,255,255,0.12);display:block;" />
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#1a1a1a;border:2px solid rgba(255,255,255,0.3);"></div>
+            </div>
+            <div style="font-size:1rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,0.6);">${ptitle}</div>
+            ${artist ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.6);margin-bottom:16px;">${artist}</div>` : `<div style="margin-bottom:16px;"></div>`}
+            <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;margin-bottom:6px;overflow:hidden;" onclick="playerSeek_${el.id}(event,this)">
+              <div id="player-prog-${el.id}" style="height:100%;background:rgba(255,255,255,0.9);border-radius:2px;width:0%;transition:width 0.2s linear;pointer-events:none;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:18px;">
+              <span id="player-cur-${el.id}" style="font-size:0.65rem;color:rgba(255,255,255,0.55);">0:00</span>
+              <span id="player-dur-${el.id}" style="font-size:0.65rem;color:rgba(255,255,255,0.55);">--:--</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:32px;">
+              <button onclick="playerCtrl_${el.id}('prev')" style="background:none;border:none;color:rgba(255,255,255,0.85);font-size:1.6rem;cursor:pointer;padding:0;line-height:1;transition:opacity 0.2s;">⏮</button>
+              <button id="player-btn-${el.id}" onclick="playerCtrl_${el.id}('play')" style="width:54px;height:54px;border-radius:50%;border:none;background:rgba(255,255,255,0.18);color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(0,0,0,0.4);transition:background 0.2s;">▶</button>
+              <button onclick="playerCtrl_${el.id}('next')" style="background:none;border:none;color:rgba(255,255,255,0.85);font-size:1.6rem;cursor:pointer;padding:0;line-height:1;transition:opacity 0.2s;">⏭</button>
+            </div>
+          </div>
+        </div>
+        <audio id="player-aud-${el.id}" src="${aSrc}" style="display:none;"></audio>
+        <script>(function(){
+          var a=document.getElementById("player-aud-${el.id}");
+          var img=document.getElementById("player-img-${el.id}");
+          var btn=document.getElementById("player-btn-${el.id}");
+          var isPlaying=false;
+          function fmt(s){if(isNaN(s)||!isFinite(s))return"0:00";var m=Math.floor(s/60),sc=Math.floor(s%60);return m+":"+(sc<10?"0":"")+sc;}
+          a.addEventListener("timeupdate",function(){if(a.duration){document.getElementById("player-prog-${el.id}").style.width=(a.currentTime/a.duration*100)+"%";document.getElementById("player-cur-${el.id}").textContent=fmt(a.currentTime);}});
+          a.addEventListener("loadedmetadata",function(){document.getElementById("player-dur-${el.id}").textContent=fmt(a.duration);});
+          a.addEventListener("ended",function(){isPlaying=false;btn.textContent="▶";img.style.animationPlayState="paused";document.getElementById("player-prog-${el.id}").style.width="0%";a.currentTime=0;});
+          window.playerCtrl_${el.id}=function(cmd){
+            if(cmd==="play"){if(isPlaying){a.pause();btn.textContent="▶";img.style.animationPlayState="paused";isPlaying=false;}else{a.play().catch(function(){});btn.textContent="⏸";img.style.animationPlayState="running";isPlaying=true;}}
+            else if(cmd==="prev"){a.currentTime=Math.max(0,a.currentTime-10);}
+            else if(cmd==="next"){if(a.duration)a.currentTime=Math.min(a.duration,a.currentTime+10);}
+          };
+          window.playerSeek_${el.id}=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));if(a.duration)a.currentTime=pct*a.duration;};
+        })()</script>
+      </div>`;
+    }
     case 'audio': {
       const ytThumb = el.ytId ? 'https://img.youtube.com/vi/' + el.ytId + '/hqdefault.jpg' : (el.coverSrc || '');
       const isYT = !!el.ytId;
@@ -93,20 +146,60 @@ export function renderElement(el, th) {
       }
       return (
         '<div class="' + animClass + '" style="' + animDelay + ' z-index:2; width:100%;">' +
-        '<div style="display:flex;align-items:center;border-radius:12px;overflow:hidden;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);padding:12px 16px;gap:12px;">' +
-        '<div style="font-size:2rem;">🎵</div>' +
+        '<div style="border-radius:16px;width:100%;background:' + th.btn + ';box-shadow:0 4px 18px rgba(0,0,0,0.18);padding:14px 16px;">' +
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<button id="playbtn-' + el.id + '" onclick="audioCtrl_' + el.id + '()" style="width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.25);color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.2s;">▶</button>' +
         '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (el.title || 'เพลงของเรา') + '</div>' +
-        '<audio controls src="' + (el.src||'') + '" style="width:100%;height:32px;"></audio>' +
-        '</div></div></div>'
+        '<div style="font-size:0.88rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;">' + (el.title||'เพลงของเรา') + '</div>' +
+        '<div style="position:relative;height:4px;background:rgba(255,255,255,0.3);border-radius:2px;cursor:pointer;" onclick="audioSeek_' + el.id + '(event,this)">' +
+        '<div id="prog-' + el.id + '" style="height:100%;background:#fff;border-radius:2px;width:0%;transition:width 0.2s linear;pointer-events:none;"></div></div>' +
+        '<div style="display:flex;justify-content:space-between;margin-top:5px;">' +
+        '<span id="cur-' + el.id + '" style="font-size:0.68rem;color:rgba(255,255,255,0.8);">0:00</span>' +
+        '<span id="dur-' + el.id + '" style="font-size:0.68rem;color:rgba(255,255,255,0.8);">--:--</span>' +
+        '</div></div></div></div>' +
+        '<audio id="aud-' + el.id + '" src="' + (el.src||'') + '" style="display:none;"></audio>' +
+        '<script>(function(){' +
+        'var a=document.getElementById("aud-' + el.id + '"),isPlaying=false;' +
+        'function fmt(s){if(isNaN(s))return"0:00";var m=Math.floor(s/60),sc=Math.floor(s%60);return m+":"+(sc<10?"0":"")+sc;}' +
+        'a.addEventListener("timeupdate",function(){if(a.duration){document.getElementById("prog-' + el.id + '").style.width=(a.currentTime/a.duration*100)+"%";document.getElementById("cur-' + el.id + '").textContent=fmt(a.currentTime);}});' +
+        'a.addEventListener("loadedmetadata",function(){document.getElementById("dur-' + el.id + '").textContent=fmt(a.duration);});' +
+        'a.addEventListener("ended",function(){isPlaying=false;document.getElementById("playbtn-' + el.id + '").textContent="▶";document.getElementById("prog-' + el.id + '").style.width="0%";});' +
+        'window.audioCtrl_' + el.id + '=function(){var btn=document.getElementById("playbtn-' + el.id + '");if(isPlaying){a.pause();btn.textContent="▶";isPlaying=false;}else{a.play();btn.textContent="⏸";isPlaying=true;}};' +
+        'window.audioSeek_' + el.id + '=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));if(a.duration)a.currentTime=pct*a.duration;};' +
+        '})()<\/script></div>'
       );
     }
-    case 'vinyl':
+    case 'vinyl': {
+      const vsz = el.size || 120;
       return `
         <div class="${animClass}" style="${animDelay} z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px; width:100%;">
-          <img src="${el.src || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="vinyl-img-${el.id}" style="width:${el.size||120}px; height:${el.size||120}px; border-radius:50%; object-fit:cover; animation:spin 4s linear infinite; animation-play-state:paused; box-shadow:0 4px 15px rgba(0,0,0,0.3); border:2px solid #333; background:#fff;" />
-          <audio id="vinyl-aud-${el.id}" controls src="${el.audioSrc||''}" style="width:100%; height:32px;" onplay="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='running'" onpause="document.getElementById('vinyl-img-${el.id}').style.animationPlayState='paused'"></audio>
-        </div>`;
+          <div style="position:relative; width:${vsz}px; height:${vsz}px; flex-shrink:0;">
+            <img src="${el.src || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="vinyl-img-${el.id}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; animation:spin 4s linear infinite; animation-play-state:paused; box-shadow:0 4px 20px rgba(0,0,0,0.35); border:3px solid #222; background:#fff; display:block;" />
+            <button id="vinyl-btn-${el.id}" onclick="vinylCtrl_${el.id}()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);color:#333;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.35);transition:transform 0.15s,background 0.15s;">▶</button>
+          </div>
+          <div style="width:${vsz}px;">
+            <div style="height:3px;background:rgba(0,0,0,0.12);border-radius:2px;cursor:pointer;overflow:hidden;" onclick="vinylSeek_${el.id}(event,this)">
+              <div id="vinyl-prog-${el.id}" style="height:100%;background:${th.btn};border-radius:2px;width:0%;transition:width 0.2s linear;pointer-events:none;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;">
+              <span id="vinyl-cur-${el.id}" style="font-size:0.62rem;color:#999;">0:00</span>
+              <span id="vinyl-dur-${el.id}" style="font-size:0.62rem;color:#999;">--:--</span>
+            </div>
+          </div>
+        </div>
+        <audio id="vinyl-aud-${el.id}" src="${el.audioSrc||''}" style="display:none;"></audio>
+        <script>(function(){
+          var a=document.getElementById("vinyl-aud-${el.id}"),isPlaying=false;
+          var img=document.getElementById("vinyl-img-${el.id}");
+          var btn=document.getElementById("vinyl-btn-${el.id}");
+          function fmt(s){if(isNaN(s))return"0:00";var m=Math.floor(s/60),sc=Math.floor(s%60);return m+":"+(sc<10?"0":"")+sc;}
+          a.addEventListener("timeupdate",function(){if(a.duration){document.getElementById("vinyl-prog-${el.id}").style.width=(a.currentTime/a.duration*100)+"%";document.getElementById("vinyl-cur-${el.id}").textContent=fmt(a.currentTime);}});
+          a.addEventListener("loadedmetadata",function(){document.getElementById("vinyl-dur-${el.id}").textContent=fmt(a.duration);});
+          a.addEventListener("ended",function(){isPlaying=false;btn.textContent="▶";img.style.animationPlayState="paused";document.getElementById("vinyl-prog-${el.id}").style.width="0%";});
+          window.vinylCtrl_${el.id}=function(){if(isPlaying){a.pause();btn.textContent="▶";img.style.animationPlayState="paused";isPlaying=false;}else{a.play();btn.textContent="⏸";img.style.animationPlayState="running";isPlaying=true;}};
+          window.vinylSeek_${el.id}=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));if(a.duration)a.currentTime=pct*a.duration;};
+        })()</script>`;
+    }
     case 'gallery': {
       const items = el.images || [];
       const cols = el.cols || 2;
