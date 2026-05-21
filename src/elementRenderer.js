@@ -175,7 +175,7 @@ export function renderElement(el, th) {
         <div class="${animClass}" style="${animDelay} z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px; width:100%;">
           <div style="position:relative; width:${vsz}px; height:${vsz}px; flex-shrink:0;">
             <img src="${el.src || 'https://cdn-icons-png.flaticon.com/512/1753/1753114.png'}" id="vinyl-img-${el.id}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; animation:spin 4s linear infinite; animation-play-state:paused; box-shadow:0 4px 20px rgba(0,0,0,0.35); border:3px solid #222; background:#fff; display:block;" />
-            <button id="vinyl-btn-${el.id}" onclick="vinylCtrl_${el.id}()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);color:#333;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.35);transition:transform 0.15s,background 0.15s;">▶</button>
+            <button id="vinyl-btn-${el.id}" onclick="vinylCtrl_${el.id}()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);color:#333;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.35);">▶</button>
           </div>
           <div style="width:${vsz}px;">
             <div style="height:3px;background:rgba(0,0,0,0.12);border-radius:2px;cursor:pointer;overflow:hidden;" onclick="vinylSeek_${el.id}(event,this)">
@@ -192,7 +192,7 @@ export function renderElement(el, th) {
           var a=document.getElementById("vinyl-aud-${el.id}"),isPlaying=false;
           var img=document.getElementById("vinyl-img-${el.id}");
           var btn=document.getElementById("vinyl-btn-${el.id}");
-          function fmt(s){if(isNaN(s))return"0:00";var m=Math.floor(s/60),sc=Math.floor(s%60);return m+":"+(sc<10?"0":"")+sc;}
+          function fmt(s){if(isNaN(s)||!isFinite(s))return"0:00";var m=Math.floor(s/60),sc=Math.floor(s%60);return m+":"+(sc<10?"0":"")+sc;}
           a.addEventListener("timeupdate",function(){if(a.duration){document.getElementById("vinyl-prog-${el.id}").style.width=(a.currentTime/a.duration*100)+"%";document.getElementById("vinyl-cur-${el.id}").textContent=fmt(a.currentTime);}});
           a.addEventListener("loadedmetadata",function(){document.getElementById("vinyl-dur-${el.id}").textContent=fmt(a.duration);});
           a.addEventListener("ended",function(){isPlaying=false;btn.textContent="▶";img.style.animationPlayState="paused";document.getElementById("vinyl-prog-${el.id}").style.width="0%";});
