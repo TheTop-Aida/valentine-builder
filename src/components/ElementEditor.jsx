@@ -230,4 +230,178 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
                 }} />
               </label>
               <button onClick={() => upd({ audioSrc:'', vinylAudioFileName:'' })} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
-           
+            </div>
+          ) : (
+            <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+              📂 เลือกไฟล์เพลง (.mp3 / .m4a / .ogg)
+              <input type="file" accept="audio/*" style={{display:'none'}} onChange={e => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => upd({ audioSrc: ev.target.result, vinylAudioFileName: file.name });
+                reader.readAsDataURL(file);
+              }} />
+            </label>
+          )}
+          {!(el.audioSrc && el.audioSrc.startsWith('data:')) && (
+            <>
+              <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
+              <input value={el.audioSrc || ''} onChange={e => upd({ audioSrc: e.target.value, vinylAudioFileName: '' })} style={inputStyle} placeholder="https://example.com/song.mp3" />
+            </>
+          )}
+        </div>
+      )}
+
+      {el.type === 'spacer' && (
+        <div>
+          <label style={labelStyle}>ความสูง (px)</label>
+          <input type="number" value={el.height || 20} onChange={e => upd({ height: +e.target.value })} style={inputStyle} min="4" max="300" />
+        </div>
+      )}
+
+      {el.type === 'divider' && (
+        <div>
+          <label style={labelStyle}>สีเส้นคั่น</label>
+          <input type="color" value={el.color || '#cccccc'} onChange={e => upd({ color: e.target.value })} style={{...inputStyle, height:'36px', padding:'2px 6px'}} />
+          <label style={labelStyle}>ความหนา (px)</label>
+          <input type="number" value={el.thickness || 1} onChange={e => upd({ thickness: +e.target.value })} style={inputStyle} min="1" max="10" />
+        </div>
+      )}
+
+      {el.type === 'counter' && (
+        <div>
+          <label style={labelStyle}>คำถาม</label>
+          <input value={el.question || ''} onChange={e => upd({ question: e.target.value })} style={inputStyle} placeholder="คุณรักฉันไหม?" />
+          <label style={labelStyle}>ข้อความปุ่ม ✅ YES</label>
+          <input value={el.yesLabel || ''} onChange={e => upd({ yesLabel: e.target.value })} style={inputStyle} placeholder="รักมากที่สุด 💚" />
+          <label style={labelStyle}>หน้าปลายทางเมื่อกด YES</label>
+          <select value={el.yesTarget || ''} onChange={e => upd({ yesTarget: e.target.value })} style={selStyle}>
+            <option value="">— ไม่ได้เชื่อมโยง —</option>
+            {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <label style={labelStyle}>ข้อความปุ่ม ❌ NO</label>
+          <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} placeholder="ไม่รัก 🚫" />
+        </div>
+      )}
+
+      {el.type === 'gift_buttons' && (
+        <div>
+          <label style={labelStyle}>ขนาดไอคอน (px)</label>
+          <input type="number" value={el.iconSize || 48} onChange={e => upd({ iconSize: +e.target.value })} style={inputStyle} min="24" max="120" />
+          {(el.gifts || [{ icon:'🎁', label:'ของขวัญ', target:'', color:'#ff6b9d' }]).map((g, i) => (
+            <div key={i} style={{border:'1px solid rgba(255,107,157,0.25)',borderRadius:'8px',padding:'10px',marginBottom:'8px'}}>
+              <label style={labelStyle}>ของขวัญ {i + 1}</label>
+              <input value={g.icon || '🎁'} onChange={e => { const gs = [...(el.gifts||[])]; gs[i] = {...gs[i], icon: e.target.value}; upd({gifts: gs}); }} style={inputStyle} placeholder="🎁" />
+              <input value={g.label || ''} onChange={e => { const gs = [...(el.gifts||[])]; gs[i] = {...gs[i], label: e.target.value}; upd({gifts: gs}); }} style={inputStyle} placeholder="ชื่อของขวัญ" />
+              <select value={g.target || ''} onChange={e => { const gs = [...(el.gifts||[])]; gs[i] = {...gs[i], target: e.target.value}; upd({gifts: gs}); }} style={selStyle}>
+                <option value="">— ไม่ได้เชื่อมโยง —</option>
+                {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          ))}
+          <button onClick={() => upd({ gifts: [...(el.gifts||[]), { icon:'🎁', label:'', target:'', color:'#ff6b9d' }] })} style={{width:'100%',padding:'7px',background:'rgba(255,107,157,0.15)',border:'1px solid rgba(255,107,157,0.3)',borderRadius:'7px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>+ เพิ่มของขวัญ</button>
+        </div>
+      )}
+
+      {el.type === 'gallery' && (
+        <div>
+          <label style={labelStyle}>จำนวนคอลัมน์</label>
+          <select value={el.cols || 2} onChange={e => upd({ cols: +e.target.value })} style={selStyle}>
+            <option value={1}>1 คอลัมน์</option>
+            <option value={2}>2 คอลัมน์</option>
+            <option value={3}>3 คอลัมน์</option>
+          </select>
+          <label style={labelStyle}>เพิ่มรูปภาพ</label>
+          <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
+            📸 เลือกรูปภาพ (เลือกได้หลายรูป)
+            <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e => {
+              const files = Array.from(e.target.files);
+              Promise.all(files.map(f => new Promise(res => { const r = new FileReader(); r.onload = ev => res(ev.target.result); r.readAsDataURL(f); }))).then(imgs => upd({ images: [...(el.images||[]), ...imgs] }));
+            }} />
+          </label>
+          {(el.images||[]).length > 0 && (
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'4px',marginBottom:'8px'}}>
+              {(el.images||[]).map((img, i) => (
+                <div key={i} style={{position:'relative'}}>
+                  <img src={img} style={{width:'100%',aspectRatio:'1',objectFit:'cover',borderRadius:'4px'}} alt="" />
+                  <button onClick={() => { const imgs = [...(el.images||[])]; imgs.splice(i,1); upd({images:imgs}); }} style={{position:'absolute',top:'2px',right:'2px',width:'18px',height:'18px',borderRadius:'50%',border:'none',background:'rgba(0,0,0,0.6)',color:'#fff',fontSize:'0.65rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {el.type === 'polaroid_gallery' && (
+        <div>
+          <label style={labelStyle}>จำนวนคอลัมน์</label>
+          <select value={el.cols || 2} onChange={e => upd({ cols: +e.target.value })} style={selStyle}>
+            <option value={1}>1 คอลัมน์</option>
+            <option value={2}>2 คอลัมน์</option>
+            <option value={3}>3 คอลัมน์</option>
+          </select>
+          {(el.photos || []).map((photo, i) => (
+            <div key={i} style={{border:'1px solid rgba(255,107,157,0.2)',borderRadius:'8px',padding:'8px',marginBottom:'8px'}}>
+              <label style={labelStyle}>รูปที่ {i+1}</label>
+              <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',width:'100%',padding:'8px',marginBottom:'6px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.35)',borderRadius:'6px',color:'#ff9a9e',fontSize:'0.75rem',cursor:'pointer',boxSizing:'border-box'}}>
+                📸 เลือกรูป
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const ps=[...(el.photos||[])];ps[i]={...ps[i],src:ev.target.result};upd({photos:ps});};r.readAsDataURL(f);}} />
+              </label>
+              {photo.src && <img src={photo.src} style={{width:'100%',maxHeight:'80px',objectFit:'cover',borderRadius:'4px',marginBottom:'6px'}} alt="" />}
+              <input value={photo.caption || ''} onChange={e => { const ps = [...(el.photos||[])]; ps[i] = {...ps[i], caption: e.target.value}; upd({photos: ps}); }} style={inputStyle} placeholder="คำบรรยายใต้รูป..." />
+              <button onClick={() => { const ps = [...(el.photos||[])]; ps.splice(i,1); upd({photos:ps}); }} style={{width:'100%',padding:'4px',background:'rgba(255,80,80,0.12)',border:'1px solid rgba(255,80,80,0.25)',borderRadius:'5px',color:'#ff8080',fontSize:'0.72rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>ลบรูปนี้</button>
+            </div>
+          ))}
+          <button onClick={() => upd({ photos: [...(el.photos||[]), { src:'', caption:'' }] })} style={{width:'100%',padding:'7px',background:'rgba(255,107,157,0.15)',border:'1px solid rgba(255,107,157,0.3)',borderRadius:'7px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>+ เพิ่มรูปโพลารอยด์</button>
+        </div>
+      )}
+
+      {/* ── ส่วนตั้งค่าร่วม ── */}
+      {(el.type === 'heading' || el.type === 'subtext') && (
+        <div>
+          <label style={labelStyle}>ฟอนต์</label>
+          <select value={el.fontFamily || 'Mali'} onChange={e => upd({ fontFamily: e.target.value })} style={selStyle}>
+            {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+          <label style={labelStyle}>ขนาดตัวอักษร (rem)</label>
+          <input type="number" step="0.1" value={el.fontSize || 1.2} onChange={e => upd({ fontSize: +e.target.value })} style={inputStyle} min="0.5" max="5" />
+          <label style={labelStyle}>สีตัวอักษร</label>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}}>
+            {['#ffffff','#000000','#ff6b9d','#e63462','#9b59b6','#3498db','#52b788','#f1c40f'].map(c => (
+              <button key={c} onClick={() => upd({ color: c })} style={{width:'24px',height:'24px',borderRadius:'50%',background:c,border: el.color===c ? '3px solid #fff' : '2px solid rgba(255,255,255,0.2)',cursor:'pointer',flexShrink:0}} />
+            ))}
+          </div>
+          <input type="color" value={el.color || '#ffffff'} onChange={e => upd({ color: e.target.value })} style={{...inputStyle, height:'36px', padding:'2px 6px'}} />
+          <label style={labelStyle}>การจัดวาง</label>
+          <select value={el.align || 'center'} onChange={e => upd({ align: e.target.value })} style={selStyle}>
+            <option value="left">ซ้าย</option>
+            <option value="center">กลาง</option>
+            <option value="right">ขวา</option>
+          </select>
+        </div>
+      )}
+
+      {(el.type === 'sticker' || el.type === 'player' || el.type === 'vinyl') && (
+        <div>
+          <label style={labelStyle}>ขนาด (px)</label>
+          <input type="number" value={el.size || 80} onChange={e => upd({ size: +e.target.value })} style={inputStyle} min="20" max="400" />
+        </div>
+      )}
+
+      {/* Animation */}
+      {el.type !== 'spacer' && el.type !== 'divider' && (
+        <div>
+          <label style={labelStyle}>แอนิเมชัน</label>
+          <select value={el.animation || 'none'} onChange={e => upd({ animation: e.target.value })} style={selStyle}>
+            {ANIMATIONS.map(a => <option key={a.id} value={a.id}>{a.icon} {a.label}</option>)}
+          </select>
+          {el.animation && el.animation !== 'none' && (
+            <>
+              <label style={labelStyle}>หน่วงเวลา (วินาที)</label>
+              <input type="number" step="0.1" value={el.delay || 0} onChange={e => upd({ delay: +e.target.value })} style={inputStyle} min="0" max="5" />
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
