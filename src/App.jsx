@@ -4,6 +4,130 @@ import { generateHTML } from './htmlExporter.js';
 import PageList from './components/PageList.jsx';
 import ElementEditor from './components/ElementEditor.jsx';
 import Preview from './components/Preview.jsx';
+import AdminPanel from './components/AdminPanel.jsx';
+import { useAuth } from './contexts/AuthContext.jsx';
+import { supabase } from './supabase.js';
+
+// ── Export Modal ──────────────────────────────────────────────────────────────
+const EXPORT_RATE_KEY = 'vb_export_rate';
+const EXPORT_MAX_ATTEMPTS = 3;
+const EXPORT_LOCKOUT_MS   = 4 * 60 * 1000;
+
+function getExportRate() { try { return JSON.parse(localStorage.getItem(EXPORT_RATE_KEY) || '{}'); } catch { return {}; } }
+function setExportRate(d) { localStorage.setItem(EXPORT_RATE_KEY, JSON.stringify(d)); }
+
+function ExportModal({ onClose, onSuccess }) {
+  const { user } = useAuth();
+  const [code,     setCode]     = useState('');
+  const [error,    setError]    = useState('');
+  const [busy,     setBusy]     = useState(false);
+  const [lockUntil, setLockUntil] = useState(0);
+  const [remaining, setRemaining] = useState(0);
+
+  useEffect(() => {
+    const d = getExportRate();
+    if (d.lockUntil && Date.now() < d.lockUntil) setLockUntil(d.lockUntil);
+  }, []);
+
+  useEffect(() => {
+    if (!lockUntil) return;
+    const iv = setInterval(() => {
+      const rem = lockUntil - Date.now();
+      if (rem <= 0) { setLockUntil(0); setRemaining(0); clearInterval(iv); }
+      else setRemaining(Math.ceil(rem / 1000));
+    }, 500);
+    return () => clearInterval(iv);
+  }, [lockUntil]);
+
+  const isLocked = lockUntil && Date.now() < lockUntil;
+
+  async function handleExport(e) {
+    e.preventDefault();
+    if (isLocked || busy || !code.trim()) return;
+    setBusy(true); setError('');
+    try {
+      const codeKey = code.trim().toUpperCase();
+
+      const { data: rec, error: fetchErr } = await supabase
+        .from('export_codes')
+        .select('*')
+        .eq('code', codeKey)
+        .single();
+
+      if (fetchErr || !rec)          throw new Error('รหัสไม่ถูกต้อง');
+      if (rec.used)                  throw new Error('รหัสนี้ถูกใช้แล้ว');
+      if (rec.user_id !== user.id)   throw new Error('รหัสนี้ไม่ใช่ของคุณ');
+      if (new Date(rec.expires_at) < new Date()) throw new Error('รหัสหมดอายุแล้ว');
+
+      // Mark used + increment export count
+      await supabase.from('export_codes').update({ used: true, used_at: new Date().toISOString() }).eq('code', codeKey);
+      await supabase.from('profiles').update({ exports_used: (rec.exports_used || 0) + 1 }).eq('id', user.id);
+
+      setExportRate({});
+      onSuccess();
+    } catch (err) {
+      const d = getExportRate();
+      const attempts = (d.attempts || 0) + 1;
+      if (attempts >= EXPORT_MAX_ATTEMPTS) {
+        const until = Date.now() + EXPORT_LOCKOUT_MS;
+        setExportRate({ lockUntil: until });
+        setLockUntil(until);
+      } else {
+        setExportRate({ attempts });
+        setError(`${err.message} — เหลือ ${EXPORT_MAX_ATTEMPTS - attempts} ครั้ง`);
+      }
+    } finally { setBusy(false); }
+  }
+
+  const lockMin = Math.floor(remaining / 60);
+  const lockSec = remaining % 60;
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9998, fontFamily:'Mitr,sans-serif' }}>
+      <div style={{ background:'#1a0a2e', border:'1px solid rgba(255,107,157,0.35)', borderRadius:'18px', padding:'32px', width:'100%', maxWidth:'360px', boxShadow:'0 20px 60px rgba(0,0,0,0.6)' }}>
+        <h3 style={{ color:'#ff9a9e', margin:'0 0 6px', fontSize:'1.1rem', textAlign:'center' }}>⬇️ Export HTML</h3>
+        <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'0.77rem', textAlign:'center', marginBottom:'22px' }}>
+          กรอก Export Code ที่ได้รับ เพื่อดาวน์โหลด
+        </p>
+
+        {isLocked ? (
+          <div style={{ textAlign:'center', padding:'16px', background:'rgba(255,80,80,0.1)', borderRadius:'12px' }}>
+            <p style={{ color:'#ff8080', fontSize:'0.88rem' }}>🔒 ลองใหม่อีก</p>
+            <p style={{ color:'#ff6060', fontSize:'1.4rem', fontWeight:700, fontFamily:'monospace' }}>
+              {lockMin > 0 ? `${lockMin}:${String(lockSec).padStart(2,'0')}` : `${lockSec} วิ`}
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleExport}>
+            <input
+              value={code}
+              onChange={e => setCode(e.target.value)}
+              placeholder="ABC123"
+              maxLength={6}
+              style={{
+                width:'100%', padding:'12px', textAlign:'center', letterSpacing:'6px',
+                fontFamily:'monospace', fontSize:'1.4rem', fontWeight:700,
+                background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,107,157,0.3)',
+                borderRadius:'10px', color:'#f0d0ff', outline:'none',
+                boxSizing:'border-box', marginBottom:'8px', textTransform:'uppercase',
+              }}
+            />
+            {error && <p style={{ color:'#ff8080', fontSize:'0.75rem', textAlign:'center', marginBottom:'10px' }}>{error}</p>}
+            <button type="submit" disabled={busy} style={{
+              width:'100%', padding:'11px', background:'linear-gradient(135deg,#ff6b9d,#e63462)',
+              border:'none', borderRadius:'10px', color:'#fff', fontFamily:'Mitr,sans-serif',
+              fontSize:'0.95rem', fontWeight:600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.7 : 1,
+            }}>{busy ? '⏳ กำลังตรวจสอบ...' : '✅ ยืนยัน & Export'}</button>
+          </form>
+        )}
+
+        <button onClick={onClose} style={{ marginTop:'12px', width:'100%', padding:'8px', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:'8px', color:'#aaa', cursor:'pointer', fontFamily:'Mitr,sans-serif' }}>
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function showToast(msg, duration = 2200) {
   const el = document.getElementById('global-toast');
@@ -46,6 +170,9 @@ function getInitialTemplate() {
 }
 
 export default function App() {
+  const { user, isAdmin, logout } = useAuth();
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [pages, setPages] = useState(() => {
     try { const saved = localStorage.getItem('vb_pages_v5'); if (saved) return JSON.parse(saved); } catch(e) {}
     return getInitialTemplate();
@@ -215,6 +342,15 @@ export default function App() {
     showToast('✅ Export สำเร็จ! ดาวน์โหลดแล้ว');
   }
 
+  function handleExportClick() {
+    if (isAdmin) {
+      // Admin export โดยตรงโดยไม่ต้องใช้ code
+      exportCompleteHTML();
+    } else {
+      setShowExportModal(true);
+    }
+  }
+
   const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
 
   return (
@@ -228,7 +364,17 @@ export default function App() {
           <button className="btn-undo" onClick={handleRedo} disabled={!canRedo}>↪️ Redo</button>
         </div>
         <div className="topbar-actions">
-          <button className="btn-top btn-export" onClick={exportCompleteHTML}>⬇️ Export HTML</button>
+          {isAdmin && (
+            <button className="btn-top" onClick={() => setShowAdminPanel(true)}
+              style={{ background:'rgba(255,200,100,0.15)', border:'1px solid rgba(255,200,100,0.3)', color:'#ffd166' }}>
+              ⚙️ Admin
+            </button>
+          )}
+          <button className="btn-top btn-export" onClick={handleExportClick}>⬇️ Export HTML</button>
+          <button onClick={logout} title="ออกจากระบบ"
+            style={{ padding:'6px 12px', background:'rgba(255,80,80,0.15)', border:'1px solid rgba(255,80,80,0.3)', borderRadius:'8px', color:'#ff8080', cursor:'pointer', fontSize:'0.8rem', fontFamily:'Mitr,sans-serif' }}>
+            🚪 ออก
+          </button>
         </div>
       </div>
 
@@ -475,6 +621,17 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <ExportModal
+          onClose={() => setShowExportModal(false)}
+          onSuccess={() => { setShowExportModal(false); exportCompleteHTML(); }}
+        />
+      )}
+
+      {/* Admin Panel */}
+      {showAdminPanel && <AdminPanel onClose={() => setShowAdminPanel(false)} />}
     </div>
   );
 }
