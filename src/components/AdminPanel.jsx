@@ -3,7 +3,11 @@ import { supabase, supabaseSecondary } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 function genCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  // ใช้ crypto.getRandomValues() แทน Math.random() เพื่อความปลอดภัย
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // ตัดตัวที่สับสนออก (0,O,1,I)
+  const arr   = new Uint8Array(6);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => chars[b % chars.length]).join('');
 }
 
 export default function AdminPanel({ onClose }) {
@@ -47,8 +51,9 @@ export default function AdminPanel({ onClose }) {
 
   async function createUser() {
     if (!newUser.trim() || !newPass.trim()) { setCreateMsg('❌ กรุณากรอกข้อมูลให้ครบ'); return; }
-    setCreateMsg('⏳ กำลังสร้าง...');
     const uname = newUser.trim().toLowerCase();
+    if (!/^[a-z0-9_-]+$/.test(uname)) { setCreateMsg('❌ Username ใช้ได้เฉพาะ a-z, 0-9, _ และ - เท่านั้น (ห้ามมี @ หรือ .)'); return; }
+    setCreateMsg('⏳ กำลังสร้าง...');
     const email = `${uname}@vb.app`;
 
     // ตรวจ username ซ้ำ
