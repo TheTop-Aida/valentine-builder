@@ -315,45 +315,42 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             placeholder={'คิดดีๆ นะ 🥺\nโอกาสสุดท้ายจริงๆ 😡\nยอมรับเถอะว่ารักเค้า!\nกด YES เถอะนะ...'}
           />
 
-          {/* ── Reaction Images ─────────────────────────────────── */}
-          <label style={labelStyle}>🎭 ชุดรูปภาพ Reaction ตามลำดับกด No</label>
-          <p style={{ color:'rgba(255,255,255,0.4)', fontSize:'0.7rem', margin:'-4px 0 8px' }}>
-            รูปที่ 1 = กด No ครั้งแรก, รูปที่ 2 = ครั้งที่ 2 ... (แสดงเหนือคำถาม)
-          </p>
+          {/* ── GIF Sticker ─────────────────────────────────────── */}
+          <label style={labelStyle}>🎭 สติกเกอร์ GIF เหนือคำถาม</label>
 
-          {/* ตารางรูป reaction ที่มีอยู่ */}
-          {(el.reactionImages || []).length > 0 && (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', marginBottom:'8px' }}>
-              {(el.reactionImages || []).map((src, i) => (
-                <div key={i} style={{ position:'relative', borderRadius:'8px', overflow:'hidden', border:'1px solid rgba(255,107,157,0.3)' }}>
-                  <div style={{ position:'absolute', top:'3px', left:'4px', background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:'0.6rem', borderRadius:'4px', padding:'1px 5px', fontFamily:'Mitr,sans-serif' }}>#{i+1}</div>
-                  <img src={src} style={{ width:'100%', aspectRatio:'1', objectFit:'cover', display:'block' }} alt={`reaction ${i+1}`} />
-                  <button
-                    onClick={() => { const imgs = [...(el.reactionImages||[])]; imgs.splice(i,1); upd({ reactionImages: imgs }); }}
-                    style={{ position:'absolute', top:'2px', right:'2px', width:'18px', height:'18px', borderRadius:'50%', border:'none', background:'rgba(220,50,50,0.8)', color:'#fff', fontSize:'0.65rem', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', padding:0 }}
-                  >✕</button>
-                </div>
-              ))}
+          {/* Preview */}
+          {el.stickerGif && (
+            <div style={{ textAlign:'center', marginBottom:'8px' }}>
+              <img src={el.stickerGif} style={{ maxWidth: `${el.stickerSize || 150}px`, maxHeight: `${el.stickerSize || 150}px`, objectFit:'contain', borderRadius:'10px', border:'1px solid rgba(255,107,157,0.3)' }} alt="sticker preview" />
+              <button onClick={() => upd({ stickerGif: '' })} style={{ display:'block', margin:'6px auto 0', padding:'3px 12px', background:'rgba(220,50,50,0.12)', border:'1px solid rgba(220,50,50,0.3)', borderRadius:'6px', color:'#ff8080', fontSize:'0.72rem', cursor:'pointer', fontFamily:'Mitr,sans-serif' }}>🗑️ ลบ GIF</button>
             </div>
           )}
 
-          {/* ปุ่มเพิ่มรูป */}
-          <label style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', width:'100%', padding:'9px', background:'rgba(255,107,157,0.08)', border:'2px dashed rgba(255,107,157,0.35)', borderRadius:'8px', color:'#ff9a9e', fontSize:'0.78rem', cursor:'pointer', boxSizing:'border-box', marginBottom:'10px' }}>
-            🖼️ เพิ่มรูป Reaction (เลือกได้หลายรูป)
-            <input type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => {
-              const files = Array.from(e.target.files);
-              Promise.all(files.map(f => new Promise(res => {
-                const r = new FileReader(); r.onload = ev => res(ev.target.result); r.readAsDataURL(f);
-              }))).then(imgs => upd({ reactionImages: [...(el.reactionImages||[]), ...imgs] }));
+          {/* URL input */}
+          <input
+            value={el.stickerGif && el.stickerGif.startsWith('data:') ? '' : (el.stickerGif || '')}
+            onChange={e => upd({ stickerGif: e.target.value })}
+            style={inputStyle}
+            placeholder="วาง URL ลิ้งค์ GIF เช่น https://media.giphy.com/..."
+          />
+
+          {/* Upload GIF */}
+          <label style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', width:'100%', padding:'8px', background:'rgba(255,107,157,0.07)', border:'2px dashed rgba(255,107,157,0.3)', borderRadius:'8px', color:'#ff9a9e', fontSize:'0.78rem', cursor:'pointer', boxSizing:'border-box', marginBottom:'10px' }}>
+            📁 หรืออัปโหลดไฟล์ GIF
+            <input type="file" accept="image/gif,image/*" style={{ display:'none' }} onChange={e => {
+              const f = e.target.files[0]; if (!f) return;
+              const r = new FileReader(); r.onload = ev => upd({ stickerGif: ev.target.result }); r.readAsDataURL(f);
             }} />
           </label>
 
-          {(el.reactionImages || []).length > 0 && (
-            <button
-              onClick={() => upd({ reactionImages: [] })}
-              style={{ width:'100%', padding:'6px', background:'rgba(220,50,50,0.1)', border:'1px solid rgba(220,50,50,0.3)', borderRadius:'7px', color:'#ff8080', fontSize:'0.75rem', cursor:'pointer', fontFamily:'Mitr,sans-serif', marginBottom:'6px' }}
-            >🗑️ ลบรูป Reaction ทั้งหมด</button>
-          )}
+          {/* Size slider */}
+          <label style={labelStyle}>ขนาด GIF: {el.stickerSize || 150} px</label>
+          <input
+            type="range" min="60" max="320" step="10"
+            value={el.stickerSize || 150}
+            onChange={e => upd({ stickerSize: +e.target.value })}
+            style={{ width:'100%', marginBottom:'10px', accentColor:'#ff6b9d' }}
+          />
         </div>
       )}
 

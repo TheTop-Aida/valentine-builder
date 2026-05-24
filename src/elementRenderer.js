@@ -247,9 +247,10 @@ export function renderElement(el, th) {
         </div>`;
     }
     case 'counter': {
-      const reactionImgs = el.reactionImages || [];
-      const reactionHtml = reactionImgs.length > 0
-        ? `<img id="react-img-${el.id}" src="${reactionImgs[0]}" class="reaction-img" style="margin-bottom:8px;" />`
+      const stickerSrc  = el.stickerGif || '';
+      const stickerSize = el.stickerSize || 150;
+      const reactionHtml = stickerSrc
+        ? `<img id="react-img-${el.id}" src="${stickerSrc}" style="width:${stickerSize}px;height:${stickerSize}px;object-fit:contain;border-radius:12px;margin-bottom:6px;transition:transform 0.3s cubic-bezier(.34,1.56,.64,1);" />`
         : '';
       const noAnim   = el.noAnim   || 'none';
       const noTaunts = (el.noTaunts || []).filter(t => t.trim());
