@@ -269,29 +269,53 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
 
       {el.type === 'counter' && (
         <div>
-          <label style={labelStyle}>คำถาม</label>
-          <input value={el.question || ''} onChange={e => upd({ question: e.target.value })} style={inputStyle} placeholder="คุณรักฉันไหม?" />
-          <label style={labelStyle}>ข้อความปุ่ม ✅ YES</label>
-          <input value={el.yesLabel || ''} onChange={e => upd({ yesLabel: e.target.value })} style={inputStyle} placeholder="รักมากที่สุด 💚" />
-          <label style={labelStyle}>หน้าปลายทางเมื่อกด YES</label>
+          <label style={labelStyle}>หัวข้อคำถามชวนตอบ</label>
+          <input value={el.question || ''} onChange={e => upd({ question: e.target.value })} style={inputStyle} placeholder="วันวาเลนไทน์ปีนี้... ตกลงเธอรักเค้าไหม? 🥺" />
+
+          <div style={{ display:'flex', gap:'8px', alignItems:'flex-end' }}>
+            <div style={{ flex:1 }}>
+              <label style={labelStyle}>ข้อความปุ่มตกลง (Yes)</label>
+              <input value={el.yesLabel || ''} onChange={e => upd({ yesLabel: e.target.value })} style={inputStyle} placeholder="รักที่สุดเลยนะ 💚" />
+            </div>
+            <div style={{ width:'64px' }}>
+              <label style={labelStyle}>สีปุ่ม Yes</label>
+              <input type="color" value={el.yesColor || '#4caf50'} onChange={e => upd({ yesColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'38px', cursor:'pointer', marginBottom:0 }} />
+            </div>
+          </div>
+
+          <label style={labelStyle}>หากดดตกลงแล้วไปหน้าไหน</label>
           <select value={el.yesTarget || ''} onChange={e => upd({ yesTarget: e.target.value })} style={selStyle}>
             <option value="">— ไม่ได้เชื่อมโยง —</option>
             {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <label style={labelStyle}>ข้อความปุ่ม ❌ NO</label>
-          <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} placeholder="ไม่รัก 🚫" />
-          <label style={labelStyle}>แอนิเมชันปุ่ม NO</label>
+
+          <div style={{ display:'flex', gap:'8px', alignItems:'flex-end' }}>
+            <div style={{ flex:1 }}>
+              <label style={labelStyle}>ข้อความปุ่มปฏิเสธ (No)</label>
+              <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} placeholder="ไม่รักหรอก 🚫" />
+            </div>
+            <div style={{ width:'64px' }}>
+              <label style={labelStyle}>สีปุ่ม No</label>
+              <input type="color" value={el.noColor || '#e63462'} onChange={e => upd({ noColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'38px', cursor:'pointer', marginBottom:0 }} />
+            </div>
+          </div>
+
+          <label style={labelStyle}>ลูกเล่นเมื่อพยายามกดปุ่ม No</label>
           <select value={el.noAnim || 'none'} onChange={e => upd({ noAnim: e.target.value })} style={selStyle}>
             <option value="none">□ ไม่มี</option>
-            <option value="shrink">🔻 ย่อเล็กลงทุกครั้งที่กด</option>
-            <option value="runaway">🏃 หนีเมาส์</option>
+            <option value="grow_shrink">🟢 ปุ่ม Yes ขยาย และปุ่ม No หดจนสลายไป</option>
+            <option value="runaway">🏃 ปุ่ม No หนีเมาส์</option>
             <option value="shake">📳 สั่น</option>
             <option value="disappear">👻 หายไปเรื่อยๆ</option>
           </select>
-          <label style={labelStyle}>สีปุ่ม YES</label>
-          <input type="color" value={el.yesColor || '#4caf50'} onChange={e => upd({ yesColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'36px', cursor:'pointer' }} />
-          <label style={labelStyle}>สีปุ่ม NO</label>
-          <input type="color" value={el.noColor || '#e63462'} onChange={e => upd({ noColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'36px', cursor:'pointer' }} />
+
+          <label style={labelStyle}>ข้อความบ่นเมื่อกด/เล็ง No (แยกบรรทัดกวน ๆ)</label>
+          <textarea
+            value={(el.noTaunts || []).join('\n')}
+            onChange={e => upd({ noTaunts: e.target.value.split('\n') })}
+            style={{ ...inputStyle, height:'90px', resize:'vertical', fontFamily:'Mitr,sans-serif', lineHeight:1.6 }}
+            placeholder={'กดยังไงก็หนีไม่พ้นหรอก 😏\nงื้อ กด YES เหอะนา\nหัวใจของเธอรู้ดีอยู่แล้ว 💕'}
+          />
         </div>
       )}
 

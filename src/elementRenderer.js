@@ -251,36 +251,55 @@ export function renderElement(el, th) {
       const reactionHtml = reactionImgs.length > 0
         ? `<img id="react-img-${el.id}" src="${reactionImgs[0]}" class="reaction-img" style="margin-bottom:8px;" />`
         : '';
-      const noAnim = el.noAnim || 'none';
+      const noAnim   = el.noAnim   || 'none';
+      const noTaunts = (el.noTaunts || []).filter(t => t.trim());
+      const tauntsJson = JSON.stringify(noTaunts).replace(/'/g, '&#39;');
 
-      // inline handlers — ทำงานได้ทั้งใน preview sandbox และ export
-      const noOnClick = noAnim === 'shrink'
-        ? `var s=parseFloat(this.dataset.scale||'1')-0.15; s=Math.max(0.3,s); this.dataset.scale=s; this.style.transform='scale('+s+')'; this.style.opacity=s;`
-        : noAnim === 'disappear'
-        ? `var o=parseFloat(this.dataset.op||'1')-0.25; o=Math.max(0,o); this.dataset.op=o; this.style.opacity=o; if(o<=0)this.style.pointerEvents='none';`
-        : noAnim === 'shake'
-        ? `this.style.animation='none'; void this.offsetWidth; this.style.animation='shakeNo_${el.id} 0.5s ease';`
+      // ข้อความบ่น — โชว์แบบสุ่มเมื่อโต้ตอบปุ่ม NO
+      const tauntCode = noTaunts.length > 0
+        ? `var _td=document.getElementById('taunt-${el.id}');var _ts=JSON.parse(this.dataset.taunts||'[]');if(_ts.length){_td.textContent=_ts[Math.floor(Math.random()*_ts.length)];_td.style.opacity='1';}`
         : '';
 
+      // onclick handler
+      let noOnClick = '';
+      if (noAnim === 'grow_shrink') {
+        noOnClick = `var _y=document.getElementById('yes-${el.id}');var _ys=parseFloat(_y.dataset.scale||'1')+0.12;_ys=Math.min(2,_ys);_y.dataset.scale=_ys;_y.style.transform='scale('+_ys+')';var _ns=parseFloat(this.dataset.scale||'1')-0.2;_ns=Math.max(0,_ns);this.dataset.scale=_ns;this.style.transform='scale('+_ns+')';this.style.opacity=_ns;if(_ns<=0)this.style.pointerEvents='none';${tauntCode}`;
+      } else if (noAnim === 'shake') {
+        noOnClick = `this.style.animation='none';void this.offsetWidth;this.style.animation='shakeNo_${el.id} 0.5s ease';${tauntCode}`;
+      } else if (noAnim === 'disappear') {
+        noOnClick = `var _o=parseFloat(this.dataset.op||'1')-0.25;_o=Math.max(0,_o);this.dataset.op=_o;this.style.opacity=_o;if(_o<=0)this.style.pointerEvents='none';${tauntCode}`;
+      } else if (noAnim === 'shrink') {
+        noOnClick = `var _s=parseFloat(this.dataset.scale||'1')-0.15;_s=Math.max(0.3,_s);this.dataset.scale=_s;this.style.transform='scale('+_s+')';this.style.opacity=_s;${tauntCode}`;
+      } else {
+        noOnClick = tauntCode;
+      }
+
+      // onmouseover handler (runaway + taunt)
       const noOnMouseOver = noAnim === 'runaway'
-        ? `var p=this.parentElement; var mxX=Math.max(0,p.offsetWidth-this.offsetWidth-8); var rx=(Math.random()*mxX)|0; var ry=((Math.random()*60)-30)|0; this.style.transform='translate('+rx+'px,'+ry+'px)';`
+        ? `var _p=this.parentElement;var _mxX=Math.max(0,(_p.offsetWidth||200)-this.offsetWidth-12);var _rx=(Math.random()*_mxX)|0;var _ry=((Math.random()*50)-25)|0;this.style.transform='translate('+_rx+'px,'+_ry+'px)';${tauntCode}`
         : '';
 
       const shakeStyle = noAnim === 'shake'
         ? `<style>@keyframes shakeNo_${el.id}{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}</style>`
         : '';
 
+      const tauntDiv = noTaunts.length > 0
+        ? `<div id="taunt-${el.id}" style="min-height:24px;${color} font-size:0.88rem;font-weight:600;text-align:center;opacity:0;transition:opacity 0.3s;padding:2px 8px;"></div>`
+        : '';
+
       return `
         ${shakeStyle}
-        <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; ${animDelay}">
+        <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; z-index:2; ${animDelay}">
           ${reactionHtml}
           <h3 id="q-text-${el.id}" style="${fontFamily}${fontSize}${color} font-weight:600; text-align:center; transition:all 0.3s;">${el.question || 'คุณรักฉันไหม?'}</h3>
-          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:60px; width:100%; position:relative;">
-            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.yesColor || th.yes || '#4caf50'}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; white-space:nowrap;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
+          ${tauntDiv}
+          <div style="display:flex; gap:14px; justify-content:center; align-items:center; min-height:50px; width:100%; overflow:visible; position:relative;">
+            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:10px 22px; font-size:15px; font-weight:700; border:none; border-radius:22px; background:${el.yesColor || th.yes || '#4caf50'}; color:#fff; cursor:pointer; box-shadow:0 3px 12px rgba(0,0,0,0.15); transition:all 0.35s ease; white-space:nowrap; transform-origin:center;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
             <button id="no-${el.id}"
+              data-taunts='${tauntsJson}'
               onclick="${noOnClick}"
               onmouseover="${noOnMouseOver}"
-              style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.noColor || th.no || '#e63462'}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.4s ease; white-space:nowrap;">${el.noLabel || 'ไม่รัก 🚫'}</button>
+              style="z-index:10; padding:10px 22px; font-size:15px; font-weight:700; border:none; border-radius:22px; background:${el.noColor || th.no || '#e63462'}; color:#fff; cursor:pointer; box-shadow:0 3px 12px rgba(0,0,0,0.15); transition:all 0.35s ease; white-space:nowrap; transform-origin:center;">${el.noLabel || 'ไม่รัก 🚫'}</button>
           </div>
         </div>`;
     }
