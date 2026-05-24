@@ -301,20 +301,18 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           </div>
 
           <label style={labelStyle}>ลูกเล่นเมื่อพยายามกดปุ่ม No</label>
-          <select value={el.noAnim || 'none'} onChange={e => upd({ noAnim: e.target.value })} style={selStyle}>
-            <option value="none">□ ไม่มี</option>
-            <option value="grow_shrink">🟢 ปุ่ม Yes ขยาย และปุ่ม No หดจนสลายไป</option>
+          <select value={el.noBehavior || 'growYes'} onChange={e => upd({ noBehavior: e.target.value })} style={selStyle}>
+            <option value="growYes">🟢 ปุ่ม Yes ขยาย และปุ่ม No หดจนสลายไป</option>
             <option value="runaway">🏃 ปุ่ม No หนีเมาส์</option>
-            <option value="shake">📳 สั่น</option>
-            <option value="disappear">👻 หายไปเรื่อยๆ</option>
+            <option value="fast">⚡ ปุ่ม No หนีเมาส์ (เร็วมาก)</option>
           </select>
 
           <label style={labelStyle}>ข้อความบ่นเมื่อกด/เล็ง No (แยกบรรทัดกวน ๆ)</label>
           <textarea
-            value={(el.noTaunts || []).join('\n')}
-            onChange={e => upd({ noTaunts: e.target.value.split('\n') })}
+            value={(el.noMessages || []).join('\n')}
+            onChange={e => upd({ noMessages: e.target.value.split('\n') })}
             style={{ ...inputStyle, height:'90px', resize:'vertical', fontFamily:'Mitr,sans-serif', lineHeight:1.6 }}
-            placeholder={'กดยังไงก็หนีไม่พ้นหรอก 😏\nงื้อ กด YES เหอะนา\nหัวใจของเธอรู้ดีอยู่แล้ว 💕'}
+            placeholder={'คิดดีๆ นะ 🥺\nโอกาสสุดท้ายจริงๆ 😡\nยอมรับเถอะว่ารักเค้า!\nกด YES เถอะนะ...'}
           />
         </div>
       )}
