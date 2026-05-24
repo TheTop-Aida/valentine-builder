@@ -280,6 +280,18 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           </select>
           <label style={labelStyle}>ข้อความปุ่ม ❌ NO</label>
           <input value={el.noLabel || ''} onChange={e => upd({ noLabel: e.target.value })} style={inputStyle} placeholder="ไม่รัก 🚫" />
+          <label style={labelStyle}>แอนิเมชันปุ่ม NO</label>
+          <select value={el.noAnim || 'none'} onChange={e => upd({ noAnim: e.target.value })} style={selStyle}>
+            <option value="none">□ ไม่มี</option>
+            <option value="shrink">🔻 ย่อเล็กลงทุกครั้งที่กด</option>
+            <option value="runaway">🏃 หนีเมาส์</option>
+            <option value="shake">📳 สั่น</option>
+            <option value="disappear">👻 หายไปเรื่อยๆ</option>
+          </select>
+          <label style={labelStyle}>สีปุ่ม YES</label>
+          <input type="color" value={el.yesColor || '#4caf50'} onChange={e => upd({ yesColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'36px', cursor:'pointer' }} />
+          <label style={labelStyle}>สีปุ่ม NO</label>
+          <input type="color" value={el.noColor || '#e63462'} onChange={e => upd({ noColor: e.target.value })} style={{ ...inputStyle, padding:'4px', height:'36px', cursor:'pointer' }} />
         </div>
       )}
 

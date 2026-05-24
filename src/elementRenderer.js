@@ -251,15 +251,62 @@ export function renderElement(el, th) {
       const reactionHtml = reactionImgs.length > 0
         ? `<img id="react-img-${el.id}" src="${reactionImgs[0]}" class="reaction-img" style="margin-bottom:8px;" />`
         : '';
+      const noAnim = el.noAnim || 'none';
+      const noAnimScript = (() => {
+        const btnId = `no-${el.id}`;
+        if (noAnim === 'shrink') return `
+          (function(){
+            var btn=document.getElementById('${btnId}'), scale=1;
+            btn.addEventListener('click',function(){
+              scale=Math.max(0.3, scale-0.15);
+              btn.style.transform='scale('+scale+')';
+              btn.style.opacity=scale;
+            });
+          })();`;
+        if (noAnim === 'runaway') return `
+          (function(){
+            var btn=document.getElementById('${btnId}');
+            btn.style.position='relative';
+            btn.addEventListener('mouseover',function(){
+              var wrap=btn.parentElement;
+              var maxX=wrap.offsetWidth-btn.offsetWidth-20;
+              var maxY=40;
+              var rx=(Math.random()*maxX)|0;
+              var ry=((Math.random()*maxY)-maxY/2)|0;
+              btn.style.transform='translate('+rx+'px,'+ry+'px)';
+            });
+          })();`;
+        if (noAnim === 'shake') return `
+          (function(){
+            var btn=document.getElementById('${btnId}');
+            btn.addEventListener('click',function(){
+              btn.style.animation='none';
+              void btn.offsetWidth;
+              btn.style.animation='shakeNo 0.5s ease';
+            });
+          })();`;
+        if (noAnim === 'disappear') return `
+          (function(){
+            var btn=document.getElementById('${btnId}'), op=1;
+            btn.addEventListener('click',function(){
+              op=Math.max(0, op-0.25);
+              btn.style.opacity=op;
+              if(op<=0) btn.style.pointerEvents='none';
+            });
+          })();`;
+        return '';
+      })();
       return `
         <div class="${animClass}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; ${animDelay}">
           ${reactionHtml}
           <h3 id="q-text-${el.id}" style="${fontFamily}${fontSize}${color} font-weight:600; text-align:center; transition:all 0.3s;">${el.question || 'คุณรักฉันไหม?'}</h3>
-          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:45px; width:100%;">
-            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.yesColor || th.yes}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; white-space:nowrap;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
-            <button id="no-${el.id}" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.noColor || th.no}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; white-space:nowrap; overflow:hidden;">${el.noLabel || 'ไม่รัก 🚫'}</button>
+          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:60px; width:100%; overflow:hidden;">
+            <button id="yes-${el.id}" onclick="goTo('${el.yesTarget||''}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.yesColor || th.yes || '#4caf50'}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; white-space:nowrap;">${el.yesLabel || 'รักมากที่สุด 💚'}</button>
+            <button id="no-${el.id}" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${el.noColor || th.no || '#e63462'}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.4s ease; white-space:nowrap;">${el.noLabel || 'ไม่รัก 🚫'}</button>
           </div>
-        </div>`;
+        </div>
+        <style>#no-${el.id}{animation-fill-mode:both;}@keyframes shakeNo{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}</style>
+        <script>${noAnimScript}</script>`;
     }
     default:
       return '';
