@@ -49,12 +49,96 @@ export function renderElement(el, th) {
       return `<hr style="border:none; border-top:${el.thickness||1}px solid ${el.color||th.accent}33; margin:12px 0; width:100%; z-index:2;"/>`;
     case 'spacer':
       return `<div style="height:${el.height||20}px; width:100%; z-index:2;"></div>`;
-    case 'letter':
-      return `
-        <div class="${animClass}" style="${animDelay} z-index:2; background:linear-gradient(135deg, rgba(255,107,157,.04), rgba(255,107,157,.01)); border:2px dashed ${th.accent}; border-radius:16px; padding:18px; text-align:left; width:100%;">
-          <div style="font-size:1.8rem; text-align:center; margin-bottom:8px; cursor:pointer;" onclick="var s=this.nextElementSibling; s.style.display=s.style.display==='none'?'block':'none';">✉️ <span style="font-size:0.75rem; color:${th.accent}; display:inline;">(คลิกเปิดจดหมาย)</span></div>
-          <div style="display:none; transition:all 0.3s; ${fontFamily}${fontSize}${color} line-height:1.6; white-space:pre-wrap;">${el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...'}</div>
-        </div>`;
+    case 'letter': {
+      const lt = el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...';
+      const acc = th.accent || '#ff6b9d';
+      const sid = el.id;
+      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center;">
+  <style>
+    #vbenv-${sid}{width:min(300px,100%);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    #vbenv-${sid} .vbflap{
+      width:0;height:0;
+      border-left:min(150px,50%)solid transparent;
+      border-right:min(150px,50%)solid transparent;
+      border-top:min(115px,38%)solid ${acc};
+      position:relative;z-index:3;
+      transform-origin:50% 0;
+      transition:transform .55s cubic-bezier(.4,0,.2,1);
+      filter:brightness(.88) drop-shadow(0 2px 4px rgba(0,0,0,.12));
+    }
+    #vbenv-${sid}.open .vbflap{transform:perspective(600px)rotateX(-180deg);}
+    #vbenv-${sid} .vbbody{
+      background:linear-gradient(160deg,#ffd6e8 0%,#fff0f7 55%,#ffe4f0 100%);
+      border:1.5px solid ${acc}55;
+      border-top:none;
+      border-radius:0 0 16px 16px;
+      height:160px;
+      position:relative;overflow:hidden;
+      box-shadow:0 8px 28px ${acc}30,0 2px 8px rgba(0,0,0,.08);
+    }
+    #vbenv-${sid} .vbbody::before{content:'';position:absolute;top:0;left:0;width:0;height:0;border-bottom:80px solid ${acc}18;border-right:150px solid transparent;}
+    #vbenv-${sid} .vbbody::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-bottom:80px solid ${acc}12;border-left:150px solid transparent;}
+    #vbenv-${sid} .vbseal{
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      font-size:2.6rem;z-index:4;
+      transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;
+      filter:drop-shadow(0 3px 8px ${acc}90);
+      animation:vbpulse-${sid} 2s ease-in-out infinite;
+    }
+    @keyframes vbpulse-${sid}{0%,100%{transform:translate(-50%,-50%)scale(1);}50%{transform:translate(-50%,-50%)scale(1.12);}}
+    #vbenv-${sid}.open .vbseal{transform:translate(-50%,-50%)scale(0)rotate(120deg)!important;opacity:0;animation:none;}
+    #vbltr-${sid}{
+      width:min(272px,calc(100% - 8px));
+      background:linear-gradient(#fffbfd,#fff5f9);
+      border:1px solid ${acc}40;
+      border-top:3px solid ${acc};
+      border-radius:0 0 12px 12px;
+      max-height:0;overflow:hidden;
+      transition:max-height .8s cubic-bezier(.25,.46,.45,.94);
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+    }
+    #vbltr-inner-${sid}{
+      padding:20px 18px 22px;
+      background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}22 28px);
+      background-size:100% 28px;
+    }
+    #vbhint-${sid}{font-size:.72rem;color:${acc};margin-top:8px;font-family:Mitr,sans-serif;opacity:.85;transition:opacity .3s;letter-spacing:.5px;}
+  </style>
+  <div id="vbenv-${sid}" onclick="vbTog_${sid}()">
+    <div class="vbflap"></div>
+    <div class="vbbody">
+      <div class="vbseal">💌</div>
+    </div>
+    <div id="vbltr-${sid}">
+      <div id="vbltr-inner-${sid}">
+        <div style="text-align:center;font-size:.95rem;color:${acc};font-family:Mitr,sans-serif;margin-bottom:12px;letter-spacing:1px;">~ ถึงคนที่ฉันรัก ~</div>
+        <div style="${fontFamily}${fontSize}${color} line-height:1.9;white-space:pre-wrap;font-size:0.88rem;">${lt}</div>
+        <div style="text-align:right;margin-top:16px;font-size:1.3rem;">💕</div>
+      </div>
+    </div>
+  </div>
+  <div id="vbhint-${sid}">💌 แตะเพื่อเปิดจดหมาย</div>
+  <script>(function(){
+    window.vbTog_${sid}=function(){
+      var env=document.getElementById('vbenv-${sid}');
+      var ltr=document.getElementById('vbltr-${sid}');
+      var inner=document.getElementById('vbltr-inner-${sid}');
+      var hint=document.getElementById('vbhint-${sid}');
+      var isOpen=env.classList.contains('open');
+      if(!isOpen){
+        env.classList.add('open');
+        ltr.style.maxHeight=inner.scrollHeight+'px';
+        hint.textContent='💌 แตะเพื่อปิดจดหมาย';
+      }else{
+        env.classList.remove('open');
+        ltr.style.maxHeight='0';
+        hint.textContent='💌 แตะเพื่อเปิดจดหมาย';
+      }
+    };
+  })()</script>
+</div>`;}
+
     case 'player': {
       const cvr = el.coverSrc || '';
       const aSrc = el.audioSrc || '';
