@@ -314,6 +314,46 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             style={{ ...inputStyle, height:'90px', resize:'vertical', fontFamily:'Mitr,sans-serif', lineHeight:1.6 }}
             placeholder={'คิดดีๆ นะ 🥺\nโอกาสสุดท้ายจริงๆ 😡\nยอมรับเถอะว่ารักเค้า!\nกด YES เถอะนะ...'}
           />
+
+          {/* ── Reaction Images ─────────────────────────────────── */}
+          <label style={labelStyle}>🎭 ชุดรูปภาพ Reaction ตามลำดับกด No</label>
+          <p style={{ color:'rgba(255,255,255,0.4)', fontSize:'0.7rem', margin:'-4px 0 8px' }}>
+            รูปที่ 1 = กด No ครั้งแรก, รูปที่ 2 = ครั้งที่ 2 ... (แสดงเหนือคำถาม)
+          </p>
+
+          {/* ตารางรูป reaction ที่มีอยู่ */}
+          {(el.reactionImages || []).length > 0 && (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'6px', marginBottom:'8px' }}>
+              {(el.reactionImages || []).map((src, i) => (
+                <div key={i} style={{ position:'relative', borderRadius:'8px', overflow:'hidden', border:'1px solid rgba(255,107,157,0.3)' }}>
+                  <div style={{ position:'absolute', top:'3px', left:'4px', background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:'0.6rem', borderRadius:'4px', padding:'1px 5px', fontFamily:'Mitr,sans-serif' }}>#{i+1}</div>
+                  <img src={src} style={{ width:'100%', aspectRatio:'1', objectFit:'cover', display:'block' }} alt={`reaction ${i+1}`} />
+                  <button
+                    onClick={() => { const imgs = [...(el.reactionImages||[])]; imgs.splice(i,1); upd({ reactionImages: imgs }); }}
+                    style={{ position:'absolute', top:'2px', right:'2px', width:'18px', height:'18px', borderRadius:'50%', border:'none', background:'rgba(220,50,50,0.8)', color:'#fff', fontSize:'0.65rem', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', padding:0 }}
+                  >✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ปุ่มเพิ่มรูป */}
+          <label style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', width:'100%', padding:'9px', background:'rgba(255,107,157,0.08)', border:'2px dashed rgba(255,107,157,0.35)', borderRadius:'8px', color:'#ff9a9e', fontSize:'0.78rem', cursor:'pointer', boxSizing:'border-box', marginBottom:'10px' }}>
+            🖼️ เพิ่มรูป Reaction (เลือกได้หลายรูป)
+            <input type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => {
+              const files = Array.from(e.target.files);
+              Promise.all(files.map(f => new Promise(res => {
+                const r = new FileReader(); r.onload = ev => res(ev.target.result); r.readAsDataURL(f);
+              }))).then(imgs => upd({ reactionImages: [...(el.reactionImages||[]), ...imgs] }));
+            }} />
+          </label>
+
+          {(el.reactionImages || []).length > 0 && (
+            <button
+              onClick={() => upd({ reactionImages: [] })}
+              style={{ width:'100%', padding:'6px', background:'rgba(220,50,50,0.1)', border:'1px solid rgba(220,50,50,0.3)', borderRadius:'7px', color:'#ff8080', fontSize:'0.75rem', cursor:'pointer', fontFamily:'Mitr,sans-serif', marginBottom:'6px' }}
+            >🗑️ ลบรูป Reaction ทั้งหมด</button>
+          )}
         </div>
       )}
 
