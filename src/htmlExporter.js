@@ -36,10 +36,10 @@ export function generateHTML(pages) {
     const elementsRendered = (p.elements || []).map(el => renderElement(el, th)).join('\n');
 
     const bgImageLayer = p.bgImage
-      ? `<div style="position:absolute; inset:0; background-image:url('${p.bgImage}'); background-size:cover; background-position:center; opacity:${p.bgOpacity ?? 0.5}; z-index:0; pointer-events:none;"></div>`
+      ? `<div style="position:absolute; inset:0; background-image:url('${p.bgImage}'); background-size:${p.bgZoom ? p.bgZoom+'%' : 'cover'}; background-position:center; opacity:${p.bgOpacity ?? 0.5}; z-index:0; pointer-events:none;"></div>`
       : '';
     const cardBgImageLayer = p.cardBgImage && p.layout !== 'minimal'
-      ? `<div style="position:absolute; inset:0; background-image:url('${p.cardBgImage}'); background-size:cover; background-position:center; opacity:${p.cardBgOpacity ?? 0.5}; z-index:0; border-radius:${p.layout === 'full' ? 0 : (p.cardRadius || 24)}px; pointer-events:none;"></div>`
+      ? `<div style="position:absolute; inset:0; background-image:url('${p.cardBgImage}'); background-size:${p.cardBgZoom ? p.cardBgZoom+'%' : 'cover'}; background-position:center; opacity:${p.cardBgOpacity ?? 0.5}; z-index:0; border-radius:${p.layout === 'full' ? 0 : (p.cardRadius || 24)}px; pointer-events:none;"></div>`
       : '';
 
     const counterEls = (p.elements || []).filter(el => el.type === 'counter');
@@ -149,7 +149,7 @@ export function generateHTML(pages) {
   `;
 
   const routeDictionary = JSON.stringify(pages.reduce((acc, p) => {
-    acc[p.id] = { effect: p.pageEffect || 'none', accent: getTheme(p.theme).accent, bgm: p.bgMusic || '', density: p.pageEffectDensity ?? 50 };
+    acc[p.id] = { effect: p.pageEffect || 'none', accent: getTheme(p.theme).accent, bgm: p.bgMusic || '', bgmStart: p.bgMusicStart || 0, bgmEnd: p.bgMusicEnd || 0, density: p.pageEffectDensity ?? 50 };
     return acc;
   }, {}));
 
@@ -181,8 +181,23 @@ export function generateHTML(pages) {
       if(metaDict[pageId]){
         if(window.startEffect) startEffect(metaDict[pageId].effect,metaDict[pageId].accent,metaDict[pageId].density);
         var bgmEl=document.getElementById('global-bgm');
-        if(bgmEl&&metaDict[pageId].bgm){ if(bgmEl.src!==metaDict[pageId].bgm){ bgmEl.src=metaDict[pageId].bgm; bgmEl.play().catch(function(){}); } }
-        else if(bgmEl){ bgmEl.pause(); }
+        if(bgmEl&&metaDict[pageId].bgm){
+          var newSrc=metaDict[pageId].bgm;
+          var bgmS=metaDict[pageId].bgmStart||0;
+          var bgmE=metaDict[pageId].bgmEnd||0;
+          bgmEl._bgmStart=bgmS; bgmEl._bgmEnd=bgmE;
+          if(!bgmEl._loopListener){
+            bgmEl._loopListener=function(){if(bgmEl._bgmEnd>0&&bgmEl.currentTime>=bgmEl._bgmEnd){bgmEl.currentTime=bgmEl._bgmStart||0;}};
+            bgmEl.addEventListener('timeupdate',bgmEl._loopListener);
+          }
+          if(bgmEl.src!==newSrc){
+            bgmEl.src=newSrc;
+            bgmEl.onloadedmetadata=function(){bgmEl.currentTime=bgmS;bgmEl.play().catch(function(){});};
+          } else {
+            bgmEl.currentTime=bgmS;
+            bgmEl.play().catch(function(){});
+          }
+        } else if(bgmEl){ bgmEl.pause(); }
       }
     }
     ${effectsEngine}
@@ -192,8 +207,15 @@ export function generateHTML(pages) {
         startEffect(metaDict[firstId].effect, metaDict[firstId].accent, metaDict[firstId].density);
         var bgmEl=document.getElementById('global-bgm');
         if(bgmEl&&metaDict[firstId].bgm){
+          var bgmS0=metaDict[firstId].bgmStart||0;
+          var bgmE0=metaDict[firstId].bgmEnd||0;
           bgmEl.src=metaDict[firstId].bgm;
-          document.body.addEventListener('click',function initAudio(){ bgmEl.play(); document.body.removeEventListener('click',initAudio); },{once:true});
+          bgmEl._bgmStart=bgmS0; bgmEl._bgmEnd=bgmE0;
+          if(!bgmEl._loopListener){
+            bgmEl._loopListener=function(){if(bgmEl._bgmEnd>0&&bgmEl.currentTime>=bgmEl._bgmEnd){bgmEl.currentTime=bgmEl._bgmStart||0;}};
+            bgmEl.addEventListener('timeupdate',bgmEl._loopListener);
+          }
+          document.body.addEventListener('click',function initAudio(){bgmEl.currentTime=bgmS0;bgmEl.play();document.body.removeEventListener('click',initAudio);},{once:true});
         }
       }
     });

@@ -522,13 +522,63 @@ export default function App() {
                       </div>
                     </div>
                     <div className="field" style={{marginTop:10}}>
-                      <label style={labelStyle}>🖼️ URL รูปพื้นหลังหน้า (Page BG Image)</label>
-                      <input value={activePage.bgImage||''} onChange={e=>updatePage(activePage.id,{bgImage:e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} placeholder="https://..." />
+                      <label style={labelStyle}>🖼️ รูปพื้นหลังหน้า (Page BG Image)</label>
+                      {(activePage.bgImage && activePage.bgImage.startsWith('data:') && activePage.bgImageFileName) ? (
+                        <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
+                          <span style={{fontSize:'1.1rem'}}>🖼️</span>
+                          <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.bgImageFileName}</span>
+                          <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
+                            เปลี่ยน
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgImage:ev.target.result,bgImageFileName:f.name});r.readAsDataURL(f);}} />
+                          </label>
+                          <button onClick={()=>updatePage(activePage.id,{bgImage:'',bgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
+                        </div>
+                      ) : (
+                        <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
+                          📂 เลือกรูปพื้นหลัง
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgImage:ev.target.result,bgImageFileName:f.name});r.readAsDataURL(f);}} />
+                        </label>
+                      )}
+                      {!(activePage.bgImage && activePage.bgImage.startsWith('data:')) && (
+                        <input value={activePage.bgImage||''} onChange={e=>updatePage(activePage.id,{bgImage:e.target.value,bgImageFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="หรือวาง URL รูปภาพ..." />
+                      )}
                       {activePage.bgImage && (
-                        <div className="field">
+                        <>
                           <label style={labelStyle}>ความโปร่งใสรูปพื้นหลัง ({Math.round((activePage.bgOpacity??0.5)*100)}%)</label>
                           <input type="range" min="0" max="1" step="0.05" value={activePage.bgOpacity??0.5} onChange={e=>updatePage(activePage.id,{bgOpacity:+e.target.value})} style={{width:'100%'}} />
+                          <label style={labelStyle}>ซูมรูปพื้นหลัง ({activePage.bgZoom||100}%)</label>
+                          <input type="range" min="100" max="300" step="5" value={activePage.bgZoom||100} onChange={e=>updatePage(activePage.id,{bgZoom:+e.target.value})} style={{width:'100%'}} />
+                        </>
+                      )}
+                    </div>
+                    <div className="field" style={{marginTop:10}}>
+                      <label style={labelStyle}>🖼️ รูปพื้นหลัง Card (Card BG Image)</label>
+                      {(activePage.cardBgImage && activePage.cardBgImage.startsWith('data:') && activePage.cardBgImageFileName) ? (
+                        <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(107,157,255,0.1)',border:'1px solid rgba(107,157,255,0.4)',borderRadius:'8px'}}>
+                          <span style={{fontSize:'1.1rem'}}>🖼️</span>
+                          <span style={{flex:1,fontSize:'0.78rem',color:'#9ac0ff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.cardBgImageFileName}</span>
+                          <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
+                            เปลี่ยน
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{cardBgImage:ev.target.result,cardBgImageFileName:f.name});r.readAsDataURL(f);}} />
+                          </label>
+                          <button onClick={()=>updatePage(activePage.id,{cardBgImage:'',cardBgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
+                      ) : (
+                        <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(107,157,255,0.08)',border:'2px dashed rgba(107,157,255,0.35)',borderRadius:'8px',color:'#9ac0ff',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
+                          📂 เลือกรูปพื้นหลัง Card
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{cardBgImage:ev.target.result,cardBgImageFileName:f.name});r.readAsDataURL(f);}} />
+                        </label>
+                      )}
+                      {!(activePage.cardBgImage && activePage.cardBgImage.startsWith('data:')) && (
+                        <input value={activePage.cardBgImage||''} onChange={e=>updatePage(activePage.id,{cardBgImage:e.target.value,cardBgImageFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(100,150,255,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="หรือวาง URL รูปภาพ..." />
+                      )}
+                      {activePage.cardBgImage && (
+                        <>
+                          <label style={labelStyle}>ความโปร่งใส Card BG ({Math.round((activePage.cardBgOpacity??0.5)*100)}%)</label>
+                          <input type="range" min="0" max="1" step="0.05" value={activePage.cardBgOpacity??0.5} onChange={e=>updatePage(activePage.id,{cardBgOpacity:+e.target.value})} style={{width:'100%'}} />
+                          <label style={labelStyle}>ซูมรูปพื้นหลัง Card ({activePage.cardBgZoom||100}%)</label>
+                          <input type="range" min="100" max="300" step="5" value={activePage.cardBgZoom||100} onChange={e=>updatePage(activePage.id,{cardBgZoom:+e.target.value})} style={{width:'100%'}} />
+                        </>
                       )}
                     </div>
                   </div>
@@ -562,6 +612,21 @@ export default function App() {
                           <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
                           <input value={activePage.bgMusic||''} onChange={e=>updatePage(activePage.id,{bgMusic:e.target.value,bgMusicFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="https://example.com/music.mp3" />
                         </>
+                      )}
+                      {activePage.bgMusic && (
+                        <div style={{marginTop:'10px'}}>
+                          <label style={labelStyle}>⏱️ ช่วงเวลาที่เล่น (วินาที)</label>
+                          <div style={{display:'flex',gap:'8px',alignItems:'flex-start'}}>
+                            <div style={{flex:1}}>
+                              <label style={{...labelStyle,fontSize:'0.68rem',marginBottom:'3px'}}>เริ่มที่ (วิ)</label>
+                              <input type="number" min="0" step="1" value={activePage.bgMusicStart||0} onChange={e=>updatePage(activePage.id,{bgMusicStart:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
+                            </div>
+                            <div style={{flex:1}}>
+                              <label style={{...labelStyle,fontSize:'0.68rem',marginBottom:'3px'}}>สิ้นสุด (วิ) — 0 = จนจบ</label>
+                              <input type="number" min="0" step="1" value={activePage.bgMusicEnd||0} onChange={e=>updatePage(activePage.id,{bgMusicEnd:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>

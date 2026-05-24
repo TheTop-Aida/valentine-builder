@@ -147,6 +147,16 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
               <input value={el.audioSrc||''} onChange={e=>upd({audioSrc:e.target.value,audioFileName:''})} style={inputStyle} placeholder="https://example.com/song.mp3" />
             </>
           )}
+          <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
+            <div style={{flex:1}}>
+              <label style={{...labelStyle,fontSize:'0.7rem'}}>⏱️ เริ่มที่ (วิ)</label>
+              <input type="number" min="0" step="1" value={el.startTime||0} onChange={e=>upd({startTime:+e.target.value})} style={inputStyle} placeholder="0" />
+            </div>
+            <div style={{flex:1}}>
+              <label style={{...labelStyle,fontSize:'0.7rem'}}>⏱️ สิ้นสุด (วิ, 0=จบ)</label>
+              <input type="number" min="0" step="1" value={el.endTime||0} onChange={e=>upd({endTime:+e.target.value})} style={inputStyle} placeholder="0" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -248,6 +258,16 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
               <input value={el.audioSrc || ''} onChange={e => upd({ audioSrc: e.target.value, vinylAudioFileName: '' })} style={inputStyle} placeholder="https://example.com/song.mp3" />
             </>
           )}
+          <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
+            <div style={{flex:1}}>
+              <label style={{...labelStyle,fontSize:'0.7rem'}}>⏱️ เริ่มที่ (วิ)</label>
+              <input type="number" min="0" step="1" value={el.startTime||0} onChange={e=>upd({startTime:+e.target.value})} style={inputStyle} placeholder="0" />
+            </div>
+            <div style={{flex:1}}>
+              <label style={{...labelStyle,fontSize:'0.7rem'}}>⏱️ สิ้นสุด (วิ, 0=จบ)</label>
+              <input type="number" min="0" step="1" value={el.endTime||0} onChange={e=>upd({endTime:+e.target.value})} style={inputStyle} placeholder="0" />
+            </div>
+          </div>
         </div>
       )}
 
