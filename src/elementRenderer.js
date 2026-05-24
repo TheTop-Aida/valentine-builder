@@ -53,90 +53,87 @@ export function renderElement(el, th) {
       const lt = el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...';
       const acc = th.accent || '#ff6b9d';
       const sid = el.id;
-      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center;">
-  <style>
-    #vbenv-${sid}{width:min(300px,100%);cursor:pointer;-webkit-tap-highlight-color:transparent;}
-    #vbenv-${sid} .vbflap{
-      width:0;height:0;
-      border-left:min(150px,50%)solid transparent;
-      border-right:min(150px,50%)solid transparent;
-      border-top:min(115px,38%)solid ${acc};
-      position:relative;z-index:3;
-      transform-origin:50% 0;
-      transition:transform .55s cubic-bezier(.4,0,.2,1);
-      filter:brightness(.88) drop-shadow(0 2px 4px rgba(0,0,0,.12));
-    }
-    #vbenv-${sid}.open .vbflap{transform:perspective(600px)rotateX(-180deg);}
-    #vbenv-${sid} .vbbody{
-      background:linear-gradient(160deg,#ffd6e8 0%,#fff0f7 55%,#ffe4f0 100%);
-      border:1.5px solid ${acc}55;
-      border-top:none;
-      border-radius:0 0 16px 16px;
-      height:160px;
-      position:relative;overflow:hidden;
-      box-shadow:0 8px 28px ${acc}30,0 2px 8px rgba(0,0,0,.08);
-    }
-    #vbenv-${sid} .vbbody::before{content:'';position:absolute;top:0;left:0;width:0;height:0;border-bottom:80px solid ${acc}18;border-right:150px solid transparent;}
-    #vbenv-${sid} .vbbody::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-bottom:80px solid ${acc}12;border-left:150px solid transparent;}
-    #vbenv-${sid} .vbseal{
-      position:absolute;top:50%;left:50%;
-      transform:translate(-50%,-50%);
-      font-size:2.6rem;z-index:4;
-      transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;
-      filter:drop-shadow(0 3px 8px ${acc}90);
-      animation:vbpulse-${sid} 2s ease-in-out infinite;
-    }
-    @keyframes vbpulse-${sid}{0%,100%{transform:translate(-50%,-50%)scale(1);}50%{transform:translate(-50%,-50%)scale(1.12);}}
-    #vbenv-${sid}.open .vbseal{transform:translate(-50%,-50%)scale(0)rotate(120deg)!important;opacity:0;animation:none;}
-    #vbltr-${sid}{
-      width:min(272px,calc(100% - 8px));
-      background:linear-gradient(#fffbfd,#fff5f9);
-      border:1px solid ${acc}40;
-      border-top:3px solid ${acc};
-      border-radius:0 0 12px 12px;
-      max-height:0;overflow:hidden;
-      transition:max-height .8s cubic-bezier(.25,.46,.45,.94);
-      box-shadow:0 6px 20px rgba(0,0,0,.08);
-    }
-    #vbltr-inner-${sid}{
-      padding:20px 18px 22px;
-      background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}22 28px);
-      background-size:100% 28px;
-    }
-    #vbhint-${sid}{font-size:.72rem;color:${acc};margin-top:8px;font-family:Mitr,sans-serif;opacity:.85;transition:opacity .3s;letter-spacing:.5px;}
-  </style>
-  <div id="vbenv-${sid}" onclick="vbTog_${sid}()">
-    <div class="vbflap"></div>
-    <div class="vbbody">
-      <div class="vbseal">💌</div>
-    </div>
-    <div id="vbltr-${sid}">
-      <div id="vbltr-inner-${sid}">
-        <div style="text-align:center;font-size:.95rem;color:${acc};font-family:Mitr,sans-serif;margin-bottom:12px;letter-spacing:1px;">~ ถึงคนที่ฉันรัก ~</div>
-        <div style="${fontFamily}${fontSize}${color} line-height:1.9;white-space:pre-wrap;font-size:0.88rem;">${lt}</div>
-        <div style="text-align:right;margin-top:16px;font-size:1.3rem;">💕</div>
+      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; font-family:Mitr,sans-serif;">
+<style>
+  /* ===== LOVE LETTER ENVELOPE ${sid} ===== */
+  #vbe-${sid}{position:relative;width:300px;max-width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
+  /* FLAP */
+  #vbf-${sid}{position:absolute;top:0;left:0;width:300px;z-index:5;transform-origin:50% 0;transition:transform .7s cubic-bezier(.4,0,.2,1);pointer-events:none;line-height:0;}
+  #vbe-${sid}.open #vbf-${sid}{transform:perspective(700px)rotateX(-180deg);}
+  /* BODY */
+  #vbd-${sid}{height:185px;background:linear-gradient(160deg,#ffd0e4 0%,#fff3f8 50%,#ffdcee 100%);border:2px solid ${acc}50;border-top:none;border-radius:0 0 20px 20px;position:relative;overflow:hidden;box-shadow:0 14px 40px ${acc}35,0 4px 16px rgba(0,0,0,.12);}
+  /* Fold lines on body */
+  #vbd-${sid}::before{content:'';position:absolute;top:0;left:0;width:0;height:0;border-top:92px solid ${acc}22;border-right:150px solid transparent;}
+  #vbd-${sid}::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-top:92px solid ${acc}15;border-left:150px solid transparent;}
+  /* BOTTOM fold V */
+  #vbbl-${sid}{position:absolute;bottom:0;left:0;width:0;height:0;border-bottom:92px solid ${acc}18;border-right:150px solid transparent;}
+  #vbbr-${sid}{position:absolute;bottom:0;right:0;width:0;height:0;border-bottom:92px solid ${acc}12;border-left:150px solid transparent;}
+  /* STAMP */
+  #vbst-${sid}{position:absolute;top:10px;right:12px;z-index:4;border:1.5px solid ${acc}55;border-radius:4px;padding:3px 7px;font-size:.55rem;color:${acc};background:rgba(255,255,255,.5);text-align:center;letter-spacing:.5px;line-height:1.5;font-family:Mitr,sans-serif;}
+  /* WAX SEAL */
+  #vbs-${sid}{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:radial-gradient(circle at 35% 32%,#fff5fa,${acc}dd);border-radius:50%;border:3px solid rgba(255,255,255,.75);box-shadow:0 0 0 4px ${acc}65,0 6px 20px ${acc}90,0 0 0 8px ${acc}25;display:flex;align-items:center;justify-content:center;font-size:2rem;z-index:4;animation:vbpls-${sid} 2.5s ease-in-out infinite;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .4s,box-shadow .4s;}
+  @keyframes vbpls-${sid}{0%,100%{box-shadow:0 0 0 4px ${acc}65,0 6px 20px ${acc}90,0 0 0 8px ${acc}25;}50%{box-shadow:0 0 0 4px ${acc}90,0 6px 28px ${acc}bb,0 0 0 14px ${acc}30;}}
+  #vbe-${sid}.open #vbs-${sid}{transform:translate(-50%,-50%)scale(0)rotate(90deg)!important;opacity:0;animation:none;}
+  /* FLOATING HEARTS */
+  #vbhts-${sid}{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  @keyframes vbflt-${sid}{0%{transform:translateY(0)scale(1);opacity:1;}100%{transform:translateY(-100px)scale(.5);opacity:0;}}
+  .vbht-${sid}{position:absolute;bottom:10px;animation:vbflt-${sid} 1.8s ease-out forwards;}
+  /* LETTER PAPER */
+  #vbltr-${sid}{max-height:0;overflow:hidden;transition:max-height 1s cubic-bezier(.25,.46,.45,.94);width:282px;max-width:calc(100% - 4px);margin:0 auto;}
+  #vbinn-${sid}{padding:24px 22px 28px;background-color:#fffef8;background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}18 28px);background-size:100% 28px;border:1.5px solid ${acc}30;border-top:3px solid ${acc};border-radius:0 0 16px 16px;box-shadow:0 10px 28px rgba(0,0,0,.09),inset 0 0 60px rgba(255,107,157,.03);}
+  /* HINT */
+  #vbhint-${sid}{font-size:.7rem;color:${acc};margin-top:10px;opacity:.75;letter-spacing:1px;transition:opacity .3s;}
+</style>
+<div id="vbe-${sid}" onclick="vbTog_${sid}()">
+  <div id="vbf-${sid}">
+    <div style="width:0;height:0;border-left:150px solid transparent;border-right:150px solid transparent;border-top:122px solid ${acc};filter:brightness(.78)saturate(1.15)drop-shadow(0 3px 6px rgba(0,0,0,.2));"></div>
+  </div>
+  <div id="vbd-${sid}">
+    <div id="vbbl-${sid}"></div><div id="vbbr-${sid}"></div>
+    <div id="vbst-${sid}">💕<br/>LOVE</div>
+    <div id="vbs-${sid}">💌</div>
+    <div id="vbhts-${sid}"></div>
+  </div>
+  <div id="vbltr-${sid}">
+    <div id="vbinn-${sid}">
+      <div style="text-align:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1.5px dashed ${acc}45;">
+        <span style="font-size:.78rem;color:${acc};letter-spacing:2px;font-weight:600;">~ ถึงคนที่ฉันรัก ~</span>
       </div>
+      <div style="${fontFamily}${fontSize}${color} line-height:2;white-space:pre-wrap;font-size:.88rem;">${lt}</div>
+      <div style="text-align:right;margin-top:18px;padding-top:10px;border-top:1px dashed ${acc}35;font-size:.76rem;color:${acc}aa;letter-spacing:.5px;">ด้วยความรักทั้งหัวใจ 💕</div>
     </div>
   </div>
-  <div id="vbhint-${sid}">💌 แตะเพื่อเปิดจดหมาย</div>
-  <script>(function(){
-    window.vbTog_${sid}=function(){
-      var env=document.getElementById('vbenv-${sid}');
-      var ltr=document.getElementById('vbltr-${sid}');
-      var inner=document.getElementById('vbltr-inner-${sid}');
-      var hint=document.getElementById('vbhint-${sid}');
-      var isOpen=env.classList.contains('open');
-      if(!isOpen){
-        env.classList.add('open');
-        ltr.style.maxHeight=inner.scrollHeight+'px';
-        hint.textContent='💌 แตะเพื่อปิดจดหมาย';
-      }else{
-        env.classList.remove('open');
-        ltr.style.maxHeight='0';
-        hint.textContent='💌 แตะเพื่อเปิดจดหมาย';
-      }
-    };
-  })()</script>
+</div>
+<div id="vbhint-${sid}">💌 แตะเพื่อเปิดจดหมาย</div>
+<script>(function(){
+  var H=['❤️','💕','💗','🌹','✨','💖','🩷','💓'];
+  window.vbTog_${sid}=function(){
+    var e=document.getElementById('vbe-${sid}');
+    var l=document.getElementById('vbltr-${sid}');
+    var inn=document.getElementById('vbinn-${sid}');
+    var h=document.getElementById('vbhint-${sid}');
+    var hts=document.getElementById('vbhts-${sid}');
+    if(!e.classList.contains('open')){
+      e.classList.add('open');
+      l.style.maxHeight=inn.scrollHeight+'px';
+      h.textContent='💌 แตะเพื่อปิดจดหมาย';
+      hts.innerHTML='';
+      for(var i=0;i<8;i++){(function(i){setTimeout(function(){
+        var d=document.createElement('div');
+        d.className='vbht-${sid}';
+        d.textContent=H[i%H.length];
+        d.style.left=(10+Math.random()*80)+'%';
+        d.style.fontSize=(.65+Math.random()*.55)+'rem';
+        hts.appendChild(d);
+        setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},2000);
+      },i*180);})(i);}
+    }else{
+      e.classList.remove('open');
+      l.style.maxHeight='0';
+      h.textContent='💌 แตะเพื่อเปิดจดหมาย';
+    }
+  };
+})()</script>
 </div>`;}
 
     case 'player': {
