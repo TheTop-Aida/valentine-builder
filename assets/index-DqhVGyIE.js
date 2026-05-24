@@ -161,53 +161,19 @@ Error generating stack: `+a.message+`
         </style>
         <div class="${s}" style="${l} display:grid; grid-template-columns:repeat(${c},1fr); gap:14px; width:100%; z-index:2;">
           ${u.map(h=>`<div class="polaroid-item"><img src="${h.src||""}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" />${h.caption?`<div class="polaroid-caption">${h.caption}</div>`:""}</div>`).join("")}
-        </div>`}case"counter":{const u=e.reactionImages||[],c=u.length>0?`<img id="react-img-${e.id}" src="${u[0]}" class="reaction-img" style="margin-bottom:8px;" />`:"",h=e.noAnim||"none",f=(()=>{const g=`no-${e.id}`;return h==="shrink"?`
-          (function(){
-            var btn=document.getElementById('${g}'), scale=1;
-            btn.addEventListener('click',function(){
-              scale=Math.max(0.3, scale-0.15);
-              btn.style.transform='scale('+scale+')';
-              btn.style.opacity=scale;
-            });
-          })();`:h==="runaway"?`
-          (function(){
-            var btn=document.getElementById('${g}');
-            btn.style.position='relative';
-            btn.addEventListener('mouseover',function(){
-              var wrap=btn.parentElement;
-              var maxX=wrap.offsetWidth-btn.offsetWidth-20;
-              var maxY=40;
-              var rx=(Math.random()*maxX)|0;
-              var ry=((Math.random()*maxY)-maxY/2)|0;
-              btn.style.transform='translate('+rx+'px,'+ry+'px)';
-            });
-          })();`:h==="shake"?`
-          (function(){
-            var btn=document.getElementById('${g}');
-            btn.addEventListener('click',function(){
-              btn.style.animation='none';
-              void btn.offsetWidth;
-              btn.style.animation='shakeNo 0.5s ease';
-            });
-          })();`:h==="disappear"?`
-          (function(){
-            var btn=document.getElementById('${g}'), op=1;
-            btn.addEventListener('click',function(){
-              op=Math.max(0, op-0.25);
-              btn.style.opacity=op;
-              if(op<=0) btn.style.pointerEvents='none';
-            });
-          })();`:""})();return`
+        </div>`}case"counter":{const u=e.reactionImages||[],c=u.length>0?`<img id="react-img-${e.id}" src="${u[0]}" class="reaction-img" style="margin-bottom:8px;" />`:"",h=e.noAnim||"none",f=h==="shrink"?"var s=parseFloat(this.dataset.scale||'1')-0.15; s=Math.max(0.3,s); this.dataset.scale=s; this.style.transform='scale('+s+')'; this.style.opacity=s;":h==="disappear"?"var o=parseFloat(this.dataset.op||'1')-0.25; o=Math.max(0,o); this.dataset.op=o; this.style.opacity=o; if(o<=0)this.style.pointerEvents='none';":h==="shake"?`this.style.animation='none'; void this.offsetWidth; this.style.animation='shakeNo_${e.id} 0.5s ease';`:"",g=h==="runaway"?"var p=this.parentElement; var mxX=Math.max(0,p.offsetWidth-this.offsetWidth-8); var rx=(Math.random()*mxX)|0; var ry=((Math.random()*60)-30)|0; this.style.transform='translate('+rx+'px,'+ry+'px)';":"";return`
+        ${h==="shake"?`<style>@keyframes shakeNo_${e.id}{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}</style>`:""}
         <div class="${s}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; ${l}">
           ${c}
           <h3 id="q-text-${e.id}" style="${n}${a}${i} font-weight:600; text-align:center; transition:all 0.3s;">${e.question||"คุณรักฉันไหม?"}</h3>
-          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:60px; width:100%; overflow:hidden;">
+          <div style="display:flex; gap:12px; justify-content:center; align-items:center; min-height:60px; width:100%; position:relative;">
             <button id="yes-${e.id}" onclick="goTo('${e.yesTarget||""}')" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${e.yesColor||t.yes||"#4caf50"}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.3s ease; white-space:nowrap;">${e.yesLabel||"รักมากที่สุด 💚"}</button>
-            <button id="no-${e.id}" style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${e.noColor||t.no||"#e63462"}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.4s ease; white-space:nowrap;">${e.noLabel||"ไม่รัก 🚫"}</button>
+            <button id="no-${e.id}"
+              onclick="${f}"
+              onmouseover="${g}"
+              style="z-index:10; padding:8px 20px; font-size:15px; font-weight:600; border:none; border-radius:20px; background:${e.noColor||t.no||"#e63462"}; color:#fff; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.1); transition:all 0.4s ease; white-space:nowrap;">${e.noLabel||"ไม่รัก 🚫"}</button>
           </div>
-        </div>
-        <style>#no-${e.id}{animation-fill-mode:both;}@keyframes shakeNo{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}</style>
-        <script>${f}<\/script>`}default:return""}}function Av(e,t){const n=e.customBg||t.bg,a=e.customCardBg||t.card,r={left:"flex-start",center:"center",right:"flex-end"}[e.contentAlign]||"center",s=e.contentAlign||"center",l=e.elementsGap!==void 0?e.elementsGap:16,o=e.cardWidth||440,u=e.cardPadding!==void 0?e.cardPadding:32,c=e.cardRadius!==void 0?e.cardRadius:24;let h=`background:${n}; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; width:100%; box-sizing:border-box; padding:16px; position:relative; overflow:hidden; z-index:1;`,f=`background:${a}; padding:${u}px; border-radius:${c}px; max-width:${o}px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; box-shadow:0 10px 35px rgba(0,0,0,0.06); position:relative; z-index:2;`;return e.layout==="full"?f=`width:100%; max-width:100%; min-height:100vh; border-radius:0; padding:${u}px; background:${a}; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; justify-content:center; box-shadow:none; margin:0; position:relative; z-index:2;`:e.layout==="top"?f+=" margin-top: 30px; margin-bottom: auto;":e.layout==="minimal"&&(f=`background:transparent; padding:12px; max-width:${o}px; width:100%; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; box-shadow:none; position:relative; z-index:2;`),{containerStyles:h,cardStyles:f}}function Fd(e){var r;const t=s=>Da[s]||Da.pink,n=e.map((s,l)=>{const o=t(s.theme),u=l===0,{containerStyles:c,cardStyles:h}=Av(s,o),f=(s.elements||[]).map(m=>Tv(m,o)).join(`
+        </div>`}default:return""}}function Av(e,t){const n=e.customBg||t.bg,a=e.customCardBg||t.card,r={left:"flex-start",center:"center",right:"flex-end"}[e.contentAlign]||"center",s=e.contentAlign||"center",l=e.elementsGap!==void 0?e.elementsGap:16,o=e.cardWidth||440,u=e.cardPadding!==void 0?e.cardPadding:32,c=e.cardRadius!==void 0?e.cardRadius:24;let h=`background:${n}; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; width:100%; box-sizing:border-box; padding:16px; position:relative; overflow:hidden; z-index:1;`,f=`background:${a}; padding:${u}px; border-radius:${c}px; max-width:${o}px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; box-shadow:0 10px 35px rgba(0,0,0,0.06); position:relative; z-index:2;`;return e.layout==="full"?f=`width:100%; max-width:100%; min-height:100vh; border-radius:0; padding:${u}px; background:${a}; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; justify-content:center; box-shadow:none; margin:0; position:relative; z-index:2;`:e.layout==="top"?f+=" margin-top: 30px; margin-bottom: auto;":e.layout==="minimal"&&(f=`background:transparent; padding:12px; max-width:${o}px; width:100%; display:flex; flex-direction:column; gap:${l}px; align-items:${r}; text-align:${s}; box-shadow:none; position:relative; z-index:2;`),{containerStyles:h,cardStyles:f}}function Fd(e){var r;const t=s=>Da[s]||Da.pink,n=e.map((s,l)=>{const o=t(s.theme),u=l===0,{containerStyles:c,cardStyles:h}=Av(s,o),f=(s.elements||[]).map(m=>Tv(m,o)).join(`
 `),g=s.bgImage?`<div style="position:absolute; inset:0; background-image:url('${s.bgImage}'); background-size:cover; background-position:center; opacity:${s.bgOpacity??.5}; z-index:0; pointer-events:none;"></div>`:"",v=s.cardBgImage&&s.layout!=="minimal"?`<div style="position:absolute; inset:0; background-image:url('${s.cardBgImage}'); background-size:cover; background-position:center; opacity:${s.cardBgOpacity??.5}; z-index:0; border-radius:${s.layout==="full"?0:s.cardRadius||24}px; pointer-events:none;"></div>`:"",x=(s.elements||[]).filter(m=>m.type==="counter").map(m=>{const p=JSON.stringify(m.noMessages||["คิดดีๆ นะ 🥺","โอกาสสุดท้ายจริงๆ 😡","ยอมรับเถอะว่ารักเค้า!","กด YES เถอะนะ..."]),y=m.noBehavior||"runaway";return`
         (function(){
           var idx=0, msgs=${p};
