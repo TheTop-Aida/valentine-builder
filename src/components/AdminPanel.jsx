@@ -34,7 +34,8 @@ export default function AdminPanel({ onClose }) {
 
   async function loadUsers() {
     setLoadingU(true);
-    const { data } = await supabase.from('profiles').select('*').order('username', { ascending: true });
+    const { data, error } = await supabase.from('profiles').select('*').order('username', { ascending: true });
+    if (error) console.error('loadUsers error:', error);
     setUsers(data || []);
     setLoadingU(false);
   }
@@ -153,7 +154,7 @@ export default function AdminPanel({ onClose }) {
             <label style={{ color:'#c9a8e8', fontSize:'0.75rem', display:'block', marginBottom:'5px' }}>Username (ตัวเล็กทั้งหมด)</label>
             <input style={inpStyle} value={newUser} onChange={e => setNewUser(e.target.value)} placeholder="เช่น nook2025" />
             <label style={{ color:'#c9a8e8', fontSize:'0.75rem', display:'block', marginBottom:'5px' }}>Password</label>
-            <input style={inpStyle} value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="รหัสผ่านที่จะให้ลูกค้า" type="text" />
+            <input style={inpStyle} value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="รหัสผ่านที่จะให้ลูกค้า" type="password" />
             <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'4px' }}>
               <button style={btnStyle()} onClick={createUser}>➕ สร้าง User</button>
             </div>
