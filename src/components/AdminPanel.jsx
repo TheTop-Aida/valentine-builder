@@ -34,7 +34,7 @@ export default function AdminPanel({ onClose }) {
 
   async function loadUsers() {
     setLoadingU(true);
-    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    const { data } = await supabase.from('profiles').select('*').order('username', { ascending: true });
     setUsers(data || []);
     setLoadingU(false);
   }
