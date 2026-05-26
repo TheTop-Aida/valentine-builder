@@ -1,4 +1,5 @@
 import { STICKERS, FONTS, ANIMATIONS, SWATCHES } from '../constants.js';
+import { compressImage } from '../utils/imageUtils.js';
 
 // แปลง Google Drive URL ทุกรูปแบบเป็น direct stream URL
 function parseDriveUrl(val) {
@@ -39,7 +40,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           <label style={labelStyle}>📁 อัปโหลดรูปจากเครื่อง หรือ URL</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}}>
             🖼️ เลือกรูปภาพจากเครื่อง
-            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>upd({src:ev.target.result});reader.readAsDataURL(file);}} />
+            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const compressed=await compressImage(file);upd({src:compressed});}} />
           </label>
           {el.src && el.src.startsWith('data:') && (
             <div style={{marginBottom:'8px',borderRadius:'8px',overflow:'hidden',border:'1px solid rgba(255,107,157,0.2)'}}>
@@ -163,14 +164,14 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
               <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.coverFileName||'รูปปก'}</span>
               <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px'}}>
                 เปลี่ยน
-                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({coverSrc:ev.target.result,coverFileName:f.name});r.readAsDataURL(f);}} />
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>upd({coverSrc:compressed,coverFileName:f.name}));}} />
               </label>
               <button onClick={()=>upd({coverSrc:'',coverFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
             </div>
           ) : (
             <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box'}}>
               📸 เลือกรูปปกเพลง
-              <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>upd({coverSrc:ev.target.result,coverFileName:f.name});r.readAsDataURL(f);}} />
+              <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>upd({coverSrc:compressed,coverFileName:f.name}));}} />
             </label>
           )}
           {/* ชื่อเพลง + ศิลปิน */}
@@ -277,7 +278,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           <label style={labelStyle}>หน้าปกแผ่นเสียง (รูปภาพ)</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}}>
             📸 เลือกรูปปก
-            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>upd({src:ev.target.result});reader.readAsDataURL(file);}} />
+            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const compressed=await compressImage(file);upd({src:compressed});}} />
           </label>
           {el.src && <div style={{textAlign:'center',marginBottom:'8px'}}><img src={el.src} style={{width:'80px',height:'80px',borderRadius:'50%',objectFit:'cover',border:'2px solid #333'}} alt="cover"/></div>}
           <label style={labelStyle}>🎵 เพิ่มเพลง</label>
@@ -461,7 +462,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             📸 เลือกรูปภาพ (เลือกได้หลายรูป)
             <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e => {
               const files = Array.from(e.target.files);
-              Promise.all(files.map(f => new Promise(res => { const r = new FileReader(); r.onload = ev => res(ev.target.result); r.readAsDataURL(f); }))).then(imgs => upd({ images: [...(el.images||[]), ...imgs] }));
+              Promise.all(files.map(f => compressImage(f))).then(imgs => upd({ images: [...(el.images||[]), ...imgs] }));
             }} />
           </label>
           {(el.images||[]).length > 0 && (
@@ -490,7 +491,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
               <label style={labelStyle}>รูปที่ {i+1}</label>
               <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',width:'100%',padding:'8px',marginBottom:'6px',background:'rgba(255,107,157,0.08)',border:'1px dashed rgba(255,107,157,0.35)',borderRadius:'6px',color:'#ff9a9e',fontSize:'0.75rem',cursor:'pointer',boxSizing:'border-box'}}>
                 📸 เลือกรูป
-                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const ps=[...(el.photos||[])];ps[i]={...ps[i],src:ev.target.result};upd({photos:ps});};r.readAsDataURL(f);}} />
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const compressed=await compressImage(f);const ps=[...(el.photos||[])];ps[i]={...ps[i],src:compressed};upd({photos:ps});}} />
               </label>
               {photo.src && <img src={photo.src} style={{width:'100%',maxHeight:'80px',objectFit:'cover',borderRadius:'4px',marginBottom:'6px'}} alt="" />}
               <input value={photo.caption || ''} onChange={e => { const ps = [...(el.photos||[])]; ps[i] = {...ps[i], caption: e.target.value}; upd({photos: ps}); }} style={inputStyle} placeholder="คำบรรยายใต้รูป..." />

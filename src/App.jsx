@@ -8,6 +8,7 @@ import AdminPanel from './components/AdminPanel.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { supabase } from './supabase.js';
+import { compressImage } from './utils/imageUtils.js';
 
 // ── Export Modal ──────────────────────────────────────────────────────────────
 const EXPORT_RATE_KEY = 'vb_export_rate';
@@ -575,14 +576,14 @@ export default function App() {
                           <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.bgImageFileName}</span>
                           <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
                             เปลี่ยน
-                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgImage:ev.target.result,bgImageFileName:f.name});r.readAsDataURL(f);}} />
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{bgImage:compressed,bgImageFileName:f.name}));}} />
                           </label>
                           <button onClick={()=>updatePage(activePage.id,{bgImage:'',bgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
                       ) : (
                         <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
                           📂 เลือกรูปพื้นหลัง
-                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgImage:ev.target.result,bgImageFileName:f.name});r.readAsDataURL(f);}} />
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{bgImage:compressed,bgImageFileName:f.name}));}} />
                         </label>
                       )}
                       {!(activePage.bgImage && activePage.bgImage.startsWith('data:')) && (
@@ -605,14 +606,14 @@ export default function App() {
                           <span style={{flex:1,fontSize:'0.78rem',color:'#9ac0ff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.cardBgImageFileName}</span>
                           <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
                             เปลี่ยน
-                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{cardBgImage:ev.target.result,cardBgImageFileName:f.name});r.readAsDataURL(f);}} />
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{cardBgImage:compressed,cardBgImageFileName:f.name}));}} />
                           </label>
                           <button onClick={()=>updatePage(activePage.id,{cardBgImage:'',cardBgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
                       ) : (
                         <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(107,157,255,0.08)',border:'2px dashed rgba(107,157,255,0.35)',borderRadius:'8px',color:'#9ac0ff',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
                           📂 เลือกรูปพื้นหลัง Card
-                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{cardBgImage:ev.target.result,cardBgImageFileName:f.name});r.readAsDataURL(f);}} />
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{cardBgImage:compressed,cardBgImageFileName:f.name}));}} />
                         </label>
                       )}
                       {!(activePage.cardBgImage && activePage.cardBgImage.startsWith('data:')) && (
