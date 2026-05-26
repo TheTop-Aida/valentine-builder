@@ -26,7 +26,7 @@ export function getAnimCSS() {
 
 export function renderElement(el, th) {
   const fontFamily = el.fontFamily ? `font-family:'${el.fontFamily}',sans-serif;` : '';
-  const fontSize = el.fontSize ? `font-size:${el.fontSize}px;` : '';
+  const fontSize = el.fontSize ? `font-size:${el.fontSize}rem;` : '';
   const color = el.color ? `color:${el.color};` : '';
   const textAlign = el.textAlign ? `text-align:${el.textAlign}; width:100%;` : '';
   const animClass = el.animation && el.animation !== 'none' ? `anim-${el.animation}` : '';

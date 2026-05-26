@@ -454,7 +454,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
           </select>
           <label style={labelStyle}>ขนาดตัวอักษร (rem)</label>
-          <input type="number" step="0.1" value={el.fontSize || 1.2} onChange={e => upd({ fontSize: +e.target.value })} style={inputStyle} min="0.5" max="5" />
+          <input type="number" step="0.1" value={el.fontSize || 1.2} onChange={e => upd({ fontSize: +e.target.value })} style={inputStyle} min="0.5" max="20" />
           <label style={labelStyle}>สีตัวอักษร</label>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}}>
             {['#ffffff','#000000','#ff6b9d','#e63462','#9b59b6','#3498db','#52b788','#f1c40f'].map(c => (
