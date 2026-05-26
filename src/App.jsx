@@ -145,8 +145,8 @@ function getInitialTemplate() {
       pageAnimation: 'fadeIn', pageEffect: 'hearts', pageEffectDensity: 50,
       elements: [
         { id: 'e1', type: 'sticker', emoji: '💖', fontSize: 60, animation: 'heartbeat' },
-        { id: 'e2', type: 'heading', text: 'Happy Valentine Day', fontSize: 28, fontFamily: 'Mali', color: '#ff6b9d', animation: 'zoomIn' },
-        { id: 'e3', type: 'subtext', text: 'ยินดีต้อนรับเข้าสู่เว็บไซต์แห่งความทรงจำของเรา\nมีของขวัญบางอย่างรออยู่ เปิดดูสิครับ ✨', fontSize: 15, fontFamily: 'Mitr', animation: 'slideUp', animDelay: 0.3 },
+        { id: 'e2', type: 'heading', text: 'Happy Valentine Day', fontSize: 1.75, fontFamily: 'Mali', color: '#ff6b9d', animation: 'zoomIn' },
+        { id: 'e3', type: 'subtext', text: 'ยินดีต้อนรับเข้าสู่เว็บไซต์แห่งความทรงจำของเรา\nมีของขวัญบางอย่างรออยู่ เปิดดูสิครับ ✨', fontSize: 1.0, fontFamily: 'Mitr', animation: 'slideUp', animDelay: 0.3 },
         { id: 'e4', type: 'button', label: 'เปิดของขวัญก้อนแรก 🎁', target: 'p2', animation: 'bounce', animDelay: 0.6 }
       ]
     },
@@ -161,7 +161,7 @@ function getInitialTemplate() {
       id: 'p3', name: '💌 หน้าเปิดจดหมายลับ', theme: 'pink', layout: 'center',
       pageAnimation: 'slideUp', pageEffect: 'confetti', pageEffectDensity: 50,
       elements: [
-        { id: 'e6', type: 'heading', text: 'เย้! ขอบคุณที่รักกันนะ 💖', fontSize: 24, fontFamily: 'Charm', color: '#ff6b9d' },
+        { id: 'e6', type: 'heading', text: 'เย้! ขอบคุณที่รักกันนะ 💖', fontSize: 1.5, fontFamily: 'Charm', color: '#ff6b9d' },
         { id: 'e7', type: 'letter', text: 'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันแบบนี้ในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลกเลยยย 💕' },
         { id: 'e8', type: 'button', label: '← กลับหน้าแรก', target: 'p1' }
       ]
@@ -298,10 +298,10 @@ export default function App() {
       theme: 'pink', layout: 'center', pageAnimation: 'fadeIn', pageEffect: 'none', pageEffectDensity: 50, elements: []
     };
     if (newPageType === 'question') base.elements = [{ id: generateEid(), type: 'counter', question: 'คุณจะยอมรับเป็นแฟนกับผมไหม? 💖', yesLabel: 'ตกลง 🥰', noLabel: 'เป็นแค่เพื่อน 🥹', noBehavior: 'growYes', noMessages: ["คิดใหม่สิ.."] }];
-    else if (newPageType === 'gallery') base.elements = [{ id: generateEid(), type: 'heading', text: 'คลังภาพความทรงจำ 📸', fontSize: 24, fontFamily: 'Mali' }, { id: generateEid(), type: 'gallery', images: [], cols: 2 }];
-    else if (newPageType === 'music') base.elements = [{ id: generateEid(), type: 'heading', text: 'เพลงนี้มอบให้เธอ 🎵', fontSize: 22, fontFamily: 'Itim' }, { id: generateEid(), type: 'vinyl', audioSrc: '' }];
-    else if (newPageType === 'letter') base.elements = [{ id: generateEid(), type: 'heading', text: 'จดหมายลับ 💌', fontSize: 22, fontFamily: 'Charm' }, { id: generateEid(), type: 'letter', text: 'เขียนความในใจที่นี่...' }];
-    else base.elements = [{ id: generateEid(), type: 'heading', text: 'หน้าใหม่ ✨', fontSize: 22 }];
+    else if (newPageType === 'gallery') base.elements = [{ id: generateEid(), type: 'heading', text: 'คลังภาพความทรงจำ 📸', fontSize: 1.5, fontFamily: 'Mali' }, { id: generateEid(), type: 'gallery', images: [], cols: 2 }];
+    else if (newPageType === 'music') base.elements = [{ id: generateEid(), type: 'heading', text: 'เพลงนี้มอบให้เธอ 🎵', fontSize: 1.4, fontFamily: 'Itim' }, { id: generateEid(), type: 'vinyl', audioSrc: '' }];
+    else if (newPageType === 'letter') base.elements = [{ id: generateEid(), type: 'heading', text: 'จดหมายลับ 💌', fontSize: 1.4, fontFamily: 'Charm' }, { id: generateEid(), type: 'letter', text: 'เขียนความในใจที่นี่...' }];
+    else base.elements = [{ id: generateEid(), type: 'heading', text: 'หน้าใหม่ ✨', fontSize: 1.8 }];
     setPages(prev => [...prev, base]);
     setActivePageId(pId);
     setNewPageName('');
@@ -311,8 +311,8 @@ export default function App() {
   function addElement(type) {
     if (!activePage) return;
     const freshNode = { id: generateEid(), type };
-    if (type === 'heading') freshNode.text = 'หัวข้อข้อความใหม่';
-    if (type === 'subtext') freshNode.text = 'รายละเอียดข้อความ';
+    if (type === 'heading') { freshNode.text = 'หัวข้อข้อความใหม่'; freshNode.fontSize = 1.8; }
+    if (type === 'subtext') { freshNode.text = 'รายละเอียดข้อความ'; freshNode.fontSize = 1.0; }
     if (type === 'sticker') freshNode.emoji = '❤️';
     if (type === 'animated_sticker') { freshNode.stickerSrc = ''; freshNode.stickerSize = 120; }
     if (type === 'button') { freshNode.label = 'ปุ่มนำทาง'; freshNode.target = ''; }
