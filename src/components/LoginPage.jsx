@@ -8,7 +8,7 @@ const RATE_KEY     = 'vb_login_rate';
 function getRateData() { try { return JSON.parse(localStorage.getItem(RATE_KEY) || '{}'); } catch { return {}; } }
 function setRateData(d) { localStorage.setItem(RATE_KEY, JSON.stringify(d)); }
 
-export default function LoginPage() {
+export default function LoginPage({ isModal = false, onClose = null }) {
   const [username,  setUsername]  = useState('');
   const [password,  setPassword]  = useState('');
   const [error,     setError]     = useState('');
@@ -57,6 +57,7 @@ export default function LoginPage() {
       if (signErr) throw new Error('รหัสผ่านไม่ถูกต้อง');
 
       setRateData({});
+      if (onClose) onClose(); // ปิด modal หลัง login สำเร็จ
     } catch (err) {
       const d = getRateData();
       const attempts = (d.attempts || 0) + 1;
@@ -76,9 +77,16 @@ export default function LoginPage() {
 
   const inp = { background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,107,157,0.3)', borderRadius:'9px', color:'#f0d0ff', fontFamily:'Mitr,sans-serif', fontSize:'0.9rem', outline:'none', width:'100%', padding:'10px 12px', marginBottom:'14px', boxSizing:'border-box' };
 
+  const wrapStyle = isModal
+    ? { position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, fontFamily:'Mitr,sans-serif' }
+    : { minHeight:'100vh', background:'linear-gradient(135deg,#1a0a2e,#2c1040)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Mitr,sans-serif' };
+
   return (
-    <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#1a0a2e,#2c1040)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Mitr,sans-serif' }}>
-      <div style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,107,157,0.3)', borderRadius:'20px', padding:'40px 36px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+    <div style={wrapStyle} onClick={isModal ? (e => { if(e.target===e.currentTarget && onClose) onClose(); }) : undefined}>
+      <div style={{ position:'relative', background:'rgba(26,10,46,0.98)', border:'1px solid rgba(255,107,157,0.3)', borderRadius:'20px', padding:'40px 36px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+        {isModal && onClose && (
+          <button onClick={onClose} style={{ position:'absolute', top:'14px', right:'16px', background:'none', border:'none', color:'rgba(255,255,255,0.4)', fontSize:'1.2rem', cursor:'pointer', lineHeight:1 }}>✕</button>
+        )}
         <div style={{ textAlign:'center', marginBottom:'28px' }}>
           <div style={{ fontSize:'2.8rem', marginBottom:'8px' }}>💌</div>
           <h1 style={{ color:'#ff9a9e', fontSize:'1.4rem', fontWeight:600, margin:0 }}>Valentine Builder Pro</h1>
@@ -113,3 +121,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

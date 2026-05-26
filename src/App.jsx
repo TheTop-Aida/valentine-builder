@@ -5,6 +5,7 @@ import PageList from './components/PageList.jsx';
 import ElementEditor from './components/ElementEditor.jsx';
 import Preview from './components/Preview.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
+import LoginPage from './components/LoginPage.jsx';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { supabase } from './supabase.js';
 
@@ -187,6 +188,8 @@ export default function App() {
 
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const cloudSaveTimerRef = useRef(null);
   const [activePageId, setActivePageId] = useState(() => {
     try {
       const saved = localStorage.getItem('vb_pages_v5');
@@ -225,7 +228,14 @@ export default function App() {
     setCanUndo(historyIdxRef.current > 0);
     setCanRedo(false);
     try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(e) {}
-  }, [pages]);
+    // Cloud save (debounced) เมื่อ login แล้ว
+    if (user) {
+      if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+      cloudSaveTimerRef.current = setTimeout(async () => {
+        try { await supabase.from('profiles').update({ pages_data: pages }).eq('id', user.id); } catch(e) {}
+      }, 1500);
+    }
+  }, [pages, user]);
 
   useEffect(() => {
     function onKey(e) {
@@ -235,6 +245,20 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // โหลดหน้าจาก Cloud เมื่อ login
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const { data } = await supabase.from('profiles').select('pages_data').eq('id', user.id).single();
+        if (data?.pages_data && data.pages_data.length > 0) {
+          setPages(data.pages_data);
+          setActivePageId(data.pages_data[0].id);
+        }
+      } catch(e) {}
+    })();
+  }, [user?.id]);
 
   useEffect(() => { setPreviewHtml(generateHTML(pages)); }, [pages]);
 
@@ -376,11 +400,27 @@ export default function App() {
               ⚙️ Admin
             </button>
           )}
-          <button className="btn-top btn-export" onClick={handleExportClick}>⬇️ Export HTML</button>
-          <button onClick={logout} title="ออกจากระบบ"
-            style={{ padding:'6px 12px', background:'rgba(255,80,80,0.15)', border:'1px solid rgba(255,80,80,0.3)', borderRadius:'8px', color:'#ff8080', cursor:'pointer', fontSize:'0.8rem', fontFamily:'Mitr,sans-serif' }}>
-            🚪 ออก
-          </button>
+          {user ? (
+            <>
+              <button className="btn-top btn-export" onClick={handleExportClick}>⬇️ Export HTML</button>
+              <button onClick={logout} title="ออกจากระบบ"
+                style={{ padding:'6px 12px', background:'rgba(255,80,80,0.15)', border:'1px solid rgba(255,80,80,0.3)', borderRadius:'8px', color:'#ff8080', cursor:'pointer', fontSize:'0.8rem', fontFamily:'Mitr,sans-serif' }}>
+                🚪 ออก
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="btn-top btn-export" onClick={() => setShowLoginModal(true)}
+                style={{ opacity:0.55, cursor:'pointer', position:'relative' }}
+                title="กรุณาเข้าสู่ระบบก่อน Export">
+                🔒 Export HTML
+              </button>
+              <button onClick={() => setShowLoginModal(true)}
+                style={{ padding:'6px 14px', background:'linear-gradient(135deg,#ff6b9d,#e63462)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', fontSize:'0.8rem', fontFamily:'Mitr,sans-serif', fontWeight:600 }}>
+                🔐 เข้าสู่ระบบ
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -703,6 +743,11 @@ export default function App() {
 
       {/* Admin Panel */}
       {showAdminPanel && <AdminPanel onClose={() => setShowAdminPanel(false)} />}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <LoginPage isModal={true} onClose={() => setShowLoginModal(false)} />
+      )}
     </div>
   );
 }
