@@ -187,7 +187,13 @@ export default function App() {
 
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
-  const [activePageId, setActivePageId] = useState('p1');
+  const [activePageId, setActivePageId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vb_pages_v5');
+      if (saved) { const ps = JSON.parse(saved); if (ps && ps.length > 0) return ps[0].id; }
+    } catch(e) {}
+    return 'p1';
+  });
   const [activeTab, setActiveTab] = useState('elements');
   const [editingElemId, setEditingElemId] = useState(null);
   const [previewHtml, setPreviewHtml] = useState('');
