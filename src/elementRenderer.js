@@ -311,7 +311,7 @@ export function renderElement(el, th) {
       const cols = el.cols || 2;
       if (items.length === 0) return `<div style="padding:20px; background:rgba(0,0,0,0.03); border-radius:10px; text-align:center; font-size:0.75rem; color:#888; z-index:2;">📸 คลังภาพยังว่างเปล่า</div>`;
       return `<div class="gallery-container ${animClass}" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:6px; width:100%; z-index:2; ${animDelay}">
-          ${items.map(img => `<img src="${img}" style="width:100%; height:110px; object-fit:cover; border-radius:8px;" />`).join('')}
+          ${items.map(img => `<img src="${img}" style="width:100%; height:auto; display:block; border-radius:8px; object-fit:contain;" />`).join('')}
         </div>`;
     }
     case 'animated_sticker': {
