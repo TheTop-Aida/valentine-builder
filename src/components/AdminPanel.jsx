@@ -47,7 +47,7 @@ export default function AdminPanel({ onClose }) {
 
   useEffect(() => {
     if (tab === 'users') loadUsers();
-    if (tab === 'code')  loadCodes();
+    if (tab === 'code')  { loadCodes(); loadUsers(); }
   }, [tab]);
 
   async function createUser() {
@@ -166,7 +166,12 @@ export default function AdminPanel({ onClose }) {
         {tab === 'code' && (
           <div>
             <label style={{ color:'#c9a8e8', fontSize:'0.75rem', display:'block', marginBottom:'5px' }}>Username ลูกค้า</label>
-            <input style={inpStyle} value={codeFor} onChange={e => setCodeFor(e.target.value)} placeholder="username ของลูกค้า" />
+            <select style={{ ...inpStyle, cursor:'pointer' }} value={codeFor} onChange={e => setCodeFor(e.target.value)}>
+              <option value="">— เลือกลูกค้า —</option>
+              {users.filter(u => !u.is_admin).map(u => (
+                <option key={u.id} value={u.username}>{u.username}</option>
+              ))}
+            </select>
             <label style={{ color:'#c9a8e8', fontSize:'0.75rem', display:'block', marginBottom:'5px' }}>หมดอายุใน</label>
             <select value={codeHrs} onChange={e => setCodeHrs(+e.target.value)} style={{ ...inpStyle, cursor:'pointer' }}>
               <option value={1}>1 ชั่วโมง</option>
