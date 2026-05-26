@@ -43,8 +43,13 @@ export function renderElement(el, th) {
       return `<div class="${animClass}" style="${animDelay} text-align:center; width:100%; z-index:2;"><img src="${el.src}" style="max-width:100%; width:${el.maxWidth||220}px; border-radius:${el.radius||12}px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.05);" alt="Valentine img"/></div>`;
     case 'sticker':
       return `<div class="${animClass}" style="font-size:${el.fontSize||48}px; margin:4px 0; display:inline-block; text-align:center; width:100%; z-index:2; ${animDelay}">${el.emoji || '❤️'}</div>`;
-    case 'button':
-      return `<div style="${textAlign} z-index:2;"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:10px 24px; border-radius:30px; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${el.fontSize||15}px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${el.label||'ปุ่มกด'}</button></div>`;
+    case 'button': {
+      const btnSizeMap = { sm: {fs:'13px', pad:'7px 18px'}, md: {fs:'15px', pad:'10px 24px'}, lg: {fs:'19px', pad:'14px 34px'} };
+      const bs = btnSizeMap[el.btnSize] || btnSizeMap.md;
+      const shapeMap = { pill: '999px', rounded: '12px', square: '4px' };
+      const bRadius = shapeMap[el.btnShape] || '999px';
+      return `<div style="${textAlign} z-index:2;"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:${bs.pad}; border-radius:${bRadius}; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${bs.fs}; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${el.label||'ปุ่มกด'}</button></div>`;
+    }
     case 'divider':
       return `<hr style="border:none; border-top:${el.thickness||1}px solid ${el.color||th.accent}33; margin:12px 0; width:100%; z-index:2;"/>`;
     case 'spacer':

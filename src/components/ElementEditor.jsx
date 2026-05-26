@@ -83,11 +83,66 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
         <div>
           <label style={labelStyle}>ข้อความบนปุ่ม</label>
           <input value={el.label || ''} onChange={e => upd({ label: e.target.value })} style={inputStyle} />
+
           <label style={labelStyle}>คลิกแล้วเชื่อมโยงไปหน้าไหน</label>
           <select value={el.target || ''} onChange={e => upd({ target: e.target.value })} style={selStyle}>
             <option value="">— เลือกหน้าปลายทาง —</option>
             {pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+
+          {/* รูปร่าง */}
+          <label style={{...labelStyle, marginTop:'10px'}}>รูปร่างปุ่ม</label>
+          <div style={{display:'flex', gap:'8px', marginBottom:'8px'}}>
+            {[{id:'pill', label:'💊 Pill'}, {id:'rounded', label:'🔲 Rounded'}, {id:'square', label:'⬛ Square'}].map(s => (
+              <button key={s.id} type="button" onClick={() => upd({ btnShape: s.id })}
+                style={{flex:1, padding:'6px 4px', fontSize:'0.72rem', borderRadius: s.id==='pill'?'20px': s.id==='rounded'?'8px':'3px',
+                  border: (el.btnShape||'pill')===s.id ? '2px solid #ff6b9d' : '1px solid rgba(255,255,255,0.15)',
+                  background: (el.btnShape||'pill')===s.id ? 'rgba(255,107,157,0.2)' : 'rgba(255,255,255,0.05)',
+                  color:'#fff', cursor:'pointer'}}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ขนาด */}
+          <label style={labelStyle}>ขนาดปุ่ม</label>
+          <div style={{display:'flex', gap:'8px', marginBottom:'8px'}}>
+            {[{id:'sm', label:'S เล็ก'}, {id:'md', label:'M กลาง'}, {id:'lg', label:'L ใหญ่'}].map(s => (
+              <button key={s.id} type="button" onClick={() => upd({ btnSize: s.id })}
+                style={{flex:1, padding:'6px 4px', fontSize:'0.72rem', borderRadius:'8px',
+                  border: (el.btnSize||'md')===s.id ? '2px solid #ff6b9d' : '1px solid rgba(255,255,255,0.15)',
+                  background: (el.btnSize||'md')===s.id ? 'rgba(255,107,157,0.2)' : 'rgba(255,255,255,0.05)',
+                  color:'#fff', cursor:'pointer'}}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* สีพื้นหลังปุ่ม */}
+          <label style={labelStyle}>สีพื้นหลังปุ่ม</label>
+          <div style={{display:'flex', flexWrap:'wrap', gap:'6px', marginBottom:'8px'}}>
+            {SWATCHES.map(c => (
+              <div key={c} onClick={() => upd({ bgColor: c })}
+                style={{width:'24px', height:'24px', borderRadius:'50%', background:c, cursor:'pointer',
+                  border: (el.bgColor||'')===c ? '2px solid #fff' : '2px solid transparent',
+                  boxShadow: (el.bgColor||'')===c ? '0 0 0 2px #ff6b9d' : 'none'}} />
+            ))}
+            <input type="color" value={el.bgColor||'#ff6b9d'} onChange={e => upd({ bgColor: e.target.value })}
+              style={{width:'24px', height:'24px', borderRadius:'50%', border:'none', padding:0, cursor:'pointer', background:'none'}} title="เลือกสีเอง" />
+          </div>
+
+          {/* สีตัวหนังสือ */}
+          <label style={labelStyle}>สีตัวหนังสือบนปุ่ม</label>
+          <div style={{display:'flex', flexWrap:'wrap', gap:'6px', marginBottom:'4px'}}>
+            {SWATCHES.map(c => (
+              <div key={c} onClick={() => upd({ textColor: c })}
+                style={{width:'24px', height:'24px', borderRadius:'50%', background:c, cursor:'pointer',
+                  border: (el.textColor||'#ffffff')===c ? '2px solid #fff' : '2px solid transparent',
+                  boxShadow: (el.textColor||'#ffffff')===c ? '0 0 0 2px #ff6b9d' : 'none'}} />
+            ))}
+            <input type="color" value={el.textColor||'#ffffff'} onChange={e => upd({ textColor: e.target.value })}
+              style={{width:'24px', height:'24px', borderRadius:'50%', border:'none', padding:0, cursor:'pointer', background:'none'}} title="เลือกสีเอง" />
+          </div>
         </div>
       )}
 
