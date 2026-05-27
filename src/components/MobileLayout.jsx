@@ -47,11 +47,14 @@ export default function MobileLayout({
     }
   }
 
+  const TOP_H = 46;
+  const BOT_H = 58;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', minHeight: '-webkit-fill-available', overflow: 'hidden', background: '#0d0d1a', fontFamily: F }}>
+    <div style={{ fontFamily: F, background: '#0d0d1a' }}>
 
       {/* ── TOP BAR ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', background: 'rgba(18,6,36,0.97)', borderBottom: '1px solid rgba(255,107,157,0.2)', flexShrink: 0, zIndex: 10 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: TOP_H, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', background: 'rgba(18,6,36,0.97)', borderBottom: '1px solid rgba(255,107,157,0.2)', zIndex: 100 }}>
         <span style={{ color: '#ff9a9e', fontWeight: 600, fontSize: '0.88rem', letterSpacing: '0.3px' }}>💌 Valentine Builder</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {isAdmin && (
@@ -68,7 +71,7 @@ export default function MobileLayout({
       </div>
 
       {/* ── MAIN CONTENT AREA ── */}
-      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ position: 'fixed', top: TOP_H, left: 0, right: 0, bottom: BOT_H, overflow: 'hidden' }}>
 
         {/* PREVIEW SCREEN */}
         <div style={{ width: '100%', height: '100%', display: activeScreen === 'preview' ? 'flex' : 'none', flexDirection: 'column', position: 'relative' }}>
@@ -94,7 +97,7 @@ export default function MobileLayout({
 
         {/* PAGES SCREEN */}
         {activeScreen === 'pages' && (
-          <div style={{ height: '100%', overflowY: 'auto', padding: '16px' }}>
+          <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: '16px', WebkitOverflowScrolling: 'touch' }}>
             <div style={{ color: '#ff9a9e', fontWeight: 600, marginBottom: '14px', fontSize: '0.9rem' }}>📑 จัดการหน้าเว็บ ({pages.length} หน้า)</div>
             {pages.map((p, idx) => (
               <div
@@ -120,7 +123,7 @@ export default function MobileLayout({
 
         {/* SETTINGS SCREEN */}
         {activeScreen === 'settings' && (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,107,157,0.2)', flexShrink: 0, overflowX: 'auto' }}>
               {[['layout', '📐 Layout'], ['theme', '🎨 Theme'], ['bg', '🖼️ พื้นหลัง'], ['music', '🎵 เพลง']].map(([id, label]) => (
                 <div key={id} onClick={() => setSettingsTab(id)} style={{ padding: '11px 16px', fontSize: '0.78rem', color: settingsTab === id ? '#ff9a9e' : '#666', borderBottom: settingsTab === id ? '2px solid #ff6b9d' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: F, flexShrink: 0 }}>
@@ -152,7 +155,7 @@ export default function MobileLayout({
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.38)', zIndex: 40 }}
             onClick={() => setDrawerOpen(false)}
           />
-          <div style={{ position: 'fixed', bottom: 56, left: 0, right: 0, height: '66vh', background: '#16072a', borderRadius: '20px 20px 0 0', border: '1px solid rgba(255,107,157,0.3)', borderBottom: 'none', zIndex: 50, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 -8px 32px rgba(0,0,0,0.5)' }}>
+          <div style={{ position: 'fixed', bottom: BOT_H, left: 0, right: 0, height: '66vh', background: '#16072a', borderRadius: '20px 20px 0 0', border: '1px solid rgba(255,107,157,0.3)', borderBottom: 'none', zIndex: 50, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 -8px 32px rgba(0,0,0,0.5)' }}>
             {/* Handle */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
               <div style={{ width: '38px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.18)' }} />
@@ -249,7 +252,7 @@ export default function MobileLayout({
       )}
 
       {/* ── BOTTOM NAVIGATION ── */}
-      <div style={{ display: 'flex', background: 'rgba(10,2,20,0.98)', borderTop: '1px solid rgba(255,107,157,0.18)', height: '58px', flexShrink: 0, zIndex: 60 }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: BOT_H, display: 'flex', background: 'rgba(10,2,20,0.98)', borderTop: '1px solid rgba(255,107,157,0.18)', zIndex: 100 }}>
         {[
           { id: 'preview', icon: '👁️', label: 'Preview' },
           { id: 'pages',   icon: '📑', label: 'หน้า' },
