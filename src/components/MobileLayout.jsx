@@ -48,7 +48,7 @@ export default function MobileLayout({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0d0d1a', fontFamily: F }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', minHeight: '-webkit-fill-available', overflow: 'hidden', background: '#0d0d1a', fontFamily: F }}>
 
       {/* ── TOP BAR ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', background: 'rgba(18,6,36,0.97)', borderBottom: '1px solid rgba(255,107,157,0.2)', flexShrink: 0, zIndex: 10 }}>
