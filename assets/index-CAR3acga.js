@@ -416,18 +416,37 @@ Error generating stack: `+i.message+`
       }
     }
     ${i}
-    // ── tap-to-edit: ส่ง element id กลับไปหา parent builder ──
+    // ── long-press-to-edit: กดค้าง 500ms เพื่อเปิด editor ──
     (function(){
-      document.addEventListener('click', function(e){
+      var _timer = null;
+      var _moved = false;
+
+      function cancel() {
+        if (_timer) { clearTimeout(_timer); _timer = null; }
+      }
+
+      document.addEventListener('touchstart', function(e) {
         var wrap = e.target.closest('[data-eid]');
         if (!wrap) return;
-        var tag = e.target.tagName ? e.target.tagName.toLowerCase() : '';
-        // ถ้าคลิกบน button หรือ a ให้ปล่อยผ่านไปตามปกติ ไม่เปิด editor
-        if (tag === 'button' || tag === 'a' || e.target.closest('button') || e.target.closest('a')) return;
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: 'vb_tap_edit', eid: wrap.getAttribute('data-eid') }, '*');
-        }
-      }, true);
+        _moved = false;
+        cancel();
+        var eid = wrap.getAttribute('data-eid');
+        _timer = setTimeout(function() {
+          _timer = null;
+          if (_moved) return;
+          // visual feedback: flash the element
+          wrap.style.transition = 'opacity 0.15s';
+          wrap.style.opacity = '0.55';
+          setTimeout(function(){ wrap.style.opacity = '1'; }, 200);
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'vb_tap_edit', eid: eid }, '*');
+          }
+        }, 500);
+      }, { passive: true });
+
+      document.addEventListener('touchmove',   function(){ _moved = true; cancel(); }, { passive: true });
+      document.addEventListener('touchend',    cancel, { passive: true });
+      document.addEventListener('touchcancel', cancel, { passive: true });
     })();
     window.addEventListener('DOMContentLoaded', function(){
       var firstId = "${((r=e[0])==null?void 0:r.id)||""}";
