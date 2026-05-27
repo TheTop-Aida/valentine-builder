@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ELEMENT_TYPES, THEMES, LAYOUTS, ANIMATIONS, PAGE_EFFECTS, SWATCHES, PAGE_TYPES,
 } from '../constants.js';
@@ -34,6 +34,23 @@ export default function MobileLayout({
   const activeEditingElement = activePage
     ? (activePage.elements || []).find(e => e.id === editingElemId)
     : null;
+
+  // รับ tap-to-edit จาก iframe
+  useEffect(() => {
+    function onMsg(e) {
+      if (e.data?.type !== 'vb_tap_edit') return;
+      const eid = e.data.eid;
+      // ตรวจว่า element นี้อยู่ใน activePage ไหม
+      const found = activePage && (activePage.elements || []).find(el => el.id === eid);
+      if (!found) return;
+      setEditingElemId(eid);
+      setDrawerOpen(true);
+      setDrawerTab('edit');
+      setActiveScreen('preview');
+    }
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [activePage]);
 
   function navTo(id) {
     if (id === 'edit') {

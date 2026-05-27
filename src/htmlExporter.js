@@ -33,7 +33,9 @@ export function generateHTML(pages) {
     const th = getTheme(p.theme);
     const isFirst = i === 0;
     const { containerStyles, cardStyles } = getPageLayoutStyles(p, th);
-    const elementsRendered = (p.elements || []).map(el => renderElement(el, th)).join('\n');
+    const elementsRendered = (p.elements || []).map(el =>
+      `<div data-eid="${el.id}" class="vb-tap-elem">${renderElement(el, th)}</div>`
+    ).join('\n');
 
     const bgImageLayer = p.bgImage
       ? `<div style="position:absolute; inset:0; background-image:url('${p.bgImage}'); background-size:${p.bgZoom ? p.bgZoom+'%' : 'cover'}; background-position:center; opacity:${p.bgOpacity ?? 0.5}; z-index:0; pointer-events:none;"></div>`
@@ -201,6 +203,19 @@ export function generateHTML(pages) {
       }
     }
     ${effectsEngine}
+    // ── tap-to-edit: ส่ง element id กลับไปหา parent builder ──
+    (function(){
+      document.addEventListener('click', function(e){
+        var wrap = e.target.closest('[data-eid]');
+        if (!wrap) return;
+        var tag = e.target.tagName ? e.target.tagName.toLowerCase() : '';
+        // ถ้าคลิกบน button หรือ a ให้ปล่อยผ่านไปตามปกติ ไม่เปิด editor
+        if (tag === 'button' || tag === 'a' || e.target.closest('button') || e.target.closest('a')) return;
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'vb_tap_edit', eid: wrap.getAttribute('data-eid') }, '*');
+        }
+      }, true);
+    })();
     window.addEventListener('DOMContentLoaded', function(){
       var firstId = "${pages[0]?.id || ''}";
       if(firstId&&metaDict[firstId]){
