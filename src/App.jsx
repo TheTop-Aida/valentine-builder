@@ -6,6 +6,7 @@ import ElementEditor from './components/ElementEditor.jsx';
 import Preview from './components/Preview.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 import LoginPage from './components/LoginPage.jsx';
+import MobileLayout from './components/MobileLayout.jsx';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { supabase } from './supabase.js';
 import { compressImage } from './utils/imageUtils.js';
@@ -198,6 +199,7 @@ export default function App() {
     } catch(e) {}
     return 'p1';
   });
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [activeTab, setActiveTab] = useState('elements');
   const [editingElemId, setEditingElemId] = useState(null);
   const [previewHtml, setPreviewHtml] = useState('');
@@ -245,6 +247,12 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth < 768); }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // โหลดหน้าจาก Cloud เมื่อ login
@@ -383,6 +391,52 @@ export default function App() {
   }
 
   const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
+
+  // ── MOBILE LAYOUT ──────────────────────────────────────────────────────────
+  if (isMobile) return (
+    <>
+      <MobileLayout
+        pages={pages}
+        activePageId={activePageId}
+        setActivePageId={setActivePageId}
+        activePage={activePage}
+        activeThemeObj={activeThemeObj}
+        iframeRef={iframeRef}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        handleUndo={handleUndo}
+        handleRedo={handleRedo}
+        user={user}
+        isAdmin={isAdmin}
+        logout={logout}
+        setShowLoginModal={setShowLoginModal}
+        setShowAdminPanel={setShowAdminPanel}
+        editingElemId={editingElemId}
+        setEditingElemId={setEditingElemId}
+        addElement={addElement}
+        updateElement={updateElement}
+        deleteElement={deleteElement}
+        updatePage={updatePage}
+        deletePage={deletePage}
+        newPageType={newPageType}
+        setNewPageType={setNewPageType}
+        newPageName={newPageName}
+        setNewPageName={setNewPageName}
+        createNewPage={createNewPage}
+        handleExportClick={handleExportClick}
+      />
+      {showAdminPanel && <AdminPanel onClose={() => setShowAdminPanel(false)} />}
+      {showExportModal && (
+        <ExportModal
+          onClose={() => setShowExportModal(false)}
+          onSuccess={() => { setShowExportModal(false); exportCompleteHTML(); }}
+        />
+      )}
+      {showLoginModal && (
+        <LoginPage isModal={true} onClose={() => setShowLoginModal(false)} />
+      )}
+    </>
+  );
 
   return (
     <div id="root" style={{display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden'}}>
