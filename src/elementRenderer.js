@@ -55,57 +55,117 @@ export function renderElement(el, th) {
     case 'spacer':
       return `<div style="height:${el.height||20}px; width:100%; z-index:2;"></div>`;
     case 'letter': {
-      const lt = el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...';
+      const lt  = el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...';
       const acc = th.accent || '#ff6b9d';
       const sid = el.id;
-      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; font-family:Mitr,sans-serif;">
+      const envStyle = el.letterStyle || 'peach';
+
+      /* ── SVG Envelopes ── */
+      const bodyPeach = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <defs><linearGradient id="pb-${sid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fcd5bc"/><stop offset="100%" stop-color="#f0ae91"/></linearGradient></defs>
+        <rect width="300" height="185" rx="12" fill="url(#pb-${sid})"/>
+        <polygon points="0,0 0,185 148,95" fill="#e89d80" opacity="0.35"/>
+        <polygon points="300,0 300,185 152,95" fill="#e4977a" opacity="0.30"/>
+        <polygon points="0,185 300,185 150,97" fill="#dd8f6e" opacity="0.38"/>
+        <rect x="248" y="10" width="40" height="30" rx="4" fill="rgba(255,255,255,0.45)" stroke="${acc}" stroke-width="1" opacity="0.75"/>
+        <text x="268" y="23" text-anchor="middle" font-size="10" fill="${acc}" font-family="sans-serif">💕</text>
+        <text x="268" y="34" text-anchor="middle" font-size="7.5" fill="${acc}" font-family="sans-serif" letter-spacing="0.5">LOVE</text>
+        <circle cx="150" cy="95" r="18" fill="${acc}" opacity="0.85"/>
+        <text x="150" y="102" text-anchor="middle" font-size="17" fill="white">♡</text>
+      </svg>`;
+      const flapPeach = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <defs><linearGradient id="pf-${sid}" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#eba882"/><stop offset="100%" stop-color="#f5bda0"/></linearGradient></defs>
+        <polygon points="0,0 300,0 150,121" fill="url(#pf-${sid})"/>
+      </svg>`;
+
+      const bodySketch = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <rect x="0.75" y="0.75" width="298.5" height="183.5" rx="6" fill="#ffffff" stroke="#2a1a14" stroke-width="1.5"/>
+        <line x1="1" y1="1" x2="150" y2="95" stroke="#2a1a14" stroke-width="1.2" opacity="0.65"/>
+        <line x1="299" y1="1" x2="150" y2="95" stroke="#2a1a14" stroke-width="1.2" opacity="0.65"/>
+        <line x1="1" y1="184" x2="150" y2="95" stroke="#2a1a14" stroke-width="1" opacity="0.45"/>
+        <line x1="299" y1="184" x2="150" y2="95" stroke="#2a1a14" stroke-width="1" opacity="0.45"/>
+        <path d="M150 104 C150 104 139 93 139 87 C139 81.5 143 78 147 78 C149 78 150 80.5 150 80.5 C150 80.5 151 78 153 78 C157 78 161 81.5 161 87 C161 93 150 104 150 104Z" fill="#e05c6f"/>
+      </svg>`;
+      const flapSketch = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <polygon points="0.75,0.75 299.25,0.75 150,121" fill="#ffffff" stroke="#2a1a14" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>`;
+
+      const bodyRed = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <rect x="0.75" y="0.75" width="298.5" height="183.5" rx="16" fill="#c94040" stroke="#2a2020" stroke-width="1.5"/>
+        <rect x="7" y="7" width="286" height="171" rx="12" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="8 5" opacity="0.65"/>
+        <line x1="1" y1="1" x2="150" y2="95" stroke="#9e3030" stroke-width="1.5" opacity="0.55"/>
+        <line x1="299" y1="1" x2="150" y2="95" stroke="#9e3030" stroke-width="1.5" opacity="0.55"/>
+        <line x1="1" y1="184" x2="150" y2="95" stroke="#882828" stroke-width="1.5" opacity="0.45"/>
+        <line x1="299" y1="184" x2="150" y2="95" stroke="#882828" stroke-width="1.5" opacity="0.45"/>
+        <path d="M150 107 C150 107 130 91 130 79 C130 71 136 65 143 65 C146.5 65 149 68 150 70 C151 68 153.5 65 157 65 C164 65 170 71 170 79 C170 91 150 107 150 107Z" fill="white" opacity="0.88"/>
+      </svg>`;
+      const flapRed = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+        <polygon points="0.75,0.75 299.25,0.75 150,121" fill="#c94040" stroke="#2a2020" stroke-width="1.5" stroke-linejoin="round"/>
+        <polyline points="9,0.75 150,116 291,0.75" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="8 5" stroke-linejoin="round" opacity="0.6"/>
+      </svg>`;
+
+      const bodies = { peach: bodyPeach, sketch: bodySketch, red: bodyRed };
+      const flaps  = { peach: flapPeach, sketch: flapSketch, red: flapRed };
+      const bodySvg = bodies[envStyle] || bodyPeach;
+      const flapSvg = flaps[envStyle]  || flapPeach;
+
+      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; font-family:Mitr,sans-serif; overflow:visible;">
 <style>
-  /* ===== LOVE LETTER ENVELOPE ${sid} ===== */
-  #vbe-${sid}{position:relative;width:300px;max-width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
-  /* FLAP */
-  #vbf-${sid}{position:absolute;top:0;left:0;width:300px;z-index:5;transform-origin:50% 0;transition:transform .7s cubic-bezier(.4,0,.2,1);pointer-events:none;line-height:0;}
-  #vbe-${sid}.open #vbf-${sid}{transform:perspective(700px)rotateX(-180deg);}
-  /* BODY */
-  #vbd-${sid}{height:185px;background:linear-gradient(160deg,#ffd0e4 0%,#fff3f8 50%,#ffdcee 100%);border:2px solid ${acc}50;border-top:none;border-radius:0 0 20px 20px;position:relative;overflow:hidden;box-shadow:0 14px 40px ${acc}35,0 4px 16px rgba(0,0,0,.12);}
-  /* Fold lines on body */
-  #vbd-${sid}::before{content:'';position:absolute;top:0;left:0;width:0;height:0;border-top:92px solid ${acc}22;border-right:150px solid transparent;}
-  #vbd-${sid}::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-top:92px solid ${acc}15;border-left:150px solid transparent;}
-  /* BOTTOM fold V */
-  #vbbl-${sid}{position:absolute;bottom:0;left:0;width:0;height:0;border-bottom:92px solid ${acc}18;border-right:150px solid transparent;}
-  #vbbr-${sid}{position:absolute;bottom:0;right:0;width:0;height:0;border-bottom:92px solid ${acc}12;border-left:150px solid transparent;}
-  /* STAMP */
-  #vbst-${sid}{position:absolute;top:10px;right:12px;z-index:4;border:1.5px solid ${acc}55;border-radius:4px;padding:3px 7px;font-size:.55rem;color:${acc};background:rgba(255,255,255,.5);text-align:center;letter-spacing:.5px;line-height:1.5;font-family:Mitr,sans-serif;}
-  /* WAX SEAL */
-  #vbs-${sid}{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:radial-gradient(circle at 35% 32%,#fff5fa,${acc}dd);border-radius:50%;border:3px solid rgba(255,255,255,.75);box-shadow:0 0 0 4px ${acc}65,0 6px 20px ${acc}90,0 0 0 8px ${acc}25;display:flex;align-items:center;justify-content:center;font-size:2rem;z-index:4;animation:vbpls-${sid} 2.5s ease-in-out infinite;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .4s,box-shadow .4s;}
-  @keyframes vbpls-${sid}{0%,100%{box-shadow:0 0 0 4px ${acc}65,0 6px 20px ${acc}90,0 0 0 8px ${acc}25;}50%{box-shadow:0 0 0 4px ${acc}90,0 6px 28px ${acc}bb,0 0 0 14px ${acc}30;}}
-  #vbe-${sid}.open #vbs-${sid}{transform:translate(-50%,-50%)scale(0)rotate(90deg)!important;opacity:0;animation:none;}
+  /* ===== LETTER ${sid} ===== */
+  #vbe-${sid}{position:relative;width:300px;max-width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;overflow:visible;}
+  /* FLAP — rotates open */
+  #vbf-${sid}{position:absolute;top:0;left:0;width:100%;z-index:6;transform-origin:top center;transition:transform .75s cubic-bezier(.4,0,.2,1);pointer-events:none;line-height:0;}
+  #vbe-${sid}.open #vbf-${sid}{transform:perspective(700px) rotateX(-180deg);}
+  /* ENVELOPE BODY */
+  #vbd-${sid}{position:relative;line-height:0;}
   /* FLOATING HEARTS */
   #vbhts-${sid}{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-  @keyframes vbflt-${sid}{0%{transform:translateY(0)scale(1);opacity:1;}100%{transform:translateY(-100px)scale(.5);opacity:0;}}
+  @keyframes vbflt-${sid}{0%{transform:translateY(0)scale(1);opacity:1;}100%{transform:translateY(-90px)scale(.5);opacity:0;}}
   .vbht-${sid}{position:absolute;bottom:10px;animation:vbflt-${sid} 1.8s ease-out forwards;}
-  /* LETTER PAPER */
-  #vbltr-${sid}{max-height:0;overflow:hidden;transition:max-height 1s cubic-bezier(.25,.46,.45,.94);width:282px;max-width:calc(100% - 4px);margin:0 auto;}
-  #vbinn-${sid}{padding:24px 22px 28px;background-color:#fffef8;background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}18 28px);background-size:100% 28px;border:1.5px solid ${acc}30;border-top:3px solid ${acc};border-radius:0 0 16px 16px;box-shadow:0 10px 28px rgba(0,0,0,.09),inset 0 0 60px rgba(255,107,157,.03);}
+  /* LETTER PAPER — sits hidden below envelope, pops UP to cover it on open */
+  #vbltr-${sid}{
+    position:absolute;left:6px;right:6px;bottom:0;
+    z-index:3;
+    transform-origin:center bottom;
+    transform:translateY(48%);
+    opacity:0;
+    transition:transform .8s cubic-bezier(.34,1.35,.64,1), opacity .38s ease;
+    pointer-events:none;
+    filter:drop-shadow(0 -8px 26px rgba(0,0,0,.24));
+  }
+  #vbe-${sid}.open #vbltr-${sid}{
+    transform:translateY(-14%);
+    opacity:1;
+    z-index:8;
+    pointer-events:auto;
+  }
+  /* INNER PAPER */
+  #vbinn-${sid}{
+    padding:22px 18px 26px;
+    background:#fffef8;
+    background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}18 28px);
+    background-size:100% 28px;
+    border:1.5px solid ${acc}40;
+    border-bottom:1.5px solid ${acc}40;
+    border-radius:12px 12px 6px 6px;
+    box-shadow:0 -6px 24px rgba(0,0,0,.16),0 -2px 8px rgba(0,0,0,.08);
+  }
   /* HINT */
   #vbhint-${sid}{font-size:.7rem;color:${acc};margin-top:10px;opacity:.75;letter-spacing:1px;transition:opacity .3s;}
 </style>
 <div id="vbe-${sid}" onclick="vbTog_${sid}()">
-  <div id="vbf-${sid}">
-    <div style="width:0;height:0;border-left:150px solid transparent;border-right:150px solid transparent;border-top:122px solid ${acc};filter:brightness(.78)saturate(1.15)drop-shadow(0 3px 6px rgba(0,0,0,.2));"></div>
-  </div>
   <div id="vbd-${sid}">
-    <div id="vbbl-${sid}"></div><div id="vbbr-${sid}"></div>
-    <div id="vbst-${sid}">💕<br/>LOVE</div>
-    <div id="vbs-${sid}">💌</div>
+    ${bodySvg}
     <div id="vbhts-${sid}"></div>
   </div>
+  <div id="vbf-${sid}">${flapSvg}</div>
   <div id="vbltr-${sid}">
     <div id="vbinn-${sid}">
-      <div style="text-align:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1.5px dashed ${acc}45;">
+      <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px dashed ${acc}45;">
         <span style="font-size:.78rem;color:${acc};letter-spacing:2px;font-weight:600;">~ ถึงคนที่ฉันรัก ~</span>
       </div>
       <div style="${fontFamily}${fontSize}${color} line-height:2;white-space:pre-wrap;font-size:.88rem;">${lt}</div>
-      <div style="text-align:right;margin-top:18px;padding-top:10px;border-top:1px dashed ${acc}35;font-size:.76rem;color:${acc}aa;letter-spacing:.5px;">ด้วยความรักทั้งหัวใจ 💕</div>
+      <div style="text-align:right;margin-top:16px;padding-top:10px;border-top:1px dashed ${acc}35;font-size:.76rem;color:${acc}aa;letter-spacing:.5px;">ด้วยความรักทั้งหัวใจ 💕</div>
     </div>
   </div>
 </div>
@@ -114,27 +174,20 @@ export function renderElement(el, th) {
   var H=['❤️','💕','💗','🌹','✨','💖','🩷','💓'];
   window.vbTog_${sid}=function(){
     var e=document.getElementById('vbe-${sid}');
-    var l=document.getElementById('vbltr-${sid}');
-    var inn=document.getElementById('vbinn-${sid}');
     var h=document.getElementById('vbhint-${sid}');
     var hts=document.getElementById('vbhts-${sid}');
     if(!e.classList.contains('open')){
       e.classList.add('open');
-      l.style.maxHeight=inn.scrollHeight+'px';
       h.textContent='💌 แตะเพื่อปิดจดหมาย';
       hts.innerHTML='';
       for(var i=0;i<8;i++){(function(i){setTimeout(function(){
-        var d=document.createElement('div');
-        d.className='vbht-${sid}';
-        d.textContent=H[i%H.length];
-        d.style.left=(10+Math.random()*80)+'%';
-        d.style.fontSize=(.65+Math.random()*.55)+'rem';
-        hts.appendChild(d);
+        var d=document.createElement('div');d.className='vbht-${sid}';
+        d.textContent=H[i%H.length];d.style.left=(10+Math.random()*80)+'%';
+        d.style.fontSize=(.65+Math.random()*.55)+'rem';hts.appendChild(d);
         setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},2000);
       },i*180);})(i);}
     }else{
       e.classList.remove('open');
-      l.style.maxHeight='0';
       h.textContent='💌 แตะเพื่อเปิดจดหมาย';
     }
   };
