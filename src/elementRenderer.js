@@ -56,142 +56,183 @@ export function renderElement(el, th) {
       return `<div style="height:${el.height||20}px; width:100%; z-index:2;"></div>`;
     case 'letter': {
       const lt  = el.text || 'เขียนความในใจซึ้ง ๆ ไว้ที่นี่...';
-      const acc = th.accent || '#ff6b9d';
-      const sid = el.id;
+      const acc = th.accent || '#ff769f';
+      const sid = el.id || Math.random().toString(36).substr(2, 9);
       const envStyle = el.letterStyle || 'peach';
 
-      /* ── SVG Envelopes ── */
-      const bodyPeach = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <defs><linearGradient id="pb-${sid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fcd5bc"/><stop offset="100%" stop-color="#f0ae91"/></linearGradient></defs>
-        <rect width="300" height="185" rx="12" fill="url(#pb-${sid})"/>
-        <polygon points="0,0 0,185 148,95" fill="#e89d80" opacity="0.35"/>
-        <polygon points="300,0 300,185 152,95" fill="#e4977a" opacity="0.30"/>
-        <polygon points="0,185 300,185 150,97" fill="#dd8f6e" opacity="0.38"/>
-        <rect x="248" y="10" width="40" height="30" rx="4" fill="rgba(255,255,255,0.45)" stroke="${acc}" stroke-width="1" opacity="0.75"/>
-        <text x="268" y="23" text-anchor="middle" font-size="10" fill="${acc}" font-family="sans-serif">💕</text>
-        <text x="268" y="34" text-anchor="middle" font-size="7.5" fill="${acc}" font-family="sans-serif" letter-spacing="0.5">LOVE</text>
-        <circle cx="150" cy="95" r="18" fill="${acc}" opacity="0.85"/>
-        <text x="150" y="102" text-anchor="middle" font-size="17" fill="white">♡</text>
-      </svg>`;
-      const flapPeach = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <defs><linearGradient id="pf-${sid}" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#eba882"/><stop offset="100%" stop-color="#f5bda0"/></linearGradient></defs>
-        <polygon points="0,0 300,0 150,121" fill="url(#pf-${sid})"/>
-      </svg>`;
+      // ดึงสไตล์ตัวอักษรของระบบมาใช้
+      const innerTextStyle = `${fontFamily}${fontSize}${color} line-height:1.8; white-space:pre-wrap; font-size:0.92rem;`;
 
-      const bodySketch = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <rect x="0.75" y="0.75" width="298.5" height="183.5" rx="6" fill="#ffffff" stroke="#2a1a14" stroke-width="1.5"/>
-        <line x1="1" y1="1" x2="150" y2="95" stroke="#2a1a14" stroke-width="1.2" opacity="0.65"/>
-        <line x1="299" y1="1" x2="150" y2="95" stroke="#2a1a14" stroke-width="1.2" opacity="0.65"/>
-        <line x1="1" y1="184" x2="150" y2="95" stroke="#2a1a14" stroke-width="1" opacity="0.45"/>
-        <line x1="299" y1="184" x2="150" y2="95" stroke="#2a1a14" stroke-width="1" opacity="0.45"/>
-        <path d="M150 104 C150 104 139 93 139 87 C139 81.5 143 78 147 78 C149 78 150 80.5 150 80.5 C150 80.5 151 78 153 78 C157 78 161 81.5 161 87 C161 93 150 104 150 104Z" fill="#e05c6f"/>
-      </svg>`;
-      const flapSketch = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <polygon points="0.75,0.75 299.25,0.75 150,121" fill="#ffffff" stroke="#2a1a14" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>`;
+      let layers = {};
+      const strokeColor = "#543d32";
 
-      const bodyRed = `<svg viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <rect x="0.75" y="0.75" width="298.5" height="183.5" rx="16" fill="#c94040" stroke="#2a2020" stroke-width="1.5"/>
-        <rect x="7" y="7" width="286" height="171" rx="12" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="8 5" opacity="0.65"/>
-        <line x1="1" y1="1" x2="150" y2="95" stroke="#9e3030" stroke-width="1.5" opacity="0.55"/>
-        <line x1="299" y1="1" x2="150" y2="95" stroke="#9e3030" stroke-width="1.5" opacity="0.55"/>
-        <line x1="1" y1="184" x2="150" y2="95" stroke="#882828" stroke-width="1.5" opacity="0.45"/>
-        <line x1="299" y1="184" x2="150" y2="95" stroke="#882828" stroke-width="1.5" opacity="0.45"/>
-        <path d="M150 107 C150 107 130 91 130 79 C130 71 136 65 143 65 C146.5 65 149 68 150 70 C151 68 153.5 65 157 65 C164 65 170 71 170 79 C170 91 150 107 150 107Z" fill="white" opacity="0.88"/>
-      </svg>`;
-      const flapRed = `<svg viewBox="0 0 300 122" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
-        <polygon points="0.75,0.75 299.25,0.75 150,121" fill="#c94040" stroke="#2a2020" stroke-width="1.5" stroke-linejoin="round"/>
-        <polyline points="9,0.75 150,116 291,0.75" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="8 5" stroke-linejoin="round" opacity="0.6"/>
-      </svg>`;
+      if (envStyle === 'red') {
+        layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="28" fill="#ff5268" stroke="${strokeColor}" stroke-width="8" stroke-linejoin="round"/></svg>`;
+        layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
+          <path d="M 6 82 L 6 194 C 6 208, 18 214, 30 214 L 290 214 C 302 214, 314 208, 314 194 L 314 82 L 185 154 C 170 162, 150 162, 135 154 Z" fill="#ff6b81" stroke="${strokeColor}" stroke-width="8" stroke-linejoin="round"/>
+          <path d="M 22 98 L 22 202 C 22 205, 25 207, 28 207 L 292 207 C 295 207, 298 205, 298 202 L 298 98" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round" opacity="0.7"/>
+          <path d="M 8 185 L 115 132 M 312 185 L 205 132" stroke="${strokeColor}" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="52" cy="155" r="16" fill="#ff2e55" opacity="0.35" filter="blur(3px)"/>
+          <circle cx="268" cy="155" r="16" fill="#ff2e55" opacity="0.35" filter="blur(3px)"/>
+        </svg>`;
+        layers.flap = `<svg viewBox="0 0 320 130" width="100%" height="100%" style="overflow:visible;">
+          <path d="M 6 26 C 6 14, 15 6, 28 6 L 292 6 C 305 6, 314 14, 314 26 Q 160 125, 6 26 Z" fill="#ff6b81" stroke="${strokeColor}" stroke-width="8" stroke-linejoin="round"/>
+          <path d="M 24 20 Q 160 108, 296 20" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round" opacity="0.7"/>
+          <path d="M 160 102 C 160 102 136 80 136 66 C 136 55, 145 47, 155 48 C 160 49, 160 53, 160 53 C 160 53, 160 49, 165 48 C 175 47, 184 55, 184 66 C 184 80, 160 102, 160 102 Z" fill="#fffdf0" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/>
+          <circle cx="150" cy="58" r="3" fill="#ffffff" opacity="0.8"/>
+        </svg>`;
+      }
+      else if (envStyle === 'sketch') {
+        layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="16" fill="#fffdfa" stroke="${strokeColor}" stroke-width="5" stroke-linejoin="round"/></svg>`;
+        layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
+          <path d="M 6 85 L 6 210 C 6 212, 8 214, 10 214 L 310 214 C 312 214, 314 212, 314 210 L 314 85 L 160 158 Z" fill="#fffdfa" stroke="${strokeColor}" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M 8 200 L 120 142 M 312 200 L 200 142" stroke="${strokeColor}" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+          <circle cx="55" cy="160" r="12" fill="#ffb3ba" opacity="0.6" filter="blur(2px)"/>
+          <circle cx="265" cy="160" r="12" fill="#ffb3ba" opacity="0.6" filter="blur(2px)"/>
+        </svg>`;
+        layers.flap = `<svg viewBox="0 0 320 130" width="100%" height="100%" style="overflow:visible;">
+          <path d="M 6 12 L 314 12 L 160 122 Z" fill="#fffdfa" stroke="${strokeColor}" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M 160 105 C 160 105 145 88 145 78 C 145 70, 151 65, 156 66 C 160 67, 160 70, 160 70 C 160 70, 160 67, 164 66 C 169 65, 175 70, 175 78 C 175 88, 160 105, 160 105 Z" fill="#ff4d6d" stroke="${strokeColor}" stroke-width="4" stroke-linejoin="round"/>
+        </svg>`;
+      }
+      else {
+        // peach pastel
+        layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="26" fill="#ffeae2" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/></svg>`;
+        layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
+          <path d="M 6 80 L 6 196 C 6 209, 17 214, 28 214 L 292 214 C 303 214, 314 209, 314 196 L 314 80 L 160 156 Z" fill="#ffd1c4" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M 6 80 L 142 147 C 153 152, 167 152, 178 147 L 314 80" fill="none" stroke="#fff4f0" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 8 198 L 115 140 M 312 198 L 205 140" stroke="${strokeColor}" stroke-width="4" opacity="0.3" stroke-linecap="round"/>
+          <circle cx="55" cy="155" r="15" fill="#ff8ba4" opacity="0.4" filter="blur(3px)"/>
+          <circle cx="265" cy="155" r="15" fill="#ff8ba4" opacity="0.4" filter="blur(3px)"/>
+        </svg>`;
+        layers.flap = `<svg viewBox="0 0 320 130" width="100%" height="100%" style="overflow:visible;">
+          <path d="M 6 22 C 6 14, 14 8, 26 8 L 294 8 C 306 8, 314 14, 314 22 L 160 120 Z" fill="#ffbca7" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="hc-${sid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff9ebb"/><stop offset="100%" stop-color="#ff5388"/></linearGradient>
+            <filter id="sh-${sid}"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.15"/></filter>
+          </defs>
+          <path d="M 160 110 C 160 110 136 88 136 72 C 136 60, 146 51, 155 52 C 160 53, 160 57, 160 57 C 160 57, 160 53, 165 52 C 175 51, 185 60, 185 72 C 185 88, 160 110, 160 110 Z" fill="url(#hc-${sid})" stroke="${strokeColor}" stroke-width="4.5" filter="url(#sh-${sid})" stroke-linejoin="round"/>
+          <circle cx="148" cy="63" r="3" fill="#ffffff" opacity="0.7"/>
+        </svg>`;
+      }
 
-      const bodies = { peach: bodyPeach, sketch: bodySketch, red: bodyRed };
-      const flaps  = { peach: flapPeach, sketch: flapSketch, red: flapRed };
-      const bodySvg = bodies[envStyle] || bodyPeach;
-      const flapSvg = flaps[envStyle]  || flapPeach;
-
-      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; font-family:Mitr,sans-serif; overflow:visible;">
+      return `<div class="${animClass}" style="${animDelay} z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; overflow:visible;">
 <style>
-  /* ===== LETTER ${sid} ===== */
-  #vbe-${sid}{position:relative;width:300px;max-width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;overflow:visible;}
-  /* FLAP — rotates open */
-  #vbf-${sid}{position:absolute;top:0;left:0;width:100%;z-index:6;transform-origin:top center;transition:transform .75s cubic-bezier(.4,0,.2,1);pointer-events:none;line-height:0;}
-  #vbe-${sid}.open #vbf-${sid}{transform:perspective(700px) rotateX(-180deg);}
-  /* ENVELOPE BODY */
-  #vbd-${sid}{position:relative;line-height:0;}
-  /* FLOATING HEARTS */
-  #vbhts-${sid}{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-  @keyframes vbflt-${sid}{0%{transform:translateY(0)scale(1);opacity:1;}100%{transform:translateY(-90px)scale(.5);opacity:0;}}
-  .vbht-${sid}{position:absolute;bottom:10px;animation:vbflt-${sid} 1.8s ease-out forwards;}
-  /* LETTER PAPER — sits hidden below envelope, pops UP to cover it on open */
-  #vbltr-${sid}{
-    position:absolute;left:6px;right:6px;bottom:0;
-    z-index:3;
-    transform-origin:center bottom;
-    transform:translateY(48%);
-    opacity:0;
-    transition:transform .8s cubic-bezier(.34,1.35,.64,1), opacity .38s ease;
-    pointer-events:none;
-    filter:drop-shadow(0 -8px 26px rgba(0,0,0,.24));
+  @keyframes sweetFloat-${sid} {
+      0%, 100% { transform: translateY(0) scale(0.96) rotate(0deg); }
+      50% { transform: translateY(-8px) scale(0.98) rotate(1.5deg); }
   }
-  #vbe-${sid}.open #vbltr-${sid}{
-    transform:translateY(-14%);
-    opacity:1;
-    z-index:8;
-    pointer-events:auto;
+  .env-container-${sid} {
+      position: relative; width: 310px; height: 215px; cursor: pointer;
+      perspective: 1200px; -webkit-tap-highlight-color: transparent;
+      user-select: none; margin: 25px 0;
+      animation: sweetFloat-${sid} 3.5s ease-in-out infinite;
+      transition: all 0.3s ease;
   }
-  /* INNER PAPER */
-  #vbinn-${sid}{
-    padding:22px 18px 26px;
-    background:#fffef8;
-    background-image:repeating-linear-gradient(transparent,transparent 27px,${acc}18 28px);
-    background-size:100% 28px;
-    border:1.5px solid ${acc}40;
-    border-bottom:1.5px solid ${acc}40;
-    border-radius:12px 12px 6px 6px;
-    box-shadow:0 -6px 24px rgba(0,0,0,.16),0 -2px 8px rgba(0,0,0,.08);
+  .env-container-${sid}.open {
+      animation: none;
+      transform: scale(0.98) translateY(20px);
   }
-  /* HINT */
-  #vbhint-${sid}{font-size:.7rem;color:${acc};margin-top:10px;opacity:.75;letter-spacing:1px;transition:opacity .3s;}
+  .env-bg-${sid} { position: absolute; inset: 0; z-index: 1; filter: drop-shadow(0 10px 25px rgba(235,140,160,0.2)); }
+  .env-fg-${sid} { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  .env-flap-${sid} {
+      position: absolute; top: 0; left: 0; width: 100%; height: 125px;
+      z-index: 5; transform-origin: top center;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.1s, z-index 0s linear 0.25s;
+      pointer-events: none;
+  }
+  .env-paper-${sid} {
+      position: absolute; inset: 12px 20px 0 20px; height: 180px;
+      z-index: 2; transform: translateY(15px) scale(0.9); opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) 0s, opacity 0.3s ease 0s;
+      pointer-events: none;
+  }
+  .paper-card-${sid} {
+      width: 100%; height: 100%; background: #fffef9;
+      border: 4px solid #543d32; border-radius: 20px;
+      box-sizing: border-box; padding: 22px 18px;
+      box-shadow: 0 -5px 20px rgba(223,100,120,0.12);
+      overflow-y: auto; position: relative;
+  }
+  .paper-card-${sid}::after {
+      content: ''; position: absolute; inset: 6px;
+      border: 2px dashed ${acc}40; border-radius: 14px; pointer-events: none;
+  }
+  .env-container-${sid}.open .env-flap-${sid} {
+      transform: rotateX(180deg); z-index: 1;
+      transition: transform 0.35s ease 0s, z-index 0s linear 0.15s;
+  }
+  .env-container-${sid}.open .env-paper-${sid} {
+      transform: translateY(-135px) scale(1) rotate(-1deg);
+      opacity: 1; z-index: 6; pointer-events: auto;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.4, 1.4) 0.15s, opacity 0.2s ease 0.12s;
+  }
+  .heart-burst-layer-${sid} { position: absolute; inset: 0; pointer-events: none; z-index: 7; overflow: visible; }
+  @keyframes loveExplode-${sid} {
+      0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 0; }
+      15% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(var(--s)) rotate(var(--r)); opacity: 0; }
+  }
+  .burst-emoji-${sid} {
+      position: absolute; left: 50%; top: 50%;
+      margin-left: -15px; margin-top: -15px;
+      width: 30px; height: 30px; text-align: center; line-height: 30px;
+      animation: loveExplode-${sid} 1.4s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+  }
+  #vbhint-${sid} { font-size: 0.82rem; color: ${acc}; margin-top: 6px; font-weight: 700; opacity: 0.85; letter-spacing: 0.5px; }
 </style>
-<div id="vbe-${sid}" onclick="vbTog_${sid}()">
-  <div id="vbd-${sid}">
-    ${bodySvg}
-    <div id="vbhts-${sid}"></div>
-  </div>
-  <div id="vbf-${sid}">${flapSvg}</div>
-  <div id="vbltr-${sid}">
-    <div id="vbinn-${sid}">
-      <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px dashed ${acc}45;">
-        <span style="font-size:.78rem;color:${acc};letter-spacing:2px;font-weight:600;">~ ถึงคนที่ฉันรัก ~</span>
+<div class="env-container-${sid}" id="vbe-${sid}" onclick="vbTog_${sid}()">
+  <div class="env-bg-${sid}">${layers.back}</div>
+  <div class="env-paper-${sid}">
+      <div class="paper-card-${sid}">
+          <div style="text-align:center; margin-bottom:10px; padding-bottom:6px;">
+              <span style="font-size:0.75rem; color:${acc}; letter-spacing:2px; font-weight:800; background:${acc}15; padding:3px 10px; border-radius:10px;">💝 MY VALENTINE 💝</span>
+          </div>
+          <div style="${innerTextStyle}">${lt}</div>
       </div>
-      <div style="${fontFamily}${fontSize}${color} line-height:2;white-space:pre-wrap;font-size:.88rem;">${lt}</div>
-      <div style="text-align:right;margin-top:16px;padding-top:10px;border-top:1px dashed ${acc}35;font-size:.76rem;color:${acc}aa;letter-spacing:.5px;">ด้วยความรักทั้งหัวใจ 💕</div>
-    </div>
   </div>
+  <div class="env-fg-${sid}">${layers.front}</div>
+  <div class="env-flap-${sid}">${layers.flap}</div>
+  <div class="heart-burst-layer-${sid}" id="vbh-${sid}"></div>
 </div>
-<div id="vbhint-${sid}">💌 แตะเพื่อเปิดจดหมาย</div>
-<script>(function(){
-  var H=['❤️','💕','💗','🌹','✨','💖','🩷','💓'];
-  window.vbTog_${sid}=function(){
-    var e=document.getElementById('vbe-${sid}');
-    var h=document.getElementById('vbhint-${sid}');
-    var hts=document.getElementById('vbhts-${sid}');
-    if(!e.classList.contains('open')){
-      e.classList.add('open');
-      h.textContent='💌 แตะเพื่อปิดจดหมาย';
-      hts.innerHTML='';
-      for(var i=0;i<8;i++){(function(i){setTimeout(function(){
-        var d=document.createElement('div');d.className='vbht-${sid}';
-        d.textContent=H[i%H.length];d.style.left=(10+Math.random()*80)+'%';
-        d.style.fontSize=(.65+Math.random()*.55)+'rem';hts.appendChild(d);
-        setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},2000);
-      },i*180);})(i);}
-    }else{
-      e.classList.remove('open');
-      h.textContent='💌 แตะเพื่อเปิดจดหมาย';
-    }
-  };
-})()</script>
+<div id="vbhint-${sid}">✨ แตะตรงนี้เพื่อเปิดซองจดหมายนะ ✨</div>
+<script>
+  (function(){
+      var sweetItems = ['❤️','💖','✨','🧸','🍓','🍬','🎀'];
+      window.vbTog_${sid} = function(){
+          var env = document.getElementById('vbe-${sid}');
+          var hint = document.getElementById('vbhint-${sid}');
+          var burstContainer = document.getElementById('vbh-${sid}');
+          if(!env.classList.contains('open')){
+              env.classList.add('open');
+              hint.textContent = '👉 แตะอีกครั้งเพื่อเก็บซองจดหมาย';
+              burstContainer.innerHTML = '';
+              const particleCount = 10;
+              for(var i=0; i<particleCount; i++) {
+                  var item = document.createElement('div');
+                  item.className = 'burst-emoji-${sid}';
+                  item.textContent = sweetItems[i % sweetItems.length];
+                  var angle = (i * (360 / particleCount)) + (Math.random() * 20 - 10);
+                  var distance = 80 + Math.random() * 80;
+                  var tx = Math.cos(angle * Math.PI / 180) * distance;
+                  var ty = Math.sin(angle * Math.PI / 180) * distance - 40;
+                  var rotation = Math.random() * 90 - 45;
+                  var scale = 0.8 + Math.random() * 0.6;
+                  item.style.setProperty('--tx', tx + 'px');
+                  item.style.setProperty('--ty', ty + 'px');
+                  item.style.setProperty('--r', rotation + 'deg');
+                  item.style.setProperty('--s', scale);
+                  item.style.animationDelay = (Math.random() * 0.1) + 's';
+                  burstContainer.appendChild(item);
+              }
+          } else {
+              env.classList.remove('open');
+              hint.textContent = '✨ แตะตรงนี้เพื่อเปิดซองจดหมายนะ ✨';
+          }
+      };
+  })();
+</script>
 </div>`;}
 
     case 'player': {
