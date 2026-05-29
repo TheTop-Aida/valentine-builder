@@ -69,7 +69,10 @@ export function renderElement(el, th) {
       if (envStyle === 'red') {
         layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="28" fill="#ff5268" stroke="${strokeColor}" stroke-width="8" stroke-linejoin="round"/></svg>`;
         layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
-          <path d="M 6 82 L 6 194 C 6 208, 18 214, 30 214 L 290 214 C 302 214, 314 208, 314 194 L 314 82 L 185 154 C 170 162, 150 162, 135 154 Z" fill="#ff6b81" stroke="${strokeColor}" stroke-width="8" stroke-linejoin="round"/>
+          <!-- fill only, no stroke on top V-seam -->
+          <path d="M 6 82 L 6 194 C 6 208, 18 214, 30 214 L 290 214 C 302 214, 314 208, 314 194 L 314 82 L 185 154 C 170 162, 150 162, 135 154 Z" fill="#ff6b81" stroke="none"/>
+          <!-- stroke: left + bottom + right only (open path, no top V) -->
+          <path d="M 6 82 L 6 194 C 6 208, 18 214, 30 214 L 290 214 C 302 214, 314 208, 314 194 L 314 82" fill="none" stroke="${strokeColor}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M 22 98 L 22 202 C 22 205, 25 207, 28 207 L 292 207 C 295 207, 298 205, 298 202 L 298 98" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round" opacity="0.7"/>
           <path d="M 8 185 L 115 132 M 312 185 L 205 132" stroke="${strokeColor}" stroke-width="7" stroke-linecap="round"/>
           <circle cx="52" cy="155" r="16" fill="#ff2e55" opacity="0.35" filter="blur(3px)"/>
@@ -85,7 +88,10 @@ export function renderElement(el, th) {
       else if (envStyle === 'sketch') {
         layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="16" fill="#fffdfa" stroke="${strokeColor}" stroke-width="5" stroke-linejoin="round"/></svg>`;
         layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
-          <path d="M 6 85 L 6 210 C 6 212, 8 214, 10 214 L 310 214 C 312 214, 314 212, 314 210 L 314 85 L 160 158 Z" fill="#fffdfa" stroke="${strokeColor}" stroke-width="5" stroke-linejoin="round"/>
+          <!-- fill only, no stroke on top V-seam -->
+          <path d="M 6 85 L 6 210 C 6 212, 8 214, 10 214 L 310 214 C 312 214, 314 212, 314 210 L 314 85 L 160 158 Z" fill="#fffdfa" stroke="none"/>
+          <!-- stroke: left + bottom + right only -->
+          <path d="M 6 85 L 6 210 C 6 212, 8 214, 10 214 L 310 214 C 312 214, 314 212, 314 210 L 314 85" fill="none" stroke="${strokeColor}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M 8 200 L 120 142 M 312 200 L 200 142" stroke="${strokeColor}" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
           <circle cx="55" cy="160" r="12" fill="#ffb3ba" opacity="0.6" filter="blur(2px)"/>
           <circle cx="265" cy="160" r="12" fill="#ffb3ba" opacity="0.6" filter="blur(2px)"/>
@@ -99,8 +105,10 @@ export function renderElement(el, th) {
         // peach pastel
         layers.back = `<svg viewBox="0 0 320 220" width="100%" height="100%"><rect x="6" y="6" width="308" height="208" rx="26" fill="#ffeae2" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/></svg>`;
         layers.front = `<svg viewBox="0 0 320 220" width="100%" height="100%">
-          <path d="M 6 80 L 6 196 C 6 209, 17 214, 28 214 L 292 214 C 303 214, 314 209, 314 196 L 314 80 L 160 156 Z" fill="#ffd1c4" stroke="${strokeColor}" stroke-width="6" stroke-linejoin="round"/>
-          <path d="M 6 80 L 142 147 C 153 152, 167 152, 178 147 L 314 80" fill="none" stroke="#fff4f0" stroke-width="4" stroke-linecap="round"/>
+          <!-- fill only, no stroke on top V-seam -->
+          <path d="M 6 80 L 6 196 C 6 209, 17 214, 28 214 L 292 214 C 303 214, 314 209, 314 196 L 314 80 L 160 156 Z" fill="#ffd1c4" stroke="none"/>
+          <!-- stroke: left + bottom + right only -->
+          <path d="M 6 80 L 6 196 C 6 209, 17 214, 28 214 L 292 214 C 303 214, 314 209, 314 196 L 314 80" fill="none" stroke="${strokeColor}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M 8 198 L 115 140 M 312 198 L 205 140" stroke="${strokeColor}" stroke-width="4" opacity="0.3" stroke-linecap="round"/>
           <circle cx="55" cy="155" r="15" fill="#ff8ba4" opacity="0.4" filter="blur(3px)"/>
           <circle cx="265" cy="155" r="15" fill="#ff8ba4" opacity="0.4" filter="blur(3px)"/>
