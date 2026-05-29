@@ -165,7 +165,6 @@ function getInitialTemplate() {
       pageAnimation: 'slideUp', pageEffect: 'confetti', pageEffectDensity: 50,
       elements: [
         { id: 'e6', type: 'heading', text: 'เย้! ขอบคุณที่รักกันนะ 💖', fontSize: 1.5, fontFamily: 'Charm', color: '#ff6b9d' },
-        { id: 'e7', type: 'letter', text: 'ถึงเธอที่รัก...\n\nขอบคุณสำหรับทุกอย่างที่ผ่านมานะ อยู่ด้วยกันไปนาน ๆ เป็นความสุขให้กันและกันแบบนี้ในทุก ๆ วันเลยนะ\n\nรักเธอที่สุดในโลกเลยยย 💕' },
         { id: 'e8', type: 'button', label: '← กลับหน้าแรก', target: 'p1' }
       ]
     }
@@ -231,6 +230,10 @@ export default function App() {
     setCanUndo(historyIdxRef.current > 0);
     setCanRedo(false);
     try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(e) {}
+    // ถ้ายังไม่ login → mark dirty (มีงานที่ยังไม่ได้ sync)
+    if (!user) {
+      try { localStorage.setItem('vb_dirty', '1'); } catch(e) {}
+    }
     // Cloud save (debounced) เมื่อ login แล้ว
     if (user) {
       if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
@@ -261,9 +264,20 @@ export default function App() {
     (async () => {
       try {
         const { data } = await supabase.from('profiles').select('pages_data').eq('id', user.id).single();
-        if (data?.pages_data && data.pages_data.length > 0) {
-          setPages(data.pages_data);
-          setActivePageId(data.pages_data[0].id);
+        const cloudPages = data?.pages_data;
+        const isDirty = localStorage.getItem('vb_dirty') === '1';
+
+        if (isDirty) {
+          // มีงานที่ทำก่อน login → อัปโหลด local ขึ้น cloud แทน
+          try {
+            await supabase.from('profiles').update({ pages_data: pages }).eq('id', user.id);
+            localStorage.removeItem('vb_dirty');
+            showToast('☁️ บันทึกงานของคุณขึ้น Cloud แล้ว');
+          } catch(e) {}
+        } else if (cloudPages && cloudPages.length > 0) {
+          // ไม่มีงาน local → โหลด cloud มาใช้
+          setPages(cloudPages);
+          setActivePageId(cloudPages[0].id);
         }
       } catch(e) {}
     })();
@@ -339,7 +353,6 @@ export default function App() {
     if (newPageType === 'question') base.elements = [{ id: generateEid(), type: 'counter', question: 'คุณจะยอมรับเป็นแฟนกับผมไหม? 💖', yesLabel: 'ตกลง 🥰', noLabel: 'เป็นแค่เพื่อน 🥹', noBehavior: 'growYes', noMessages: ["คิดใหม่สิ.."] }];
     else if (newPageType === 'gallery') base.elements = [{ id: generateEid(), type: 'heading', text: 'คลังภาพความทรงจำ 📸', fontSize: 1.5, fontFamily: 'Mali' }, { id: generateEid(), type: 'gallery', images: [], cols: 2 }];
     else if (newPageType === 'music') base.elements = [{ id: generateEid(), type: 'heading', text: 'เพลงนี้มอบให้เธอ 🎵', fontSize: 1.4, fontFamily: 'Itim' }, { id: generateEid(), type: 'vinyl', audioSrc: '' }];
-    else if (newPageType === 'letter') base.elements = [{ id: generateEid(), type: 'heading', text: 'จดหมายลับ 💌', fontSize: 1.4, fontFamily: 'Charm' }, { id: generateEid(), type: 'letter', text: 'เขียนความในใจที่นี่...' }];
     else base.elements = [{ id: generateEid(), type: 'heading', text: 'หน้าใหม่ ✨', fontSize: 1.8 }];
     setPages(prev => [...prev, base]);
     setActivePageId(pId);
@@ -727,86 +740,6 @@ export default function App() {
                               <input type="number" min="0" step="1" value={activePage.bgMusicEnd||0} onChange={e=>updatePage(activePage.id,{bgMusicEnd:+e.target.value})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none'}} />
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB: THEME */}
-                {activeTab === 'theme' && (
-                  <div>
-                    <div className="sec-header">🎨 เลือกโทนสีหลัก (Theme)</div>
-                    <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
-                      {Object.keys(THEMES).map(k => {
-                        const th = THEMES[k];
-                        return (
-                          <div key={k} style={{padding:'10px',background:'rgba(255,255,255,0.03)',border:`1px solid ${activePage.theme===k?'#ff6b9d':'rgba(255,100,150,0.15)'}`,borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between'}} onClick={() => updatePage(activePage.id, {theme:k})}>
-                            <span style={{fontSize:'0.82rem',fontWeight:500,flex:1,color:'#e8d0f0'}}>{th.name}</span>
-                            <div style={{display:'flex',gap:'4px'}}>
-                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.bg,border:'1px solid #777'}}/>
-                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.accent}}/>
-                              <div style={{width:'14px',height:'14px',borderRadius:'50%',background:th.btn}}/>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div style={{padding:'40px',textAlign:'center',color:'#4a3a5a'}}>กรุณาเลือกหรือเพิ่มหน้าเว็บใหม่จากเมนูด้านซ้าย</div>
-          )}
-        </div>
-
-        {/* RIGHT: PREVIEW */}
-        <Preview iframeRef={iframeRef} />
-      </div>
-
-      {/* MODAL: ADD PAGE */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3>➕ เพิ่มหน้าสไลด์ใหม่</h3>
-            <div className="field">
-              <label>รูปแบบหน้าเทมเพลต</label>
-              <select value={newPageType} onChange={e => setNewPageType(e.target.value)} style={{width:'100%',padding:'6px',background:'#2a1a34',color:'#fff',border:'1px solid rgba(255,100,150,0.3)',borderRadius:'6px'}}>
-                {PAGE_TYPES.map(pt => <option key={pt.value} value={pt.value}>{pt.icon} {pt.label}</option>)}
-              </select>
-            </div>
-            <div className="field">
-              <label>ชื่อหน้า</label>
-              <input type="text" placeholder="เว้นว่างไว้เพื่อใช้ชื่ออัตโนมัติ" value={newPageName} onChange={e => setNewPageName(e.target.value)} style={{width:'100%',padding:'6px',background:'#2a1a34',color:'#fff',border:'1px solid rgba(255,100,150,0.3)',borderRadius:'6px'}} onKeyDown={e => e.key==='Enter' && createNewPage()} />
-            </div>
-            <div className="modal-btns">
-              <button className="btn-cancel" onClick={() => setShowAddModal(false)}>ยกเลิก</button>
-              <button className="btn-confirm" onClick={createNewPage}>ตกลงสร้างหน้าใหม่</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Export Modal */}
-      {showExportModal && (
-        <ExportModal
-          onClose={() => setShowExportModal(false)}
-          onSuccess={() => { setShowExportModal(false); exportCompleteHTML(); }}
-        />
-      )}
-
-      {/* Admin Panel */}
-      {showAdminPanel && <AdminPanel onClose={() => setShowAdminPanel(false)} />}
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <LoginPage isModal={true} onClose={() => setShowLoginModal(false)} />
-      )}
-    </div>
-  );
-}
-
                         </div>
                       )}
                     </div>

@@ -147,41 +147,6 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
         </div>
       )}
 
-      {el.type === 'letter' && (<>
-        {/* ── Envelope Style Picker ── */}
-        <div style={{marginBottom:'14px'}}>
-          <label style={labelStyle}>💌 รูปแบบซองจดหมาย</label>
-          <div style={{display:'flex', gap:'10px', marginTop:'6px'}}>
-            {[
-              { key:'peach',  label:'🍑 Peach',  bg:'#ffeae2', stroke:'#543d32', flapColor:'#ffbca7' },
-              { key:'sketch', label:'✏️ Sketch', bg:'#fffdfa', stroke:'#543d32', flapColor:'#fffdfa' },
-              { key:'red',    label:'❤️ Red',    bg:'#ff5268', stroke:'#543d32', flapColor:'#ff6b81' },
-            ].map(opt => {
-              const active = (el.letterStyle || 'peach') === opt.key;
-              return (
-                <button key={opt.key} onClick={() => upd({ letterStyle: opt.key })}
-                  style={{flex:1, padding:'7px 4px 6px', borderRadius:'12px', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'5px',
-                    border: active ? '2px solid #ff6b9d' : '2px solid rgba(255,255,255,0.12)',
-                    background: active ? 'rgba(255,107,157,0.15)' : 'rgba(255,255,255,0.05)',
-                    boxShadow: active ? '0 0 0 2px #ff6b9d44, 0 3px 10px rgba(255,107,157,0.15)' : 'none',
-                    transition:'all .2s'}}>
-                  <svg width="60" height="44" viewBox="0 0 60 44" style={{borderRadius:'7px', boxShadow: active ? '0 2px 8px rgba(255,107,157,0.3)' : '0 2px 6px rgba(0,0,0,0.15)'}}>
-                    <rect x="1" y="1" width="58" height="42" rx="6" fill={opt.bg} stroke={opt.stroke} strokeWidth="2"/>
-                    <path d={`M 1 16 L 30 30 L 59 16`} fill={opt.flapColor} stroke={opt.stroke} strokeWidth="1.5"/>
-                  </svg>
-                  <span style={{fontSize:'0.63rem', color: active ? '#ff9a9e' : '#aaa', fontWeight: active ? 700 : 400, letterSpacing:'0.3px'}}>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        {/* ── Letter Text ── */}
-        <div className="field">
-          <label style={labelStyle}>เนื้อหาความในใจภายในจดหมาย</label>
-          <textarea value={el.text || ''} onChange={e => upd({ text: e.target.value })} style={{...inputStyle, minHeight:'100px'}} placeholder="บอกรักความในใจแบบยาวเหยียดที่นี่..." />
-        </div>
-      </>)}
-
       {el.type === 'player' && (
         <div>
           {/* รูปปก */}

@@ -61,7 +61,6 @@ export const ELEMENT_TYPES = [
   { type:'gift_buttons',     icon:'🎁', label:'กล่องของขวัญ' },
   { type:'divider',          icon:'➖', label:'เส้นคั่นแบ่ง' },
   { type:'spacer',           icon:'↕️', label:'Spacer ช่องว่าง' },
-  { type:'letter',           icon:'💌', label:'กล่องเปิดจดหมาย' },
   { type:'player',           icon:'🎵', label:'เครื่องเล่นเพลง' },
   { type:'gallery',          icon:'📸', label:'คอลเลกชันแกลเลอรี' },
   { type:'polaroid_gallery', icon:'🖼️', label:'แกลเลอรีโพลารอยด์' },
@@ -75,5 +74,4 @@ export const PAGE_TYPES = [
   { value:'question', label:'❓ หน้าถามตอบวัดใจ',         icon:'❓' },
   { value:'gallery',  label:'📸 หน้าคลังความทรงจำ',       icon:'📸' },
   { value:'music',    label:'🎵 หน้าฟังเพลงสุดซึ้ง',      icon:'🎵' },
-  { value:'letter',   label:'💌 หน้าจดหมายลับ',           icon:'💌' },
 ];
