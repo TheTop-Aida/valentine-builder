@@ -191,6 +191,7 @@ export default function App() {
   const [canRedo, setCanRedo] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const cloudSaveTimerRef = useRef(null);
+  const importJsonRef = useRef(null);
   const [activePageId, setActivePageId] = useState(() => {
     try {
       const saved = localStorage.getItem('vb_pages_v5');
@@ -403,7 +404,38 @@ export default function App() {
     }
   }
 
-  const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
+  // ── Import / Export Project JSON ───────────────────────────────────────────
+  function handleExportJSON() {
+    const project = { version: 1, exportedAt: new Date().toISOString(), pages };
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `valentine-project-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.pages || !Array.isArray(data.pages)) throw new Error('ไฟล์ไม่ถูกต้อง');
+        if (!window.confirm('📂 นำเข้าโปรเจกต์ "' + file.name + '"?\nงานปัจจุบันจะถูกแทนที่')) return;
+        setPages(data.pages);
+        setActivePageId(data.pages[0]?.id || null);
+        setEditingElemId(null);
+      } catch (err) { alert('❌ นำเข้าไม่สำเร็จ: ' + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
+    const activeEditingElement = activePage ? (activePage.elements || []).find(e => e.id === editingElemId) : null;
 
   // ── MOBILE LAYOUT ──────────────────────────────────────────────────────────
   if (isMobile) return (
@@ -470,6 +502,13 @@ export default function App() {
           )}
           {user ? (
             <>
+              <input ref={importJsonRef} type="file" accept=".json" style={{display:'none'}} onChange={handleImportJSON} />
+              <button className="btn-top" onClick={() => importJsonRef.current?.click()}
+                style={{background:'rgba(100,200,255,0.12)',border:'1px solid rgba(100,200,255,0.3)',color:'#90e0ff'}}
+                title="นำเข้าโปรเจกต์จากไฟล์ .json">📂 นำเข้า</button>
+              <button className="btn-top" onClick={handleExportJSON}
+                style={{background:'rgba(100,255,160,0.12)',border:'1px solid rgba(100,255,160,0.3)',color:'#90ffb8'}}
+                title="บันทึกโปรเจกต์เป็นไฟล์ .json">💾 บันทึก</button>
               <button className="btn-top btn-export" onClick={handleExportClick}>⬇️ Export HTML</button>
               <button onClick={logout} title="ออกจากระบบ"
                 style={{ padding:'6px 12px', background:'rgba(255,80,80,0.15)', border:'1px solid rgba(255,80,80,0.3)', borderRadius:'8px', color:'#ff8080', cursor:'pointer', fontSize:'0.8rem', fontFamily:'Mitr,sans-serif' }}>

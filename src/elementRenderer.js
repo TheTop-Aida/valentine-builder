@@ -24,6 +24,26 @@ export function getAnimCSS() {
 `;
 }
 
+
+// ── Security helpers ───────────────────────────────────────────────────────
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeUrl(url) {
+  if (!url) return '';
+  const s = String(url).trim();
+  // Allow only http/https/data URIs (for base64 images)
+  if (/^(https?:|data:image\/)/.test(s)) return s;
+  return '';
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 export function renderElement(el, th) {
   const fontFamily = el.fontFamily ? `font-family:'${el.fontFamily}',sans-serif;` : '';
   const fontSize = el.fontSize ? `font-size:${el.fontSize > 10 ? (el.fontSize / 16).toFixed(3) : el.fontSize}rem;` : '';
@@ -35,20 +55,20 @@ export function renderElement(el, th) {
 
   switch (el.type) {
     case 'heading':
-      return `<h1 class="${animClass}" style="${itemStyle} font-weight:700; margin-bottom:4px; line-height:1.3; z-index:2;">${el.text || 'หัวข้อหลัก'}</h1>`;
+      return `<h1 class="${animClass}" style="${itemStyle} font-weight:700; margin-bottom:4px; line-height:1.3; z-index:2;">${esc(el.text || 'หัวข้อหลัก')}</h1>`;
     case 'subtext':
-      return `<p class="${animClass}" style="${itemStyle} margin-bottom:4px; line-height:1.6; white-space:pre-wrap; z-index:2;">${el.text || 'ใส่ข้อความของคุณที่นี่...'}</p>`;
+      return `<p class="${animClass}" style="${itemStyle} margin-bottom:4px; line-height:1.6; white-space:pre-wrap; z-index:2;">${esc(el.text || 'ใส่ข้อความของคุณที่นี่...')}</p>`;
     case 'image':
       if (!el.src) return `<div style="width:100%; padding:30px; background:rgba(0,0,0,.04); border-radius:12px; text-align:center; font-size:1.5rem; z-index:2;">🖼️ ยังไม่ได้ใส่ URL รูปภาพ</div>`;
-      return `<div class="${animClass}" style="${animDelay} text-align:center; width:100%; z-index:2;"><img src="${el.src}" style="max-width:100%; width:${el.maxWidth||220}px; border-radius:${el.radius||12}px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.05);" alt="Valentine img"/></div>`;
+      return `<div class="${animClass}" style="${animDelay} text-align:center; width:100%; z-index:2;"><img src="${safeUrl(el.src)}" style="max-width:100%; width:${el.maxWidth||220}px; border-radius:${el.radius||12}px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.05);" alt="Valentine img"/></div>`;
     case 'sticker':
-      return `<div class="${animClass}" style="font-size:${el.fontSize||48}px; margin:4px 0; display:inline-block; text-align:center; width:100%; z-index:2; ${animDelay}">${el.emoji || '❤️'}</div>`;
+      return `<div class="${animClass}" style="font-size:${el.fontSize||48}px; margin:4px 0; display:inline-block; text-align:center; width:100%; z-index:2; ${animDelay}">${esc(el.emoji || '❤️')}</div>`;
     case 'button': {
       const btnSizeMap = { sm: {fs:'13px', pad:'7px 18px'}, md: {fs:'15px', pad:'10px 24px'}, lg: {fs:'19px', pad:'14px 34px'} };
       const bs = btnSizeMap[el.btnSize] || btnSizeMap.md;
       const shapeMap = { pill: '999px', rounded: '12px', square: '4px' };
       const bRadius = shapeMap[el.btnShape] || '999px';
-      return `<div style="${textAlign} z-index:2;"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:${bs.pad}; border-radius:${bRadius}; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${bs.fs}; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${el.label||'ปุ่มกด'}</button></div>`;
+      return `<div style="${textAlign} z-index:2;"><button onclick="goTo('${el.target||''}')" class="${animClass}" style="font-family:inherit; padding:${bs.pad}; border-radius:${bRadius}; border:none; background:${el.bgColor||th.btn}; color:${el.textColor||'#fff'}; font-size:${bs.fs}; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.1); ${animDelay}">${esc(el.label||'ปุ่มกด')}</button></div>`;
     }
     case 'divider':
       return `<hr style="border:none; border-top:${el.thickness||1}px solid ${el.color||th.accent}33; margin:12px 0; width:100%; z-index:2;"/>`;
