@@ -134,7 +134,7 @@ export function renderElement(el, th) {
             else if(cmd==="next"){if(tot)a.currentTime=Math.min(tot,a.currentTime+10);}
           };
           window.playerSeek_${el.id}=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));var tot=endT>0?endT:a.duration;if(tot)a.currentTime=startT+pct*(tot-startT);};
-        })()<\/script>
+        })()</script>
       </div>`;
     }
     case 'audio': {
@@ -170,7 +170,7 @@ export function renderElement(el, th) {
           'if(!window._ytApiLoaded){window._ytApiLoaded=true;var s=document.createElement("script");s.src="https://www.youtube.com/iframe_api";document.head.appendChild(s);}' +
           'if(typeof YT!=="undefined"&&YT.Player){initPlayer_' + el.id + '();}' +
           'else{var prev2=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=function(){if(prev2)prev2();initPlayer_' + el.id + '();};}' +
-          '})()<\/script></div>'
+          '})()</script></div>'
         );
       }
       return (
@@ -201,7 +201,7 @@ export function renderElement(el, th) {
         'a.addEventListener("ended",function(){isPlaying=false;document.getElementById("playbtn-' + el.id + '").textContent="▶";document.getElementById("prog-' + el.id + '").style.width="0%";a.currentTime=startT;});' +
         'window.audioCtrl_' + el.id + '=function(){var btn=document.getElementById("playbtn-' + el.id + '");if(isPlaying){a.pause();btn.textContent="▶";isPlaying=false;}else{if(a.currentTime<startT)a.currentTime=startT;a.play();btn.textContent="⏸";isPlaying=true;}};' +
         'window.audioSeek_' + el.id + '=function(e,bar){var rect=bar.getBoundingClientRect();var pct=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));var tot=endT>0?endT:a.duration;if(tot)a.currentTime=startT+pct*(tot-startT);};' +
-        '})()<\/script></div>'
+        '})()</script></div>'
       );
     }
     case 'vinyl': {
@@ -306,7 +306,7 @@ export function renderElement(el, th) {
         : '';
 
       // onclick handler
-      let noOnClick = '';
+      let noOnClick;
       if (noAnim === 'grow_shrink') {
         noOnClick = `var _y=document.getElementById('yes-${el.id}');var _ys=parseFloat(_y.dataset.scale||'1')+0.12;_ys=Math.min(2,_ys);_y.dataset.scale=_ys;_y.style.transform='scale('+_ys+')';var _ns=parseFloat(this.dataset.scale||'1')-0.2;_ns=Math.max(0,_ns);this.dataset.scale=_ns;this.style.transform='scale('+_ns+')';this.style.opacity=_ns;if(_ns<=0)this.style.pointerEvents='none';${tauntCode}`;
       } else if (noAnim === 'shake') {

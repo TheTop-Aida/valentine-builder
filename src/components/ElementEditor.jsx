@@ -1,21 +1,9 @@
 import { STICKERS, FONTS, ANIMATIONS, SWATCHES } from '../constants.js';
 import { compressImage } from '../utils/imageUtils.js';
+import { uploadAsset } from '../utils/storageUtils.js';
 
-// แปลง Google Drive URL ทุกรูปแบบเป็น direct stream URL
-function parseDriveUrl(val) {
-  // รูปแบบ: /file/d/FILE_ID/view หรือ /file/d/FILE_ID/
-  const fileMatch = val.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (fileMatch) return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
-  // รูปแบบ: open?id=FILE_ID
-  const openMatch = val.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-  if (openMatch) return `https://drive.google.com/uc?export=download&id=${openMatch[1]}`;
-  // รูปแบบ: uc?id=FILE_ID (มีอยู่แล้ว แต่ยังไม่มี export)
-  const ucMatch = val.match(/drive\.google\.com\/uc\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
-  if (ucMatch) return `https://drive.google.com/uc?export=download&id=${ucMatch[1]}`;
-  return null;
-}
 
-export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }) {
+export default function ElementEditor({ el, _themeObj, pages, onUpdate, onClose }) {
   const inputStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', marginBottom:'8px' };
   const selStyle = { ...inputStyle, cursor:'pointer' };
   const labelStyle = { display:'block', fontSize:'0.68rem', color:'#9a7aaa', marginBottom:'4px', fontWeight:'500' };
@@ -40,15 +28,15 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           <label style={labelStyle}>📁 อัปโหลดรูปจากเครื่อง หรือ URL</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}}>
             🖼️ เลือกรูปภาพจากเครื่อง
-            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const compressed=await compressImage(file);upd({src:compressed});}} />
+            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const url=await uploadAsset(file,'images');if(url)upd({src:url});}} />
           </label>
-          {el.src && el.src.startsWith('data:') && (
+          {el.src && el.src.startsWith('http') && (
             <div style={{marginBottom:'8px',borderRadius:'8px',overflow:'hidden',border:'1px solid rgba(255,107,157,0.2)'}}>
               <img src={el.src} style={{width:'100%',maxHeight:'120px',objectFit:'cover',display:'block'}} alt="preview" />
             </div>
           )}
-          <input value={el.src && el.src.startsWith('data:') ? '(รูปจากเครื่อง ✓)' : (el.src||'')} onChange={e=>upd({src:e.target.value})} style={inputStyle} placeholder="https://example.com/photo.jpg" readOnly={!!(el.src && el.src.startsWith('data:'))} />
-          {el.src && el.src.startsWith('data:') && (
+          <input value={el.src && el.src.startsWith('http') ? '(รูปจากเครื่อง ✓)' : (el.src||'')} onChange={e=>upd({src:e.target.value})} style={inputStyle} placeholder="https://example.com/photo.jpg" readOnly={!!(el.src && el.src.startsWith('http'))} />
+          {el.src && el.src.startsWith('http') && (
             <button onClick={()=>upd({src:''})} style={{width:'100%',padding:'5px',marginBottom:'8px',background:'rgba(255,80,80,0.15)',border:'1px solid rgba(255,80,80,0.3)',borderRadius:'6px',color:'#ff8080',fontSize:'0.75rem',cursor:'pointer',fontFamily:'Mitr,sans-serif'}}>✕ ลบรูปนี้ออก</button>
           )}
           <label style={labelStyle}>ความกว้างรูปภาพ (px)</label>
@@ -215,7 +203,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           <input value={el.title || ''} onChange={e => upd({ title: e.target.value })} style={inputStyle} />
           <label style={labelStyle}>🎵 เพิ่มเพลง</label>
           {/* Widget อัปโหลด — รวมในกล่องเดียว */}
-          {(el.src && el.src.startsWith('data:') && el.audioFileName) ? (
+          {(el.src && el.src.startsWith('http') && el.audioFileName) ? (
             <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
               <span style={{fontSize:'1.1rem'}}>🎵</span>
               <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{el.audioFileName}</span>
@@ -242,7 +230,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
             </label>
           )}
           {/* หรือวาง URL */}
-          {!(el.src && el.src.startsWith('data:')) && (
+          {!(el.src && el.src.startsWith('http')) && (
             <>
               <label style={labelStyle}>หรือวาง URL เพลง (.mp3 / YouTube)</label>
               <input value={el.src || ''} onChange={e => {
@@ -271,7 +259,7 @@ export default function ElementEditor({ el, themeObj, pages, onUpdate, onClose }
           <label style={labelStyle}>หน้าปกแผ่นเสียง (รูปภาพ)</label>
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer'}}>
             📸 เลือกรูปปก
-            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const compressed=await compressImage(file);upd({src:compressed});}} />
+            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const file=e.target.files[0];if(!file)return;const url=await uploadAsset(file,'images');if(url)upd({src:url});}} />
           </label>
           {el.src && <div style={{textAlign:'center',marginBottom:'8px'}}><img src={el.src} style={{width:'80px',height:'80px',borderRadius:'50%',objectFit:'cover',border:'2px solid #333'}} alt="cover"/></div>}
           <label style={labelStyle}>🎵 เพิ่มเพลง</label>

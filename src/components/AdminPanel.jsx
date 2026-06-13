@@ -30,6 +30,11 @@ export default function AdminPanel({ onClose }) {
   const [recentCodes, setRecentCodes] = useState([]);
   const [loadingU,    setLoadingU]    = useState(false);
 
+  useEffect(() => {
+    if (tab === 'users') loadUsers();
+    if (tab === 'code')  { loadCodes(); loadUsers(); }
+  }, [tab]);
+
   if (!isAdmin) return null;
 
   async function loadUsers() {
@@ -45,10 +50,6 @@ export default function AdminPanel({ onClose }) {
     setRecentCodes(data || []);
   }
 
-  useEffect(() => {
-    if (tab === 'users') loadUsers();
-    if (tab === 'code')  { loadCodes(); loadUsers(); }
-  }, [tab]);
 
   async function createUser() {
     if (!newUser.trim() || !newPass.trim()) { setCreateMsg('❌ กรุณากรอกข้อมูลให้ครบ'); return; }

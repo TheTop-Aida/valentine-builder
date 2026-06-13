@@ -91,7 +91,7 @@ export function generateHTML(pages) {
           ${cardBgImageLayer}
           ${elementsRendered}
         </div>
-        <script>setTimeout(function(){ ${pageCounterScripts} }, 100);<\/script>
+        <script>setTimeout(function(){ ${pageCounterScripts} }, 100);</script>
       </section>
     `;
   }).join('\n');
@@ -253,35 +253,7 @@ export function generateHTML(pages) {
         }
       }
     });
-  <\/script>
-</body>
-</html>`;
-}
-      }, { passive: true });
-
-      document.addEventListener('touchmove',   function(){ _moved = true; cancel(); }, { passive: true });
-      document.addEventListener('touchend',    cancel, { passive: true });
-      document.addEventListener('touchcancel', cancel, { passive: true });
-    })();
-    window.addEventListener('DOMContentLoaded', function(){
-      var firstId = "${pages[0]?.id || ''}";
-      if(firstId&&metaDict[firstId]){
-        startEffect(metaDict[firstId].effect, metaDict[firstId].accent, metaDict[firstId].density);
-        var bgmEl=document.getElementById('global-bgm');
-        if(bgmEl&&metaDict[firstId].bgm){
-          var bgmS0=metaDict[firstId].bgmStart||0;
-          var bgmE0=metaDict[firstId].bgmEnd||0;
-          bgmEl.src=metaDict[firstId].bgm;
-          bgmEl._bgmStart=bgmS0; bgmEl._bgmEnd=bgmE0;
-          if(!bgmEl._loopListener){
-            bgmEl._loopListener=function(){if(bgmEl._bgmEnd>0&&bgmEl.currentTime>=bgmEl._bgmEnd){bgmEl.currentTime=bgmEl._bgmStart||0;}};
-            bgmEl.addEventListener('timeupdate',bgmEl._loopListener);
-          }
-          document.body.addEventListener('click',function initAudio(){bgmEl.currentTime=bgmS0;bgmEl.play();document.body.removeEventListener('click',initAudio);},{once:true});
-        }
-      }
-    });
-  <\/script>
+  </script>
 </body>
 </html>`;
 }

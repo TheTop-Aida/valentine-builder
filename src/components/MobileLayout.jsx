@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ELEMENT_TYPES, THEMES, LAYOUTS, ANIMATIONS, PAGE_EFFECTS, SWATCHES, PAGE_TYPES,
 } from '../constants.js';
 import ElementEditor from './ElementEditor.jsx';
-import { compressImage } from '../utils/imageUtils.js';
+import { uploadAsset } from '../utils/storageUtils.js';
 
 const F = 'Mitr,sans-serif';
 
@@ -31,6 +31,39 @@ export default function MobileLayout({
   const [settingsTab, setSettingsTab] = useState('layout'); // layout | theme | bg | music
   const [showAddPage, setShowAddPage] = useState(false);
 
+  // ── touch drag-to-reorder ──
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dropIdx, setDropIdx] = useState(null);
+  const listRef = useRef(null);
+
+  function onGripStart(e, idx) {
+    e.stopPropagation();
+    setDragIdx(idx);
+    setDropIdx(idx);
+  }
+  function onListMove(e) {
+    if (dragIdx === null || !listRef.current) return;
+    const t = e.touches[0];
+    const rows = listRef.current.querySelectorAll('[data-rowidx]');
+    let best = dropIdx; let bestDist = Infinity;
+    rows.forEach(row => {
+      const rect = row.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      const dist = Math.abs(t.clientY - mid);
+      if (dist < bestDist) { bestDist = dist; best = parseInt(row.getAttribute('data-rowidx')); }
+    });
+    if (best !== dropIdx) setDropIdx(best);
+  }
+  function onListEnd() {
+    if (dragIdx !== null && dropIdx !== null && dragIdx !== dropIdx && activePage) {
+      const elems = [...(activePage.elements || [])];
+      const [moved] = elems.splice(dragIdx, 1);
+      elems.splice(dropIdx, 0, moved);
+      updatePage(activePage.id, { elements: elems });
+    }
+    setDragIdx(null); setDropIdx(null);
+  }
+
   const activeEditingElement = activePage
     ? (activePage.elements || []).find(e => e.id === editingElemId)
     : null;
@@ -50,6 +83,7 @@ export default function MobileLayout({
     }
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage]);
 
   function navTo(id) {
@@ -213,33 +247,61 @@ export default function MobileLayout({
 
               {/* LIST TAB */}
               {drawerTab === 'list' && (
-                <div>
+                <div
+                  ref={listRef}
+                  onTouchMove={onListMove}
+                  onTouchEnd={onListEnd}
+                  onTouchCancel={onListEnd}
+                >
                   {activePage && (activePage.elements || []).length === 0 ? (
                     <div style={{ color: '#555', textAlign: 'center', padding: '32px 20px', fontSize: '0.82rem', lineHeight: 1.6 }}>
                       <div style={{ fontSize: '2.2rem', marginBottom: '8px' }}>🧩</div>
                       ยังไม่มีวัตถุในหน้านี้<br />กด <strong style={{ color: '#ff9a9e' }}>➕ เพิ่มใหม่</strong> เพื่อเริ่มต้น
                     </div>
                   ) : (
-                    (activePage?.elements || []).map(el => (
-                      <div
-                        key={el.id}
-                        style={{ display: 'flex', alignItems: 'center', gap: '9px', padding: '10px 12px', background: editingElemId === el.id ? 'rgba(255,107,157,0.14)' : 'rgba(255,255,255,0.05)', border: `1px solid ${editingElemId === el.id ? 'rgba(255,107,157,0.45)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '11px', marginBottom: '6px' }}
-                      >
-                        <span style={{ fontSize: '1.15rem' }}>{ELEMENT_TYPES.find(t => t.type === el.type)?.icon || '📦'}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ color: '#f0d0ff', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{el.text || el.emoji || el.label || el.question || el.type}</div>
-                          <div style={{ color: '#666', fontSize: '0.67rem', marginTop: '2px' }}>{el.type}</div>
+                    (activePage?.elements || []).map((el, idx) => {
+                      const isDragging = dragIdx === idx;
+                      const isDropTarget = dropIdx === idx && dragIdx !== null && dragIdx !== idx;
+                      const dropAbove = isDropTarget && dragIdx > idx;
+                      const dropBelow = isDropTarget && dragIdx < idx;
+                      return (
+                        <div
+                          key={el.id}
+                          data-rowidx={idx}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '9px',
+                            padding: '10px 12px',
+                            background: isDragging ? 'rgba(255,107,157,0.22)' : editingElemId === el.id ? 'rgba(255,107,157,0.14)' : 'rgba(255,255,255,0.05)',
+                            border: `1px solid ${isDragging ? 'rgba(255,107,157,0.6)' : editingElemId === el.id ? 'rgba(255,107,157,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                            borderTop: dropAbove ? '3px solid #ff6b9d' : undefined,
+                            borderBottom: dropBelow ? '3px solid #ff6b9d' : undefined,
+                            borderRadius: '11px', marginBottom: '6px',
+                            opacity: isDragging ? 0.65 : 1,
+                            transform: isDragging ? 'scale(0.97)' : 'none',
+                            transition: 'transform 0.1s, opacity 0.1s',
+                          }}
+                        >
+                          {/* GRIP HANDLE */}
+                          <div
+                            onTouchStart={e => onGripStart(e, idx)}
+                            style={{ padding: '6px 3px', color: '#555', fontSize: '1rem', lineHeight: 1, touchAction: 'none', userSelect: 'none', flexShrink: 0, cursor: 'grab' }}
+                          >☰</div>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{ELEMENT_TYPES.find(t => t.type === el.type)?.icon || '📦'}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ color: '#f0d0ff', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{el.text || el.emoji || el.label || el.question || el.type}</div>
+                            <div style={{ color: '#666', fontSize: '0.67rem', marginTop: '2px' }}>{el.type}</div>
+                          </div>
+                          <button
+                            onClick={() => { setEditingElemId(editingElemId === el.id ? null : el.id); setDrawerTab('edit'); }}
+                            style={{ padding: '4px 9px', background: 'rgba(255,107,157,0.15)', border: '1px solid rgba(255,107,157,0.35)', borderRadius: '7px', color: '#ff9a9e', fontSize: '0.72rem', cursor: 'pointer', fontFamily: F, flexShrink: 0 }}
+                          >✏️</button>
+                          <button
+                            onClick={() => deleteElement(activePage.id, el.id)}
+                            style={{ background: 'none', border: 'none', color: '#ff4444', fontSize: '0.9rem', cursor: 'pointer', padding: '3px 4px', lineHeight: 1, flexShrink: 0 }}
+                          >✕</button>
                         </div>
-                        <button
-                          onClick={() => { setEditingElemId(editingElemId === el.id ? null : el.id); setDrawerTab('edit'); }}
-                          style={{ padding: '4px 9px', background: 'rgba(255,107,157,0.15)', border: '1px solid rgba(255,107,157,0.35)', borderRadius: '7px', color: '#ff9a9e', fontSize: '0.72rem', cursor: 'pointer', fontFamily: F }}
-                        >✏️</button>
-                        <button
-                          onClick={() => deleteElement(activePage.id, el.id)}
-                          style={{ background: 'none', border: 'none', color: '#ff4444', fontSize: '0.9rem', cursor: 'pointer', padding: '3px 4px', lineHeight: 1 }}
-                        >✕</button>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -403,18 +465,18 @@ function SettingsBg({ activePage, updatePage }) {
       </div>
 
       <div style={{ color: '#ff9a9e', fontWeight: 600, marginBottom: '10px', fontSize: '0.85rem' }}>🖼️ รูปพื้นหลังหน้า</div>
-      {activePage.bgImage && activePage.bgImage.startsWith('data:') && activePage.bgImageFileName ? (
+      {activePage.bgImage && activePage.bgImage.startsWith('http') && activePage.bgImageFileName ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(255,107,157,0.1)', border: '1px solid rgba(255,107,157,0.4)', borderRadius: '8px', marginBottom: '10px' }}>
           <span>🖼️</span>
           <span style={{ flex: 1, fontSize: '0.78rem', color: '#ff9a9e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePage.bgImageFileName}</span>
           <label style={{ fontSize: '0.72rem', color: '#ccc', cursor: 'pointer', padding: '3px 8px', background: 'rgba(255,255,255,0.08)', borderRadius: '5px', fontFamily: F }}>
-            เปลี่ยน<input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; compressImage(f).then(c => updatePage(id, { bgImage: c, bgImageFileName: f.name })); }} />
+            เปลี่ยน<input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'images'); if (url) updatePage(id, { bgImage: url, bgImageFileName: f.name }); }} />
           </label>
           <button onClick={() => updatePage(id, { bgImage: '', bgImageFileName: '' })} style={{ background: 'none', border: 'none', color: '#ff8080', cursor: 'pointer' }}>✕</button>
         </div>
       ) : (
         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', background: 'rgba(255,107,157,0.08)', border: '2px dashed rgba(255,107,157,0.4)', borderRadius: '8px', color: '#ff9a9e', fontSize: '0.8rem', cursor: 'pointer', boxSizing: 'border-box', fontFamily: F, marginBottom: '10px' }}>
-          📂 เลือกรูปพื้นหลัง<input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; compressImage(f).then(c => updatePage(id, { bgImage: c, bgImageFileName: f.name })); }} />
+          📂 เลือกรูปพื้นหลัง<input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'images'); if (url) updatePage(id, { bgImage: url, bgImageFileName: f.name }); }} />
         </label>
       )}
       {activePage.bgImage && (
@@ -427,18 +489,18 @@ function SettingsBg({ activePage, updatePage }) {
       )}
 
       <div style={{ color: '#ff9a9e', fontWeight: 600, marginBottom: '10px', fontSize: '0.85rem' }}>🖼️ รูปพื้นหลัง Card</div>
-      {activePage.cardBgImage && activePage.cardBgImage.startsWith('data:') && activePage.cardBgImageFileName ? (
+      {activePage.cardBgImage && activePage.cardBgImage.startsWith('http') && activePage.cardBgImageFileName ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(107,157,255,0.1)', border: '1px solid rgba(107,157,255,0.4)', borderRadius: '8px', marginBottom: '10px' }}>
           <span>🖼️</span>
           <span style={{ flex: 1, fontSize: '0.78rem', color: '#9ac0ff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePage.cardBgImageFileName}</span>
           <label style={{ fontSize: '0.72rem', color: '#ccc', cursor: 'pointer', padding: '3px 8px', background: 'rgba(255,255,255,0.08)', borderRadius: '5px', fontFamily: F }}>
-            เปลี่ยน<input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; compressImage(f).then(c => updatePage(id, { cardBgImage: c, cardBgImageFileName: f.name })); }} />
+            เปลี่ยน<input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'images'); if (url) updatePage(id, { cardBgImage: url, cardBgImageFileName: f.name }); }} />
           </label>
           <button onClick={() => updatePage(id, { cardBgImage: '', cardBgImageFileName: '' })} style={{ background: 'none', border: 'none', color: '#ff8080', cursor: 'pointer' }}>✕</button>
         </div>
       ) : (
         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', background: 'rgba(107,157,255,0.08)', border: '2px dashed rgba(107,157,255,0.35)', borderRadius: '8px', color: '#9ac0ff', fontSize: '0.8rem', cursor: 'pointer', boxSizing: 'border-box', fontFamily: F, marginBottom: '10px' }}>
-          📂 เลือกรูปพื้นหลัง Card<input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; compressImage(f).then(c => updatePage(id, { cardBgImage: c, cardBgImageFileName: f.name })); }} />
+          📂 เลือกรูปพื้นหลัง Card<input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'images'); if (url) updatePage(id, { cardBgImage: url, cardBgImageFileName: f.name }); }} />
         </label>
       )}
       {activePage.cardBgImage && (
@@ -459,21 +521,21 @@ function SettingsMusic({ activePage, updatePage }) {
     <div>
       <div style={{ color: '#ff9a9e', fontWeight: 600, marginBottom: '8px', fontSize: '0.85rem' }}>🎵 เพลงพื้นหลัง (BGM)</div>
       <p style={{ fontSize: '0.72rem', color: '#7a5a8a', marginBottom: '12px', lineHeight: 1.5 }}>เพลงจะเล่นอัตโนมัติเมื่อผู้รับแตะหน้าจอครั้งแรก</p>
-      {activePage.bgMusic && activePage.bgMusic.startsWith('data:') && activePage.bgMusicFileName ? (
+      {activePage.bgMusic && activePage.bgMusic.startsWith('http') && activePage.bgMusicFileName ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(255,107,157,0.1)', border: '1px solid rgba(255,107,157,0.4)', borderRadius: '8px', marginBottom: '12px' }}>
           <span>🎵</span>
           <span style={{ flex: 1, fontSize: '0.78rem', color: '#ff9a9e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePage.bgMusicFileName}</span>
           <label style={{ fontSize: '0.72rem', color: '#ccc', cursor: 'pointer', padding: '3px 8px', background: 'rgba(255,255,255,0.08)', borderRadius: '5px', fontFamily: F }}>
-            เปลี่ยน<input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => updatePage(id, { bgMusic: ev.target.result, bgMusicFileName: f.name }); r.readAsDataURL(f); }} />
+            เปลี่ยน<input type="file" accept="audio/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'audio'); if (url) updatePage(id, { bgMusic: url, bgMusicFileName: f.name }); }} />
           </label>
           <button onClick={() => updatePage(id, { bgMusic: '', bgMusicFileName: '' })} style={{ background: 'none', border: 'none', color: '#ff8080', cursor: 'pointer' }}>✕</button>
         </div>
       ) : (
         <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', background: 'rgba(255,107,157,0.08)', border: '2px dashed rgba(255,107,157,0.4)', borderRadius: '8px', color: '#ff9a9e', fontSize: '0.8rem', cursor: 'pointer', boxSizing: 'border-box', fontFamily: F, marginBottom: '10px' }}>
-          🎵 เลือกไฟล์เพลง (.mp3 / .m4a)<input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => updatePage(id, { bgMusic: ev.target.result, bgMusicFileName: f.name }); r.readAsDataURL(f); }} />
+          🎵 เลือกไฟล์เพลง (.mp3 / .m4a)<input type="file" accept="audio/*" style={{ display: 'none' }} onChange={async e => { const f = e.target.files[0]; if (!f) return; const url = await uploadAsset(f, 'audio'); if (url) updatePage(id, { bgMusic: url, bgMusicFileName: f.name }); }} />
         </label>
       )}
-      {!(activePage.bgMusic && activePage.bgMusic.startsWith('data:')) && (
+      {!(activePage.bgMusic && activePage.bgMusic.startsWith('http')) && (
         <>
           <label style={lbl}>หรือวาง URL เพลง (.mp3)</label>
           <input value={activePage.bgMusic || ''} onChange={e => updatePage(id, { bgMusic: e.target.value, bgMusicFileName: '' })} placeholder="https://example.com/music.mp3" style={inp()} />

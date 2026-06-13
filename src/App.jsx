@@ -9,7 +9,7 @@ import LoginPage from './components/LoginPage.jsx';
 import MobileLayout from './components/MobileLayout.jsx';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { supabase } from './supabase.js';
-import { compressImage } from './utils/imageUtils.js';
+import { uploadAsset } from './utils/storageUtils.js';
 
 // ── Export Modal ──────────────────────────────────────────────────────────────
 const EXPORT_RATE_KEY = 'vb_export_rate';
@@ -176,7 +176,7 @@ export default function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [pages, setPages] = useState(() => {
-    try { const saved = localStorage.getItem('vb_pages_v5'); if (saved) return JSON.parse(saved); } catch(e) {}
+    try { const saved = localStorage.getItem('vb_pages_v5'); if (saved) return JSON.parse(saved); } catch(_e) {}
     return getInitialTemplate();
   });
 
@@ -196,7 +196,7 @@ export default function App() {
     try {
       const saved = localStorage.getItem('vb_pages_v5');
       if (saved) { const ps = JSON.parse(saved); if (ps && ps.length > 0) return ps[0].id; }
-    } catch(e) {}
+    } catch(_e) {}
     return 'p1';
   });
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -212,7 +212,6 @@ export default function App() {
   const activePage = pages.find(p => p.id === activePageId);
   const activeThemeObj = activePage ? (THEMES[activePage.theme] || THEMES.pink) : null;
 
-  const selStyle = { width:'100%', background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,100,150,.2)', borderRadius:'7px', color:'#e8d0f0', fontFamily:'Mitr,sans-serif', fontSize:'0.8rem', padding:'6px 9px', outline:'none', cursor:'pointer' };
   const labelStyle = { display:'block', fontSize:'0.72rem', color:'#9a7aaa', marginBottom:'5px', fontWeight:'500' };
 
   useEffect(() => {
@@ -230,16 +229,16 @@ export default function App() {
     historyIdxRef.current = newHistory.length - 1;
     setCanUndo(historyIdxRef.current > 0);
     setCanRedo(false);
-    try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(e) {}
+    try { localStorage.setItem('vb_pages_v5', JSON.stringify(pages)); } catch(_e) {}
     // ถ้ายังไม่ login → mark dirty (มีงานที่ยังไม่ได้ sync)
     if (!user) {
-      try { localStorage.setItem('vb_dirty', '1'); } catch(e) {}
+      try { localStorage.setItem('vb_dirty', '1'); } catch(_e) {}
     }
     // Cloud save (debounced) เมื่อ login แล้ว
     if (user) {
       if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
       cloudSaveTimerRef.current = setTimeout(async () => {
-        try { await supabase.from('profiles').update({ pages_data: pages }).eq('id', user.id); } catch(e) {}
+        try { await supabase.from('profiles').update({ pages_data: pages }).eq('id', user.id); } catch(_e) {}
       }, 1500);
     }
   }, [pages, user]);
@@ -274,14 +273,15 @@ export default function App() {
             await supabase.from('profiles').update({ pages_data: pages }).eq('id', user.id);
             localStorage.removeItem('vb_dirty');
             showToast('☁️ บันทึกงานของคุณขึ้น Cloud แล้ว');
-          } catch(e) {}
+          } catch(_e) {}
         } else if (cloudPages && cloudPages.length > 0) {
           // ไม่มีงาน local → โหลด cloud มาใช้
           setPages(cloudPages);
           setActivePageId(cloudPages[0].id);
         }
-      } catch(e) {}
+      } catch(_e) {}
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => { setPreviewHtml(generateHTML(pages)); }, [pages]);
@@ -289,7 +289,7 @@ export default function App() {
   useEffect(() => {
     if (iframeRef.current && previewHtml) {
       const win = iframeRef.current.contentWindow;
-      if (win && typeof win.clearEffects === 'function') { try { win.clearEffects(); } catch(e) {} }
+      if (win && typeof win.clearEffects === 'function') { try { win.clearEffects(); } catch(_e) {} }
       const doc = iframeRef.current.contentDocument || win.document;
       doc.open(); doc.write(previewHtml); doc.close();
       if (win && typeof win.goTo === 'function') win.goTo(activePageId);
@@ -676,23 +676,23 @@ export default function App() {
                     </div>
                     <div className="field" style={{marginTop:10}}>
                       <label style={labelStyle}>🖼️ รูปพื้นหลังหน้า (Page BG Image)</label>
-                      {(activePage.bgImage && activePage.bgImage.startsWith('data:') && activePage.bgImageFileName) ? (
+                      {(activePage.bgImage && activePage.bgImage.startsWith('http') && activePage.bgImageFileName) ? (
                         <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
                           <span style={{fontSize:'1.1rem'}}>🖼️</span>
                           <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.bgImageFileName}</span>
                           <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
                             เปลี่ยน
-                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{bgImage:compressed,bgImageFileName:f.name}));}} />
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'images');if(url)updatePage(activePage.id,{bgImage:url,bgImageFileName:f.name});}} />
                           </label>
                           <button onClick={()=>updatePage(activePage.id,{bgImage:'',bgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
                       ) : (
                         <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
                           📂 เลือกรูปพื้นหลัง
-                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{bgImage:compressed,bgImageFileName:f.name}));}} />
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'images');if(url)updatePage(activePage.id,{bgImage:url,bgImageFileName:f.name});}} />
                         </label>
                       )}
-                      {!(activePage.bgImage && activePage.bgImage.startsWith('data:')) && (
+                      {!(activePage.bgImage && activePage.bgImage.startsWith('http')) && (
                         <input value={activePage.bgImage||''} onChange={e=>updatePage(activePage.id,{bgImage:e.target.value,bgImageFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="หรือวาง URL รูปภาพ..." />
                       )}
                       {activePage.bgImage && (
@@ -712,14 +712,14 @@ export default function App() {
                           <span style={{flex:1,fontSize:'0.78rem',color:'#9ac0ff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.cardBgImageFileName}</span>
                           <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
                             เปลี่ยน
-                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{cardBgImage:compressed,cardBgImageFileName:f.name}));}} />
+                            <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'images');if(url)updatePage(activePage.id,{cardBgImage:url,cardBgImageFileName:f.name});}} />
                           </label>
                           <button onClick={()=>updatePage(activePage.id,{cardBgImage:'',cardBgImageFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
                       ) : (
                         <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(107,157,255,0.08)',border:'2px dashed rgba(107,157,255,0.35)',borderRadius:'8px',color:'#9ac0ff',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
                           📂 เลือกรูปพื้นหลัง Card
-                          <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;compressImage(f).then(compressed=>updatePage(activePage.id,{cardBgImage:compressed,cardBgImageFileName:f.name}));}} />
+                          <input type="file" accept="image/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'images');if(url)updatePage(activePage.id,{cardBgImage:url,cardBgImageFileName:f.name});}} />
                         </label>
                       )}
                       {!(activePage.cardBgImage && activePage.cardBgImage.startsWith('data:')) && (
@@ -744,23 +744,23 @@ export default function App() {
                     <div className="field">
                       <p style={{fontSize:'0.7rem',color:'#9a7aaa',marginBottom:'10px',lineHeight:1.5}}>เพลงจะเล่นอัตโนมัติเมื่อผู้รับแตะหน้าจอครั้งแรก ไม่มีปุ่มใดๆ แสดงให้เห็น</p>
                       {/* อัปโหลดไฟล์ */}
-                      {(activePage.bgMusic && activePage.bgMusic.startsWith('data:') && activePage.bgMusicFileName) ? (
+                      {(activePage.bgMusic && activePage.bgMusic.startsWith('http') && activePage.bgMusicFileName) ? (
                         <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',marginBottom:'8px',background:'rgba(255,107,157,0.1)',border:'1px solid rgba(255,107,157,0.4)',borderRadius:'8px'}}>
                           <span style={{fontSize:'1.1rem'}}>🎵</span>
                           <span style={{flex:1,fontSize:'0.78rem',color:'#ff9a9e',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activePage.bgMusicFileName}</span>
                           <label style={{fontSize:'0.72rem',color:'#ccc',cursor:'pointer',whiteSpace:'nowrap',padding:'3px 8px',background:'rgba(255,255,255,0.08)',borderRadius:'5px',fontFamily:'Mitr,sans-serif'}}>
                             เปลี่ยน
-                            <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgMusic:ev.target.result,bgMusicFileName:f.name});r.readAsDataURL(f);}} />
+                            <input type="file" accept="audio/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'audio');if(url)updatePage(activePage.id,{bgMusic:url,bgMusicFileName:f.name});}} />
                           </label>
                           <button onClick={()=>updatePage(activePage.id,{bgMusic:'',bgMusicFileName:''})} style={{background:'none',border:'none',color:'#ff8080',cursor:'pointer',fontSize:'1rem',lineHeight:1}}>✕</button>
                         </div>
                       ) : (
                         <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',width:'100%',padding:'10px',marginBottom:'8px',background:'rgba(255,107,157,0.08)',border:'2px dashed rgba(255,107,157,0.4)',borderRadius:'8px',color:'#ff9a9e',fontSize:'0.8rem',cursor:'pointer',boxSizing:'border-box',fontFamily:'Mitr,sans-serif'}}>
                           📂 เลือกไฟล์เพลง BGM (.mp3 / .m4a)
-                          <input type="file" accept="audio/*" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>updatePage(activePage.id,{bgMusic:ev.target.result,bgMusicFileName:f.name});r.readAsDataURL(f);}} />
+                          <input type="file" accept="audio/*" style={{display:'none'}} onChange={async e=>{const f=e.target.files[0];if(!f)return;const url=await uploadAsset(f,'audio');if(url)updatePage(activePage.id,{bgMusic:url,bgMusicFileName:f.name});}} />
                         </label>
                       )}
-                      {!(activePage.bgMusic && activePage.bgMusic.startsWith('data:')) && (
+                      {!(activePage.bgMusic && activePage.bgMusic.startsWith('http')) && (
                         <>
                           <label style={labelStyle}>หรือวาง URL เพลง (.mp3)</label>
                           <input value={activePage.bgMusic||''} onChange={e=>updatePage(activePage.id,{bgMusic:e.target.value,bgMusicFileName:''})} style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,100,150,.2)',borderRadius:'7px',color:'#e8d0f0',fontFamily:'Mitr,sans-serif',fontSize:'0.8rem',padding:'6px 9px',outline:'none',marginBottom:'4px'}} placeholder="https://example.com/music.mp3" />
